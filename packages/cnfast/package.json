@@ -1,6 +1,6 @@
 {
   "name": "cnfast",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Fast drop-in replacement for `cn`",
   "keywords": [
     "className",
