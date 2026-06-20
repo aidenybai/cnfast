@@ -74,7 +74,7 @@ Across 59 workloads the geometric mean is **3.12x**, with 0 mismatches over 30,1
 
 `cn` runs once per element, so its cost scales with how much you render. Server-rendering a large page calls it across the whole tree, and a client app that re-renders often (data grids, virtualized tables, live dashboards) calls it thousands of times per second. A faster `cn` keeps those busy frames inside budget. On a small or rarely-updated page, the saving disappears into noise.
 
-The chart regenerates in CI on every library change. See the [benchmark suite](./packages/fastcn/bench/README.md) for the full breakdown and the [architecture guide](./docs/architecture.md) for how it works.
+Regenerate the chart with `pnpm --filter cnfast bench:chart`. See the [benchmark suite](./packages/fastcn/bench/README.md) for the full breakdown and the [architecture guide](./docs/architecture.md) for how it works.
 
 ## Development
 
