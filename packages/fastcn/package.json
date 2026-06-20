@@ -11,19 +11,19 @@
     "tailwind",
     "utility"
   ],
+  "homepage": "https://github.com/aidenybai/fastcn#readme",
+  "bugs": {
+    "url": "https://github.com/aidenybai/fastcn/issues"
+  },
   "license": "MIT",
   "author": {
     "name": "Aiden Bai",
     "email": "aiden@million.dev"
   },
-  "homepage": "https://github.com/aidenybai/fastcn#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aidenybai/fastcn.git",
     "directory": "packages/fastcn"
-  },
-  "bugs": {
-    "url": "https://github.com/aidenybai/fastcn/issues"
   },
   "bin": {
     "cnfast": "./bin/cli.js"

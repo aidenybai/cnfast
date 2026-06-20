@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "cnfast",
+  "homepage": "https://github.com/aidenybai/fastcn",
+  "items": [
+    {
+      "name": "cn",
+      "type": "registry:lib",
+      "title": "cn",
+      "description": "Fast drop-in replacement for the shadcn/ui cn utility, backed by cnfast.",
+      "dependencies": ["cnfast"],
+      "files": [
+        {
+          "path": "registry/cnfast/utils.ts",
+          "type": "registry:lib"
+        }
+      ]
+    }
+  ]
+}
