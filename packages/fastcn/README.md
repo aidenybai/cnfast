@@ -29,7 +29,7 @@ npx cnfast migrate
 On a shadcn/ui project, add or replace your `cn` utility through the registry. This rewrites `lib/utils.ts` to re-export cnfast and installs the package:
 
 ```bash
-npx shadcn@latest add aidenybai/fastcn/cn
+npx shadcn@latest add aidenybai/cnfast/cn
 ```
 
 ## Usage

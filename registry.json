@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "cnfast",
-  "homepage": "https://github.com/aidenybai/fastcn",
+  "homepage": "https://github.com/aidenybai/cnfast",
   "items": [
     {
       "name": "cn",

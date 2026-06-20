@@ -11,9 +11,9 @@
     "tailwind",
     "utility"
   ],
-  "homepage": "https://github.com/aidenybai/fastcn#readme",
+  "homepage": "https://github.com/aidenybai/cnfast#readme",
   "bugs": {
-    "url": "https://github.com/aidenybai/fastcn/issues"
+    "url": "https://github.com/aidenybai/cnfast/issues"
   },
   "license": "MIT",
   "author": {
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aidenybai/fastcn.git",
+    "url": "git+https://github.com/aidenybai/cnfast.git",
     "directory": "packages/fastcn"
   },
   "bin": {
