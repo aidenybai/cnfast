@@ -23,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aidenybai/cnfast.git",
-    "directory": "packages/fastcn"
+    "directory": "packages/cnfast"
   },
   "bin": {
     "cnfast": "./bin/cli.js"

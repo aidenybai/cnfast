@@ -6,14 +6,14 @@ This suite measures how fast `cn` runs against `clsx` + `tailwind-merge`, using 
 
 fastcn produces byte-identical output and runs faster on the `cn` operation, but the end-to-end payoff depends entirely on whether `cn` is on your critical path. The numbers below come from `pnpm bench:report` on Bun, best-of-3.
 
-| Scenario                                    | fastcn             | clsx + tailwind-merge | Outcome                                           |
-| ------------------------------------------- | ------------------ | --------------------- | ------------------------------------------------- |
-| Output correctness                          | identical          | baseline              | 0 mismatches across 30,127 real call groups       |
-| Live 12,000-cell data grid, per frame       | 15.4 ms            | 32.5 ms               | 2.11x: fastcn holds 60 fps, baseline drops frames |
-| One typical page render (`cn` cost only)    | 0.06 to 0.50 ms    | 0.10 to 1.00 ms       | 1.5x to 3.1x, saves at most 0.50 ms               |
-| React server-side rendering throughput      | up to 1.26x        | baseline              | marginal                                          |
-| `cn` throughput on harvested component code | 286 to 1,184 ops/s | 83 to 338 ops/s       | 3.0x to 3.6x                                      |
-| Bundle size, minified and gzipped           | 8.73 KB            | 8.45 KB               | fastcn is 0.28 KB larger                          |
+| Scenario                                    | fastcn          | clsx + tailwind-merge | Outcome                                           |
+| ------------------------------------------- | --------------- | --------------------- | ------------------------------------------------- |
+| Output correctness                          | identical       | baseline              | 0 mismatches across 113,291 real call groups      |
+| Live 12,000-cell data grid, per frame       | 15.4 ms         | 32.5 ms               | 2.11x: fastcn holds 60 fps, baseline drops frames |
+| One typical page render (`cn` cost only)    | 0.06 to 0.50 ms | 0.10 to 1.00 ms       | 1.5x to 3.1x, saves at most 0.50 ms               |
+| React server-side rendering throughput      | up to 1.26x     | baseline              | marginal                                          |
+| `cn` throughput on harvested component code | per-repo        | baseline              | 3.53x geomean across 53 repos (2.07x to 6.70x)    |
+| Bundle size, minified and gzipped           | 8.73 KB         | 8.45 KB               | fastcn is 0.28 KB larger                          |
 
 The one place the speed converts into user-visible behavior is the data grid. The places it does not: ordinary page renders, Core Web Vitals, and React server-side rendering.
 
@@ -21,7 +21,7 @@ The one place the speed converts into user-visible behavior is the data grid. Th
 
 Read the suite as three claims, in order of importance.
 
-**Correctness comes first**: `pnpm bench:parity` runs every harvested call through both implementations and compares output. It finds 0 differences in 30,127 call groups, so the speed is real work, not skipped work.
+**Correctness comes first**: `pnpm bench:parity` runs every harvested call through both implementations and compares output. It finds 0 differences in 113,291 call groups harvested from 53 open-source apps, so the speed is real work, not skipped work.
 
 **The win is narrow and real**: a live data grid recomputes thousands of class names per frame, and those classes change every frame (a heatmap color, a live width), so the [least-recently-used (LRU) cache](../src/lib/create-tailwind-merge.ts) misses on most calls. At 12,000 cells, fastcn finishes in 15.4 ms and stays inside the 16.7 ms budget for 60 frames per second (fps). `clsx` + `tailwind-merge` takes 32.5 ms and drops to roughly 31 fps. Same output, one janks and one does not.
 
@@ -77,7 +77,7 @@ pnpm bench:setup
 
 Each benchmark targets one workload, with fixtures alongside this file. They all share one runner, **`lib/harness.ts`**, which benchmarks fastcn against the reference best-of-N and accumulates every result into a sink so the JIT cannot dead-code-eliminate `cn`'s side-effect-free fast paths (single bare tokens, no-op merges) and report illusory throughput. **`lib/workloads.ts`** builds the reusable workload set that both the individual entries and the combined **`index.ts`** (`pnpm bench:all`) consume.
 
-- **`corpus.bench.ts`**: replays class strings harvested from `repos.json` checkouts into `corpora/*.json`. This is the raw `cn` speed under cache pressure, the most flattering and least representative number.
+- **`corpus.bench.ts`**: replays class strings harvested from `repos.json` checkouts into `corpora/*.json`. This is the raw `cn` speed under cache pressure, the most flattering and least representative number. The repo set is restricted to apps that actually use Tailwind: a repo is included only if at least half its harvested tokens are recognized Tailwind classes and it yields at least 50 call groups. That gate (applied independent of measured speed) keeps the corpus from being padded with non-Tailwind code (CSS-modules/BEM/Emotion), where neither library does real merge work, and drops degenerate empty/tiny corpora that would otherwise add noise to the equal-weighted geomean.
 - **`page-replay.bench.ts`**: replays each captured page’s real call sequence from `pages/*.json`, with duplicates, so the cache hit rate matches production. This is the honest per-render cost.
 - **`hard-task.bench.ts`**: a synthetic 200 by 60 data grid with conflict-heavy, cache-busting classes. This is the workload where speed changes frame rate.
 - **`ssr.bench.ts`**: React `renderToString` over the captured trees, plus a string-only upper bound.

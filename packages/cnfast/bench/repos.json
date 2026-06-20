@@ -60,18 +60,6 @@
     "url": "https://github.com/aidenybai/react-scan.git"
   },
   {
-    "name": "tldraw",
-    "url": "https://github.com/tldraw/tldraw.git"
-  },
-  {
-    "name": "excalidraw",
-    "url": "https://github.com/excalidraw/excalidraw.git"
-  },
-  {
-    "name": "twenty",
-    "url": "https://github.com/twentyhq/twenty.git"
-  },
-  {
     "name": "posthog",
     "url": "https://github.com/PostHog/posthog.git"
   },
@@ -88,16 +76,8 @@
     "url": "https://github.com/payloadcms/payload.git"
   },
   {
-    "name": "sentry",
-    "url": "https://github.com/getsentry/sentry.git"
-  },
-  {
     "name": "nodejs-org",
     "url": "https://github.com/nodejs/nodejs.org.git"
-  },
-  {
-    "name": "lobe-chat",
-    "url": "https://github.com/lobehub/lobe-chat.git"
   },
   {
     "name": "langfuse",
@@ -116,18 +96,6 @@
     "url": "https://github.com/medusajs/medusa.git"
   },
   {
-    "name": "appsmith",
-    "url": "https://github.com/appsmithorg/appsmith.git"
-  },
-  {
-    "name": "tooljet",
-    "url": "https://github.com/ToolJet/ToolJet.git"
-  },
-  {
-    "name": "rocket-chat",
-    "url": "https://github.com/RocketChat/Rocket.Chat.git"
-  },
-  {
     "name": "executor",
     "url": "https://github.com/RhysSullivan/executor.git"
   },
@@ -140,30 +108,6 @@
     "url": "https://github.com/mastra-ai/mastra.git"
   },
   {
-    "name": "freecodecamp",
-    "url": "https://github.com/freeCodeCamp/freeCodeCamp.git"
-  },
-  {
-    "name": "create-react-app",
-    "url": "https://github.com/facebook/create-react-app.git"
-  },
-  {
-    "name": "nextchat",
-    "url": "https://github.com/ChatGPTNextWeb/NextChat.git"
-  },
-  {
-    "name": "lobehub",
-    "url": "https://github.com/lobehub/lobehub.git"
-  },
-  {
-    "name": "grafana",
-    "url": "https://github.com/grafana/grafana.git"
-  },
-  {
-    "name": "superset",
-    "url": "https://github.com/apache/superset.git"
-  },
-  {
     "name": "affine",
     "url": "https://github.com/toeverything/AFFiNE.git"
   },
@@ -172,36 +116,8 @@
     "url": "https://github.com/usememos/memos.git"
   },
   {
-    "name": "joplin",
-    "url": "https://github.com/laurent22/joplin.git"
-  },
-  {
-    "name": "mastodon",
-    "url": "https://github.com/mastodon/mastodon.git"
-  },
-  {
-    "name": "penpot",
-    "url": "https://github.com/penpot/penpot.git"
-  },
-  {
-    "name": "metabase",
-    "url": "https://github.com/metabase/metabase.git"
-  },
-  {
-    "name": "jsoncrack-com",
-    "url": "https://github.com/AykutSarac/jsoncrack.com.git"
-  },
-  {
-    "name": "bruno",
-    "url": "https://github.com/usebruno/bruno.git"
-  },
-  {
     "name": "cal-diy",
     "url": "https://github.com/calcom/cal.diy.git"
-  },
-  {
-    "name": "outline",
-    "url": "https://github.com/outline/outline.git"
   },
   {
     "name": "insomnia",
@@ -220,24 +136,8 @@
     "url": "https://github.com/amruthpillai/reactive-resume.git"
   },
   {
-    "name": "mattermost",
-    "url": "https://github.com/mattermost/mattermost.git"
-  },
-  {
-    "name": "umami",
-    "url": "https://github.com/umami-software/umami.git"
-  },
-  {
-    "name": "conductor",
-    "url": "https://github.com/conductor-oss/conductor.git"
-  },
-  {
     "name": "postiz-app",
     "url": "https://github.com/gitroomhq/postiz-app.git"
-  },
-  {
-    "name": "jitsi-meet",
-    "url": "https://github.com/jitsi/jitsi-meet.git"
   },
   {
     "name": "create-t3-app",
@@ -248,24 +148,12 @@
     "url": "https://github.com/nrwl/nx.git"
   },
   {
-    "name": "redash",
-    "url": "https://github.com/getredash/redash.git"
-  },
-  {
     "name": "fastgpt",
     "url": "https://github.com/labring/FastGPT.git"
   },
   {
-    "name": "signoz",
-    "url": "https://github.com/SigNoz/signoz.git"
-  },
-  {
     "name": "infisical",
     "url": "https://github.com/Infisical/infisical.git"
-  },
-  {
-    "name": "actual",
-    "url": "https://github.com/actualbudget/actual.git"
   },
   {
     "name": "karakeep",
@@ -276,10 +164,6 @@
     "url": "https://github.com/responsively-org/responsively-app.git"
   },
   {
-    "name": "nocobase",
-    "url": "https://github.com/nocobase/nocobase.git"
-  },
-  {
     "name": "chartdb",
     "url": "https://github.com/chartdb/chartdb.git"
   },
@@ -288,20 +172,8 @@
     "url": "https://github.com/teableio/teable.git"
   },
   {
-    "name": "navidrome",
-    "url": "https://github.com/navidrome/navidrome.git"
-  },
-  {
     "name": "dyad",
     "url": "https://github.com/dyad-sh/dyad.git"
-  },
-  {
-    "name": "kap",
-    "url": "https://github.com/wulkano/Kap.git"
-  },
-  {
-    "name": "decap-cms",
-    "url": "https://github.com/decaporg/decap-cms.git"
   },
   {
     "name": "cap",
@@ -316,26 +188,6 @@
     "url": "https://github.com/bluesky-social/social-app.git"
   },
   {
-    "name": "signal-desktop",
-    "url": "https://github.com/signalapp/Signal-Desktop.git"
-  },
-  {
-    "name": "reactotron",
-    "url": "https://github.com/infinitered/reactotron.git"
-  },
-  {
-    "name": "answer",
-    "url": "https://github.com/apache/answer.git"
-  },
-  {
-    "name": "apitable",
-    "url": "https://github.com/apitable/apitable.git"
-  },
-  {
-    "name": "notesnook",
-    "url": "https://github.com/streetwriters/notesnook.git"
-  },
-  {
     "name": "commerce",
     "url": "https://github.com/vercel/commerce.git"
   },
@@ -344,59 +196,19 @@
     "url": "https://github.com/tinacms/tinacms.git"
   },
   {
-    "name": "element-web",
-    "url": "https://github.com/element-hq/element-web.git"
-  },
-  {
-    "name": "wp-calypso",
-    "url": "https://github.com/Automattic/wp-calypso.git"
-  },
-  {
-    "name": "formily",
-    "url": "https://github.com/alibaba/formily.git"
-  },
-  {
     "name": "omi",
     "url": "https://github.com/BasedHardware/omi.git"
-  },
-  {
-    "name": "illa-builder",
-    "url": "https://github.com/illacloud/illa-builder.git"
   },
   {
     "name": "openreplay",
     "url": "https://github.com/openreplay/openreplay.git"
   },
   {
-    "name": "planka",
-    "url": "https://github.com/plankanban/planka.git"
-  },
-  {
     "name": "note-gen",
     "url": "https://github.com/codexu/note-gen.git"
   },
   {
-    "name": "giscus",
-    "url": "https://github.com/giscus/giscus.git"
-  },
-  {
-    "name": "react-pdf",
-    "url": "https://github.com/wojtekmaj/react-pdf.git"
-  },
-  {
-    "name": "proton-native",
-    "url": "https://github.com/kusti8/proton-native.git"
-  },
-  {
     "name": "inbox-zero",
     "url": "https://github.com/elie222/inbox-zero.git"
-  },
-  {
-    "name": "reactide",
-    "url": "https://github.com/reactide/reactide.git"
-  },
-  {
-    "name": "react-native-debugger",
-    "url": "https://github.com/jhen0409/react-native-debugger.git"
   }
 ]

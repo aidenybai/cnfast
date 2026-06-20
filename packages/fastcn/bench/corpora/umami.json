@@ -1,8 +1,0 @@
-[
-  ["bg-surface-overlay"],
-  ["code-textarea"],
-  ["dashboard_svg__lucide dashboard_svg__lucide-layout-dashboard"],
-  ["min-w-[200px]"],
-  ["rounded-lg"],
-  ["w-full justify-between"]
-]

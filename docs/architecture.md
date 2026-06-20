@@ -133,7 +133,7 @@ The default config in `src/lib/default-config.ts` is about 76% of the minified o
 
 ## Measuring every change
 
-Every hot-path change is gated on the commands below, run from `packages/fastcn`. Treat a change as an improvement only when parity stays green and the benchmark improves across a best-of-three or best-of-five run, never a single sample.
+Every hot-path change is gated on the commands below, run from `packages/cnfast`. Treat a change as an improvement only when parity stays green and the benchmark improves across a best-of-three or best-of-five run, never a single sample.
 
 - **Parity**: `pnpm test` runs the full suite, including the differential fuzz test against the real `twMerge`
 - **Speed**: `pnpm bench` runs the benchmark against `clsx` plus `tailwind-merge` across the cached and uncached corpora
