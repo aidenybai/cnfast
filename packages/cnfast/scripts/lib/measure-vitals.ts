@@ -33,8 +33,8 @@ const bundle = async (contents: string): Promise<string> => {
 
 // IIFE bundles exposing window.__cnModule.cn for each implementation. The
 // reference is the canonical shadcn `cn = (...i) => twMerge(clsx(i))`.
-export const bundleImplementations = async (): Promise<{ fastcn: string; reference: string }> => ({
-  fastcn: await bundle(`export { cn } from ${JSON.stringify(sourceEntry)};`),
+export const bundleImplementations = async (): Promise<{ cnfast: string; reference: string }> => ({
+  cnfast: await bundle(`export { cn } from ${JSON.stringify(sourceEntry)};`),
   reference: await bundle(
     `import { clsx } from "clsx";
      import { twMerge } from "tailwind-merge";

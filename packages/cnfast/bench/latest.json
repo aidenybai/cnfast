@@ -7,14 +7,14 @@
   "workloadCount": 65,
   "overallSpeedup": 3.1684285016388167,
   "bundle": {
-    "fastcnGzip": 9256,
+    "cnfastGzip": 9256,
     "referenceGzip": 8649
   },
   "rows": [
     {
       "label": "Cached re-render",
       "detail": "repeated class strings, cache hits",
-      "fastcn": 4764.973280726822,
+      "cnfast": 4764.973280726822,
       "reference": 3613.46630510715,
       "speedup": 1.3186710151391674,
       "emphasis": false
@@ -22,7 +22,7 @@
     {
       "label": "Merge engine (cold)",
       "detail": "unique strings, every call misses",
-      "fastcn": 4284.852594164351,
+      "cnfast": 4284.852594164351,
       "reference": 1108.3038363051307,
       "speedup": 3.8661353085713532,
       "emphasis": false
@@ -30,7 +30,7 @@
     {
       "label": "Component corpus",
       "detail": "harvested app source, geomean",
-      "fastcn": 3695.170139396441,
+      "cnfast": 3695.170139396441,
       "reference": 1037.5385011852677,
       "speedup": 3.5614776079876895,
       "emphasis": false
@@ -38,7 +38,7 @@
     {
       "label": "Page render",
       "detail": "real call sequence, geomean",
-      "fastcn": 5925.714252048613,
+      "cnfast": 5925.714252048613,
       "reference": 3273.505738373852,
       "speedup": 1.8102043269953951,
       "emphasis": false
@@ -46,7 +46,7 @@
     {
       "label": "Live data grid",
       "detail": "12K cells, live arbitrary values",
-      "fastcn": 55.96065017440079,
+      "cnfast": 55.96065017440079,
       "reference": 26.30887154652318,
       "speedup": 2.1270638717986445,
       "emphasis": false
@@ -54,7 +54,7 @@
     {
       "label": "Overall",
       "detail": "geometric mean of 65 workloads",
-      "fastcn": 3623.0006541363487,
+      "cnfast": 3623.0006541363487,
       "reference": 1143.4692789382543,
       "speedup": 3.1684285016388167,
       "emphasis": true

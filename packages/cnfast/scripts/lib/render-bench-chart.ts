@@ -4,7 +4,7 @@ import { compile, type TopLevelSpec } from "vega-lite";
 export interface BenchChartRow {
   label: string;
   detail: string;
-  fastcn: number;
+  cnfast: number;
   reference: number;
   speedup: number;
   emphasis?: boolean;
@@ -24,7 +24,7 @@ export interface BenchReport {
   timeMs: number;
   workloadCount: number;
   overallSpeedup: number;
-  bundle: { fastcnGzip: number; referenceGzip: number };
+  bundle: { cnfastGzip: number; referenceGzip: number };
   rows: BenchChartRow[];
   forms: BenchForm[];
 }

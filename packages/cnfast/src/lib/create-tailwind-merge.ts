@@ -14,7 +14,7 @@ export interface TailwindMerge {
 }
 
 /**
- * Whole-string result cache capacity. Matches tailwind-merge's default; fastcn ships a single,
+ * Whole-string result cache capacity. Matches tailwind-merge's default; cnfast ships a single,
  * non-configurable config so it is baked in rather than exposed as an option.
  */
 const MERGE_CACHE_SIZE = 500;

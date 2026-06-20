@@ -49,7 +49,7 @@ const aggregate = (results: WorkloadResult[], group: string): WorkloadResult => 
   return {
     group,
     name: group,
-    fastcn: geomean(rows.map((row) => row.fastcn)),
+    cnfast: geomean(rows.map((row) => row.cnfast)),
     reference: geomean(rows.map((row) => row.reference)),
     speedup: geomean(rows.map((row) => row.speedup)),
   };
@@ -63,7 +63,7 @@ const toRow = (
 ): BenchChartRow => ({
   label,
   detail,
-  fastcn: result.fastcn,
+  cnfast: result.cnfast,
   reference: result.reference,
   speedup: result.speedup,
   emphasis,
@@ -140,7 +140,7 @@ const rows: BenchChartRow[] = [
     {
       group: "overall",
       name: "overall",
-      fastcn: geomean(results.map((result) => result.fastcn)),
+      cnfast: geomean(results.map((result) => result.cnfast)),
       reference: geomean(results.map((result) => result.reference)),
       speedup: overallSpeedup,
     },
@@ -158,7 +158,7 @@ const report: BenchReport = {
   timeMs: TIME_MS,
   workloadCount: results.length,
   overallSpeedup,
-  bundle: { fastcnGzip: bundle.fastcn.gzipped, referenceGzip: bundle.reference.gzipped },
+  bundle: { cnfastGzip: bundle.cnfast.gzipped, referenceGzip: bundle.reference.gzipped },
   rows,
   forms,
 };

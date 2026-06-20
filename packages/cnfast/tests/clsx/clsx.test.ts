@@ -1,6 +1,6 @@
 /**
  * Cases ported from clsx (https://github.com/lukeed/clsx), MIT License,
- * Copyright (c) Luke Edwards. Adapted to vitest and fastcn's `clsx` export.
+ * Copyright (c) Luke Edwards. Adapted to vitest and cnfast's `clsx` export.
  */
 import { describe, expect, it } from "vitest";
 import { clsx } from "../src/index.js";

@@ -19,7 +19,7 @@ for (const corpus of loadCorpora()) {
       mismatches++;
       if (samples.length < 10) {
         samples.push(
-          `[${corpus.name}] in=${JSON.stringify(group)}\n  fastcn:    ${mine}\n  reference: ${reference}`,
+          `[${corpus.name}] in=${JSON.stringify(group)}\n  cnfast:    ${mine}\n  reference: ${reference}`,
         );
       }
     }
@@ -34,4 +34,4 @@ if (samples.length > 0) {
   console.log(`\nFirst mismatches:\n${samples.join("\n\n")}`);
   process.exit(1);
 }
-console.log("\nfastcn output is byte-identical to clsx + tailwind-merge on every input.");
+console.log("\ncnfast output is byte-identical to clsx + tailwind-merge on every input.");

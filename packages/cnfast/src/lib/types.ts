@@ -1,5 +1,5 @@
 /**
- * Type the baked-in fastcn configuration adheres to.
+ * Type the baked-in cnfast configuration adheres to.
  */
 export type Config<ClassGroupIds extends string, ThemeGroupIds extends string> = ConfigGroupsPart<
   ClassGroupIds,

@@ -26,12 +26,12 @@ console.log(
 );
 
 for (const workload of gridWorkloads()) {
-  const { fastcn, reference } = await benchRun(workload.run);
+  const { cnfast, reference } = await benchRun(workload.run);
   console.log(`== ${workload.name} ${workload.meta} ==`);
-  console.table([summarize("fastcn", fastcn), summarize("clsx + tailwind-merge", reference)]);
+  console.table([summarize("cnfast", cnfast), summarize("clsx + tailwind-merge", reference)]);
   console.log(
-    `speedup: ${(fastcn / reference).toFixed(2)}x  |  ` +
-      `cn budget saved per grid: ${(1000 / reference - 1000 / fastcn).toFixed(2)}ms\n`,
+    `speedup: ${(cnfast / reference).toFixed(2)}x  |  ` +
+      `cn budget saved per grid: ${(1000 / reference - 1000 / cnfast).toFixed(2)}ms\n`,
   );
 }
 

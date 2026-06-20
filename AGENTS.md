@@ -49,9 +49,9 @@ See root `package.json` scripts for the full list. Quick reference:
 - **Typecheck**: `pnpm typecheck` - tsc
 - **Format**: `pnpm format` - oxfmt
 
-## Performance (fastcn hot paths)
+## Performance (cnfast hot paths)
 
-`fastcn` competes on speed with `clsx` + `tailwind-merge` at 100% output parity. The merge/join
+`cnfast` competes on speed with `clsx` + `tailwind-merge` at 100% output parity. The merge/join
 hot paths (`src/clsx.ts`, `src/lib/merge-classlist.ts`, `config-utils.ts`, `parse-class-name.ts`,
 `class-group-utils.ts`, `sort-modifiers.ts`, `tw-join.ts`) are performance-critical. Rules:
 

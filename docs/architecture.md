@@ -1,15 +1,15 @@
-# fastcn architecture
+# cnfast architecture
 
-This document explains how `fastcn` turns a list of class values into a merged Tailwind class string, and why each layer is built the way it is. It targets contributors who want to change the hot paths without regressing speed or output parity. Read it top to bottom once; after that, each section stands alone as a reference.
+This document explains how `cnfast` turns a list of class values into a merged Tailwind class string, and why each layer is built the way it is. It targets contributors who want to change the hot paths without regressing speed or output parity. Read it top to bottom once; after that, each section stands alone as a reference.
 
-`fastcn` is a dependency-free replacement for `clsx` plus `tailwind-merge` behind a single `cn` function. It matches their combined output exactly while running the uncached merge engine about 3.1x faster on the benchmark corpus. The speed comes from caching, integer interning, and allocation-free data structures, not from cutting features.
+`cnfast` is a dependency-free replacement for `clsx` plus `tailwind-merge` behind a single `cn` function. It matches their combined output exactly while running the uncached merge engine about 3.1x faster on the benchmark corpus. The speed comes from caching, integer interning, and allocation-free data structures, not from cutting features.
 
 ## Design principles
 
 These principles decide most trade-offs in the codebase. When a change helps one and hurts another, the order below breaks the tie.
 
 - **Match `clsx` and `tailwind-merge` output exactly**: parity is the contract. A differential fuzz test compares `cn` against the real libraries on random input, so any divergence fails the suite.
-- **Do the expensive work once, then cache it**: parsing a token, finding its class group, and computing its conflicts are deterministic. `fastcn` memoizes that result per token and reuses it across every call.
+- **Do the expensive work once, then cache it**: parsing a token, finding its class group, and computing its conflicts are deterministic. `cnfast` memoizes that result per token and reuses it across every call.
 - **Allocate nothing on the hot path**: object literals, arrays, and `Set` instances created per call dominate the cost of a fast function. The merge loop reuses buffers and integer indices instead.
 - **Keep object shapes monomorphic**: V8 optimizes call sites that always read the same object shape. Every parse and descriptor result flows through one factory with identical key order.
 - **Stay dependency-free and tree-shakeable**: the `cn` bundle includes only the code it references. The bundler excludes anything a caller doesn’t import.
@@ -76,13 +76,13 @@ The benchmark splits into two corpora, and each rewards a different technique. T
 
 ### Two levels of caching
 
-`fastcn` caches at two granularities, both using a least recently used (LRU) policy. The outer cache maps a full class string to its merged result and holds 500 entries, the same bound `tailwind-merge` uses; it is inlined into `tailwindMerge` in `src/lib/create-tailwind-merge.ts`. The inner cache maps a single token to its `ClassDescriptor` and holds 4096 entries; it is inlined into `config-utils.ts`. Both are inlined rather than hidden behind a `get`/`set` helper because each is on a per-call (and the inner one per-token) hot path, where a closure hop is measurable.
+`cnfast` caches at two granularities, both using a least recently used (LRU) policy. The outer cache maps a full class string to its merged result and holds 500 entries, the same bound `tailwind-merge` uses; it is inlined into `tailwindMerge` in `src/lib/create-tailwind-merge.ts`. The inner cache maps a single token to its `ClassDescriptor` and holds 4096 entries; it is inlined into `config-utils.ts`. Both are inlined rather than hidden behind a `get`/`set` helper because each is on a per-call (and the inner one per-token) hot path, where a closure hop is measurable.
 
-`tailwind-merge` caches only whole strings. The per-token descriptor cache is the structural difference: when two different class strings share the token `flex`, `fastcn` parses and classifies `flex` once and reuses the descriptor for both.
+`tailwind-merge` caches only whole strings. The per-token descriptor cache is the structural difference: when two different class strings share the token `flex`, `cnfast` parses and classifies `flex` once and reuses the descriptor for both.
 
-Both caches are a two-generation design backed by null-prototype objects from `Object.create(null)`. A full generation becomes the previous slot instead of evicting entries one at a time, which keeps writes allocation-free in the common case. `fastcn` uses null-prototype objects instead of `Map` because property reads on them are faster than `Map.get` for this string-keyed, read-heavy pattern.
+Both caches are a two-generation design backed by null-prototype objects from `Object.create(null)`. A full generation becomes the previous slot instead of evicting entries one at a time, which keeps writes allocation-free in the common case. `cnfast` uses null-prototype objects instead of `Map` because property reads on them are faster than `Map.get` for this string-keyed, read-heavy pattern.
 
-The `bench/lru.bench.ts` harness compares this design against `Map`-backed LRU, true LRU, SIEVE, and S3-FIFO on lookup speed and on hit ratio under a skewed access pattern. The two-generation object wins or ties on every axis: it is fastest when the working set fits, and because it holds up to two generations it reaches a higher hit ratio than SIEVE or S3-FIFO under capacity pressure. Those algorithms raise hit ratio elsewhere by adding per-access bookkeeping over a `Map` index, which costs more than it saves here, so `fastcn` keeps the two-generation object.
+The `bench/lru.bench.ts` harness compares this design against `Map`-backed LRU, true LRU, SIEVE, and S3-FIFO on lookup speed and on hit ratio under a skewed access pattern. The two-generation object wins or ties on every axis: it is fastest when the working set fits, and because it holds up to two generations it reaches a higher hit ratio than SIEVE or S3-FIFO under capacity pressure. Those algorithms raise hit ratio elsewhere by adding per-access bookkeeping over a `Map` index, which costs more than it saves here, so `cnfast` keeps the two-generation object.
 
 ### Interning conflict keys to integers
 
@@ -92,7 +92,7 @@ The integer registry never evicts. A key always maps to the same ID even after i
 
 ### A generation-stamped claim tracker
 
-The merge loop needs a set of conflict keys already claimed by a later class. The obvious implementation allocates a fresh `Set` per call, one allocation per merge on the uncached corpus. `fastcn` replaces that `Set` with a reusable `Int32Array` indexed by conflict-key ID.
+The merge loop needs a set of conflict keys already claimed by a later class. The obvious implementation allocates a fresh `Set` per call, one allocation per merge on the uncached corpus. `cnfast` replaces that `Set` with a reusable `Int32Array` indexed by conflict-key ID.
 
 Each merge bumps a generation counter, and claiming a key writes the current generation into the array at that key’s index. A key counts as claimed when its stored stamp equals the current generation. Starting a new merge is one integer increment, with no allocation and no per-element reset.
 

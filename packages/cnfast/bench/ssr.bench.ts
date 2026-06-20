@@ -78,19 +78,19 @@ for (const file of files) {
   const react = await benchRun((impl) => renderReact(tree, impl));
   reactRows.push({
     page,
-    "fastcn renders/s": Math.round(react.fastcn).toLocaleString("en-US"),
+    "cnfast renders/s": Math.round(react.cnfast).toLocaleString("en-US"),
     "reference renders/s": Math.round(react.reference).toLocaleString("en-US"),
-    "fastcn ms": (1000 / react.fastcn).toFixed(2),
+    "cnfast ms": (1000 / react.cnfast).toFixed(2),
     "reference ms": (1000 / react.reference).toFixed(2),
-    speedup: `${(react.fastcn / react.reference).toFixed(2)}x`,
+    speedup: `${(react.cnfast / react.reference).toFixed(2)}x`,
   });
 
   const string = await benchRun((impl) => renderHtml(tree, impl));
   stringRows.push({
     page,
-    "fastcn renders/s": Math.round(string.fastcn).toLocaleString("en-US"),
+    "cnfast renders/s": Math.round(string.cnfast).toLocaleString("en-US"),
     "reference renders/s": Math.round(string.reference).toLocaleString("en-US"),
-    speedup: `${(string.fastcn / string.reference).toFixed(2)}x`,
+    speedup: `${(string.cnfast / string.reference).toFixed(2)}x`,
   });
 }
 

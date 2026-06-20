@@ -60,32 +60,32 @@ export interface WorkloadResult {
   group: string;
   name: string;
   meta?: string;
-  fastcn: number;
+  cnfast: number;
   reference: number;
   speedup: number;
 }
 
-// Best-of-N ops/s for fastcn vs the reference over one `run`. The `sink +=` accumulation is what
+// Best-of-N ops/s for cnfast vs the reference over one `run`. The `sink +=` accumulation is what
 // makes the comparison DCE-safe, so every benchmark in the repo should go through here.
 export const benchRun = async (
   run: (impl: Impl) => number,
-): Promise<{ fastcn: number; reference: number }> => {
-  let fastcn = 0;
+): Promise<{ cnfast: number; reference: number }> => {
+  let cnfast = 0;
   let reference = 0;
   for (let attempt = 0; attempt < BEST_OF; attempt++) {
     const bench = new Bench({ time: TIME_MS, warmupTime: 150 });
     bench
-      .add("fastcn", () => {
+      .add("cnfast", () => {
         sink += run(cn);
       })
       .add("reference", () => {
         sink += run(referenceCn);
       });
     await bench.run();
-    fastcn = Math.max(fastcn, meanOps(bench.tasks[0]!));
+    cnfast = Math.max(cnfast, meanOps(bench.tasks[0]!));
     reference = Math.max(reference, meanOps(bench.tasks[1]!));
   }
-  return { fastcn, reference };
+  return { cnfast, reference };
 };
 
 // Best-of-N ops/s for a single sink-returning function, DCE-safe via the shared sink. Used by
@@ -105,14 +105,14 @@ export const benchOne = async (run: () => number): Promise<number> => {
 };
 
 const benchWorkload = async (workload: Workload): Promise<WorkloadResult> => {
-  const { fastcn, reference } = await benchRun(workload.run);
+  const { cnfast, reference } = await benchRun(workload.run);
   return {
     group: workload.group,
     name: workload.name,
     meta: workload.meta,
-    fastcn,
+    cnfast,
     reference,
-    speedup: fastcn / reference,
+    speedup: cnfast / reference,
   };
 };
 
@@ -137,7 +137,7 @@ const printSummary = (results: WorkloadResult[], suiteLabel: string): void => {
     console.table(
       rows.map((row) => ({
         workload: row.meta ? `${row.name} ${row.meta}` : row.name,
-        "fastcn ops/s": Math.round(row.fastcn).toLocaleString("en-US"),
+        "cnfast ops/s": Math.round(row.cnfast).toLocaleString("en-US"),
         "reference ops/s": Math.round(row.reference).toLocaleString("en-US"),
         speedup: `${row.speedup.toFixed(2)}x`,
       })),
@@ -172,7 +172,7 @@ export const runSuite = async (
         gitSha,
         group: result.group,
         corpus: result.meta ? `${result.name} ${result.meta}` : result.name,
-        fastcn: result.fastcn,
+        cnfast: result.cnfast,
         reference: result.reference,
         speedup: result.speedup,
       })}\n`,

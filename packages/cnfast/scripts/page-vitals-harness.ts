@@ -79,11 +79,11 @@ const pageHtml = (cnBundle: string, treeJson: string): string => `<!doctype html
 const round = (value: number): string => value.toFixed(1);
 const ratio = (slow: number, fast: number): string => `${(slow / fast).toFixed(2)}x`;
 
-const { fastcn: fastcnBundle, reference: referenceBundle } = await bundleImplementations();
+const { cnfast: cnfastBundle, reference: referenceBundle } = await bundleImplementations();
 
 console.log(
   `Frozen-page web vitals: ${pageNames.length} real pages x slowdowns [${SLOWDOWNS.join(", ")}], ` +
-    `best-of-${RUNS}, ${INTERACTION_COUNT} interactions, fastcn vs clsx+tailwind-merge ...\n`,
+    `best-of-${RUNS}, ${INTERACTION_COUNT} interactions, cnfast vs clsx+tailwind-merge ...\n`,
 );
 
 const rows: Record<string, unknown>[] = [];
@@ -97,25 +97,25 @@ for (const name of pageNames) {
   const tree = JSON.parse(readFileSync(path, "utf8")) as FrozenNode;
   const nodes = countNodes(tree);
   const treeJson = JSON.stringify(tree).replace(/</g, "\\u003c");
-  const fastcnHtml = pageHtml(fastcnBundle, treeJson);
+  const cnfastHtml = pageHtml(cnfastBundle, treeJson);
   const referenceHtml = pageHtml(referenceBundle, treeJson);
 
   for (const cpuSlowdown of SLOWDOWNS) {
     const options = { interactions: INTERACTION_COUNT, runs: RUNS, cpuSlowdown };
-    const fastcn: VitalsSample = await bestOfVitals(fastcnHtml, options);
+    const cnfast: VitalsSample = await bestOfVitals(cnfastHtml, options);
     const reference: VitalsSample = await bestOfVitals(referenceHtml, options);
     rows.push({
       page: name,
       nodes,
       CPU: `${cpuSlowdown}x`,
-      "render f/r": `${round(fastcn.initialRenderMs)}/${round(reference.initialRenderMs)}`,
-      "render x": ratio(reference.initialRenderMs, fastcn.initialRenderMs),
-      "LCP f/r": `${round(fastcn.lcpMs)}/${round(reference.lcpMs)}`,
-      "INP f/r": `${round(fastcn.inpMs)}/${round(reference.inpMs)}`,
+      "render f/r": `${round(cnfast.initialRenderMs)}/${round(reference.initialRenderMs)}`,
+      "render x": ratio(reference.initialRenderMs, cnfast.initialRenderMs),
+      "LCP f/r": `${round(cnfast.lcpMs)}/${round(reference.lcpMs)}`,
+      "INP f/r": `${round(cnfast.inpMs)}/${round(reference.inpMs)}`,
     });
     console.log(`  done: ${name} @ ${cpuSlowdown}x`);
   }
 }
 
-console.log("\n(f/r = fastcn / clsx+tailwind-merge, milliseconds; lower is better)");
+console.log("\n(f/r = cnfast / clsx+tailwind-merge, milliseconds; lower is better)");
 console.table(rows);

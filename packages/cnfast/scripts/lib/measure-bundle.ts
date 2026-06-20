@@ -9,7 +9,7 @@ export interface BundleResult {
 }
 
 export interface BundleComparison {
-  fastcn: BundleResult;
+  cnfast: BundleResult;
   reference: BundleResult;
 }
 
@@ -32,12 +32,12 @@ const measure = async (label: string, contents: string): Promise<BundleResult> =
 };
 
 export const measureBundles = async (): Promise<BundleComparison> => {
-  const fastcn = await measure("cnfast", `export { cn } from ${JSON.stringify(sourceEntry)};`);
+  const cnfast = await measure("cnfast", `export { cn } from ${JSON.stringify(sourceEntry)};`);
   const reference = await measure(
     "clsx + tailwind-merge",
     `import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 export const cn = (...inputs) => twMerge(clsx(inputs));`,
   );
-  return { fastcn, reference };
+  return { cnfast, reference };
 };

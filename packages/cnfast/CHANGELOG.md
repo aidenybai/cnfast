@@ -1,4 +1,4 @@
-# fastcn
+# cnfast
 
 ## 0.0.3
 

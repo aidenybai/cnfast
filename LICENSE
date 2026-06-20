@@ -22,7 +22,7 @@ SOFTWARE.
 
 -------------------------------------------------------------------------------
 
-fastcn bundles and adapts code from the following MIT-licensed projects:
+cnfast bundles and adapts code from the following MIT-licensed projects:
 
 clsx — Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)
 https://github.com/lukeed/clsx
