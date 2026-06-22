@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs **3.2x faster** on average than `clsx` + `tailwind-merge`, up to **7x** with tagged templates, with byte-identical output. Same API, no code changes.
+cnfast runs **3.2x faster** on average than `tailwind-merge`, up to **7x** with tagged templates, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
@@ -50,7 +50,7 @@ cnfast also exports `clsx`, `twMerge`, and `twJoin`.
 
 ## Going even faster
 
-As a tagged template, `cn` caches by call-site identity: a stable call site runs 2.6x faster than the `cn(...)` call form and 7x faster than `clsx` + `tailwind-merge`.
+As a tagged template, `cn` caches by call-site identity: a stable call site runs 2.6x faster than the `cn(...)` call form and 7x faster than `tailwind-merge`.
 
 ```ts
 cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
@@ -58,13 +58,13 @@ cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
 
 ## Comparing against cn
 
-cnfast produces byte-identical output to `clsx` + `tailwind-merge`, then does that work faster. On a re-rendering call site, the tagged-template form pulls furthest ahead:
+cnfast produces byte-identical output to `tailwind-merge`, then does that work faster. On a re-rendering call site, the tagged-template form pulls furthest ahead:
 
 ![cnfast on a re-rendering call site, operations per second](https://raw.githubusercontent.com/aidenybai/cnfast/main/packages/cnfast/bench/chart.svg)
 
 Across the wider suite, operations per second on Bun, best-of-3:
 
-| Workload           | clsx + tailwind-merge | cnfast      | Speedup   |
+| Workload           | tailwind-merge        | cnfast      | Speedup   |
 | ------------------ | --------------------- | ----------- | --------- |
 | Cached re-render   | 2,192 ops/s           | 2,925 ops/s | **1.33x** |
 | Merge engine, cold | 473 ops/s             | 2,153 ops/s | **4.55x** |

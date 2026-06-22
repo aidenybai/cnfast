@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs **3.8x faster** on average than `clsx` + `tailwind-merge`, up to **7x** on component-heavy code, with byte-identical output. Same API, no code changes.
+cnfast runs **3.8x faster** on average than `tailwind-merge`, up to **7x** on component-heavy code, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
@@ -50,7 +50,7 @@ cnfast also exports `clsx`, `twMerge`, and `twJoin`.
 
 ## Tagged templates
 
-As a tagged template, `cn` caches by call-site identity, skipping the join and hash on every repeat. A stable call site runs 4.3x faster than `clsx` + `tailwind-merge`. The `cn(...)` call form already caches its arguments on V8, so on that engine the template form is only 1.2x ahead; the gap is wider on engines without that cache.
+As a tagged template, `cn` caches by call-site identity, skipping the join and hash on every repeat. A stable call site runs 4.3x faster than `tailwind-merge`. The `cn(...)` call form already caches its arguments on V8, so on that engine the template form is only 1.2x ahead; the gap is wider on engines without that cache.
 
 ```ts
 cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
@@ -58,13 +58,13 @@ cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
 
 ## Comparing against cn
 
-cnfast produces byte-identical output to `clsx` + `tailwind-merge` and computes it faster, with the largest gains on re-rendering call sites where the same class arguments recur:
+cnfast produces byte-identical output to `tailwind-merge` and computes it faster, with the largest gains on re-rendering call sites where the same class arguments recur:
 
 ![cnfast on a re-rendering call site, operations per second](./packages/cnfast/bench/chart.svg)
 
 Across the wider suite, operations per second on V8 (Node and Chrome), best-of-3:
 
-| Workload           | clsx + tailwind-merge | cnfast       | Speedup  |
+| Workload           | tailwind-merge        | cnfast       | Speedup  |
 | ------------------ | --------------------- | ------------ | -------- |
 | Cached re-render   | 2,025 ops/s           | 8,709 ops/s  | **4.3x** |
 | Merge engine, cold | 1,440 ops/s           | 5,411 ops/s  | **3.8x** |

@@ -1,12 +1,12 @@
 # cnfast benchmarks
 
-This suite measures `cn` throughput against `clsx` + `tailwind-merge` on real class strings harvested from open-source apps that ship Tailwind. It shows where a faster `cn` changes what a user feels and where the difference is noise. Every benchmark runs on committed fixtures, so `pnpm bench:report` reproduces the tables below without network access.
+This suite measures `cn` throughput against `tailwind-merge` on real class strings harvested from open-source apps that ship Tailwind. It shows where a faster `cn` changes what a user feels and where the difference is noise. Every benchmark runs on committed fixtures, so `pnpm bench:report` reproduces the tables below without network access.
 
 ## Headline results
 
 cnfast produces byte-identical output and runs the `cn` operation faster. The end-to-end payoff depends on whether `cn` sits on your critical path. The numbers below come from `pnpm bench:report` on Bun, best-of-3.
 
-| Scenario                                    | cnfast          | clsx + tailwind-merge | Outcome                                           |
+| Scenario                                    | cnfast          | tailwind-merge        | Outcome                                           |
 | ------------------------------------------- | --------------- | --------------------- | ------------------------------------------------- |
 | Output correctness                          | identical       | baseline              | 0 mismatches across 113,291 real call groups      |
 | Live 12,000-cell data grid, per frame       | 15.4 ms         | 32.5 ms               | 2.11x: cnfast holds 60 fps, baseline drops frames |
@@ -23,7 +23,7 @@ The suite makes three claims, in order of importance.
 
 **Correctness**: `pnpm bench:parity` runs every harvested call through both implementations and compares the output. It finds 0 differences across 113,291 call groups from 53 open-source apps, so the speed is real work, not skipped work.
 
-**The win is narrow and real**: a live data grid recomputes thousands of class names per frame, and those classes change every frame (a heatmap color, a live width), so the [least-recently-used (LRU) cache](../src/lib/create-tailwind-merge.ts) misses most calls. At 12,000 cells, cnfast finishes in 15.4 ms and stays inside the 16.7 ms budget for 60 frames per second (fps). `clsx` + `tailwind-merge` takes 32.5 ms and drops to about 31 fps. Same output: one stays smooth, one drops frames.
+**The win is narrow and real**: a live data grid recomputes thousands of class names per frame, and those classes change every frame (a heatmap color, a live width), so the [least-recently-used (LRU) cache](../src/lib/create-tailwind-merge.ts) misses most calls. At 12,000 cells, cnfast finishes in 15.4 ms and stays inside the 16.7 ms budget for 60 frames per second (fps). `tailwind-merge` takes 32.5 ms and drops to about 31 fps. Same output: one stays smooth, one drops frames.
 
 **Everywhere else is a rounding error**: replaying each captured page's real call sequence (with duplicates, so the cache behaves as it does in production) shows that a whole page render spends 0.06 to 0.50 ms in `cn`. cnfast saves at most 0.50 ms per render. Largest Contentful Paint (LCP) and Interaction to Next Paint (INP), measured in Chrome by `pnpm bench:pages`, do not change: paint and layout dominate those metrics, and `cn` is a fraction of a fraction.
 
@@ -62,7 +62,7 @@ pnpm bench:hard      # live data-grid stress (the headline win)
 pnpm bench:replay    # real per-render cn cost on captured pages
 pnpm bench:ssr       # server-side rendering throughput
 pnpm bench:corpus    # raw cn throughput on harvested component code
-pnpm bench:parity    # output correctness vs clsx + tailwind-merge
+pnpm bench:parity    # output correctness vs tailwind-merge
 pnpm size            # bundle size
 pnpm bench:pages     # LCP and INP in Chrome (needs Google Chrome installed)
 ```
