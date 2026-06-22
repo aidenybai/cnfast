@@ -79,24 +79,15 @@ const workloads = [
 const results = await runSuite(workloads, "chart");
 const bundle = await measureBundles();
 
-// Same stable call site rendered three ways, so the ops/s are directly comparable: the baseline
-// (clsx + tailwind-merge), cnfast's variadic call, and cnfast's identity-cached tagged template.
-// All three run inside ONE Bench so they share warmup/timing and the ratio is stable across runs;
-// measuring them in separate benches let JIT/thermal drift swing the cache-hit template wildly.
+// Same stable call site rendered two ways, so the ops/s are directly comparable: the baseline
+// (clsx + tailwind-merge) and cnfast's variadic call. Both run inside ONE Bench so they share
+// warmup/timing and the ratio is stable across runs.
 const TEMPLATE_VARIANTS: (string | false)[] = ["bg-blue-500", false, "bg-red-500", false];
 const TEMPLATE_BASE = "rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm";
 let formSink = 0;
 
 const formBench = new Bench({ time: Math.max(TIME_MS, 1000), warmupTime: 300 });
 formBench
-  .add("template", () => {
-    for (let index = 0; index < TEMPLATE_VARIANTS.length; index++) {
-      const variant = TEMPLATE_VARIANTS[index]!;
-      formSink += cn`rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm ${
-        variant && variant
-      }`.length;
-    }
-  })
   .add("variadic", () => {
     for (let index = 0; index < TEMPLATE_VARIANTS.length; index++)
       formSink += cn(TEMPLATE_BASE, TEMPLATE_VARIANTS[index]!).length;
@@ -112,12 +103,10 @@ const formOps = (taskName: string): number => {
   const result = formBench.getTask(taskName)?.result;
   return result && "throughput" in result ? result.throughput.mean : Number.NaN;
 };
-const templateOps = formOps("template");
 const variadicOps = formOps("variadic");
 const referenceOps = formOps("reference");
 
 const forms: BenchForm[] = [
-  { label: "cnfast + template", opsPerSec: templateOps, speedup: templateOps / referenceOps },
   { label: "cnfast", opsPerSec: variadicOps, speedup: variadicOps / referenceOps },
   { label: "cn", opsPerSec: referenceOps, speedup: 1 },
 ];
