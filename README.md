@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs **3.2x faster** on average than `clsx` + `tailwind-merge`, up to **7x** with tagged templates, with byte-identical output. Same API, no code changes.
+cnfast runs **3.8x faster** on average than `clsx` + `tailwind-merge`, up to **7x** on component-heavy code, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
@@ -48,9 +48,9 @@ export { cn } from "cnfast";
 
 cnfast also exports `clsx`, `twMerge`, and `twJoin`.
 
-## Going even faster
+## Tagged templates
 
-As a tagged template, `cn` caches by call-site identity: a stable call site runs 2.6x faster than the `cn(...)` call form and 7x faster than `clsx` + `tailwind-merge`.
+As a tagged template, `cn` caches by call-site identity, skipping the join and hash on every repeat. A stable call site runs 4.3x faster than `clsx` + `tailwind-merge`. The `cn(...)` call form already caches its arguments on V8, so on that engine the template form is only 1.2x ahead; the gap is wider on engines without that cache.
 
 ```ts
 cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
@@ -58,25 +58,25 @@ cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
 
 ## Comparing against cn
 
-cnfast produces byte-identical output to `clsx` + `tailwind-merge`, then does that work faster. On a re-rendering call site, the tagged-template form pulls furthest ahead:
+cnfast produces byte-identical output to `clsx` + `tailwind-merge` and computes it faster, with the largest gains on re-rendering call sites where the same class arguments recur:
 
 ![cnfast on a re-rendering call site, operations per second](./packages/cnfast/bench/chart.svg)
 
-Across the wider suite, operations per second on Bun, best-of-3:
+Across the wider suite, operations per second on V8 (Node and Chrome), best-of-3:
 
-| Workload           | clsx + tailwind-merge | cnfast      | Speedup   |
-| ------------------ | --------------------- | ----------- | --------- |
-| Cached re-render   | 3,613 ops/s           | 4,765 ops/s | **1.32x** |
-| Merge engine, cold | 1,108 ops/s           | 4,285 ops/s | **3.87x** |
-| Component corpus   | 1,038 ops/s           | 3,695 ops/s | **3.56x** |
-| Page render        | 3,274 ops/s           | 5,926 ops/s | **1.81x** |
-| Live data grid     | 26 ops/s              | 56 ops/s    | **2.13x** |
+| Workload           | clsx + tailwind-merge | cnfast       | Speedup  |
+| ------------------ | --------------------- | ------------ | -------- |
+| Cached re-render   | 2,025 ops/s           | 8,709 ops/s  | **4.3x** |
+| Merge engine, cold | 1,440 ops/s           | 5,411 ops/s  | **3.8x** |
+| Component corpus   | 1,585 ops/s           | 6,506 ops/s  | **4.1x** |
+| Page render        | 4,249 ops/s           | 11,908 ops/s | **2.8x** |
+| Live data grid     | 500 ops/s             | 2,185 ops/s  | **4.4x** |
 
-Across 65 workloads the geometric mean is **3.17x**, with 0 mismatches over 30,127 real-world call groups. The bundle is 9.04 KB gzipped against 8.45 KB for the baseline.
+Across 65 workloads the geometric mean is **3.8x**, with 0 mismatches over 113,291 real-world call groups. The bundle is 9.43 KB gzipped against 8.45 KB for the baseline. Figures come from V8; see the [benchmark suite](./packages/cnfast/bench/README.md) for the Bun breakdown and the per-engine caveats.
 
-`cn` runs once per element, so its cost scales with how much you render. Server-rendering a large page calls it across the whole tree, and a client app that re-renders often (data grids, virtualized tables, live dashboards) calls it thousands of times per second. A faster `cn` keeps those busy frames inside budget. On a small or rarely-updated page, the saving disappears into noise.
+`cn` runs once per element, so its cost scales with how much you render. Server-rendering a large page calls it across the whole tree; a client app that re-renders often (data grids, virtualized tables, live dashboards) calls it thousands of times per second, where a faster `cn` keeps frames within budget. On a small or rarely updated page, the saving stays within run-to-run noise.
 
-Regenerate the chart with `pnpm --filter cnfast bench:chart`. See the [benchmark suite](./packages/cnfast/bench/README.md) for the full breakdown and the [architecture guide](./docs/architecture.md) for how it works.
+Regenerate the chart with `pnpm --filter cnfast bench:chart`. See the [architecture guide](./docs/architecture.md) for how it works.
 
 ## Development
 

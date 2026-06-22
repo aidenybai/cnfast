@@ -1,79 +1,79 @@
 {
-  "generatedAt": "2026-06-20T04:48:55.747Z",
-  "gitSha": "43e438e",
-  "runtime": "Bun 1.3.11",
+  "generatedAt": "2026-06-22T01:26:22.098Z",
+  "gitSha": "cdc1878",
+  "runtime": "Node 24.17.0",
   "bestOf": 3,
   "timeMs": 500,
   "workloadCount": 65,
-  "overallSpeedup": 3.1684285016388167,
+  "overallSpeedup": 3.7967172498194706,
   "bundle": {
-    "cnfastGzip": 9256,
+    "cnfastGzip": 9654,
     "referenceGzip": 8649
   },
   "rows": [
     {
       "label": "Cached re-render",
       "detail": "repeated class strings, cache hits",
-      "cnfast": 4764.973280726822,
-      "reference": 3613.46630510715,
-      "speedup": 1.3186710151391674,
+      "cnfast": 8675.086934370795,
+      "reference": 2011.9191223784467,
+      "speedup": 4.311846752624577,
       "emphasis": false
     },
     {
       "label": "Merge engine (cold)",
       "detail": "unique strings, every call misses",
-      "cnfast": 4284.852594164351,
-      "reference": 1108.3038363051307,
-      "speedup": 3.8661353085713532,
+      "cnfast": 5285.100624497902,
+      "reference": 1455.0888385247997,
+      "speedup": 3.632149793586521,
       "emphasis": false
     },
     {
       "label": "Component corpus",
       "detail": "harvested app source, geomean",
-      "cnfast": 3695.170139396441,
-      "reference": 1037.5385011852677,
-      "speedup": 3.5614776079876895,
+      "cnfast": 6609.4542244992135,
+      "reference": 1629.5926458274942,
+      "speedup": 4.055893502847137,
       "emphasis": false
     },
     {
       "label": "Page render",
       "detail": "real call sequence, geomean",
-      "cnfast": 5925.714252048613,
-      "reference": 3273.505738373852,
-      "speedup": 1.8102043269953951,
+      "cnfast": 11359.313164198844,
+      "reference": 4166.913310050529,
+      "speedup": 2.726073791072249,
       "emphasis": false
     },
     {
       "label": "Live data grid",
       "detail": "12K cells, live arbitrary values",
-      "cnfast": 55.96065017440079,
-      "reference": 26.30887154652318,
-      "speedup": 2.1270638717986445,
+      "cnfast": 38.72926026906709,
+      "reference": 28.35745249630018,
+      "speedup": 1.3657524516393047,
       "emphasis": false
     },
     {
       "label": "Overall",
       "detail": "geometric mean of 65 workloads",
-      "cnfast": 3623.0006541363487,
-      "reference": 1143.4692789382543,
-      "speedup": 3.1684285016388167,
+      "cnfast": 6417.069687772262,
+      "reference": 1690.1626498726985,
+      "speedup": 3.7967172498194706,
       "emphasis": true
     }
   ],
   "forms": [
     {
       "label": "cnfast + template",
-      "opsPerSec": 17422763.603523105,
-      "speedup": 7.083036351668542
+      "opsPerSec": 11525383.0910922,
+      "speedup": 3.497741858186542
     },
     {
       "label": "cnfast",
-      "opsPerSec": 6598907.561047275,
-      "speedup": 2.6827145910851224
+      "opsPerSec": 11465235.65886821,
+      "speedup": 3.4794882183995153
     },
     {
       "label": "cn",
-      "opsPerSec": 2459787.4045103337,
+      "opsPerSec": 3295092.5363793746,
       "speedup": 1
     }
   ]
