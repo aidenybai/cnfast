@@ -159,20 +159,19 @@ const mergeVariadicCached = (inputs: ClassValue[]): string => {
 export const cn: ClassNameFunction = function (): string {
   const first = arguments[0];
 
-  // Tagged-template call (``cn`...` ``): the first arg is a frozen `TemplateStringsArray`, uniquely
-  // identified by its `.raw` array. No string/array/object class value carries `.raw`, so every
-  // standard `cn(...)` shape below is unaffected. Reading `arguments` only by index here keeps V8's
+  // Tagged-template call (``cn`...` ``): the first arg is a frozen `TemplateStringsArray`, which is
+  // a real array carrying a `.raw` array. The array check is what makes this safe: a plain class
+  // dictionary such as `cn({ raw: true })` is an object with a `raw` key but is NOT an array, and a
+  // class-value array (`cn(["px-2"])`) is an array but never carries `.raw`, so only a genuine
+  // tagged template satisfies both. Reading `arguments` only by index here keeps V8's
   // arguments-elision intact; the interpolations are copied into a fresh array so the `arguments`
   // object itself never escapes into `mergeTemplate`.
-  if (
-    first !== null &&
-    typeof first === "object" &&
-    (first as TemplateStringsArray).raw !== undefined
-  ) {
+  if (Array.isArray(first) && "raw" in first) {
+    const strings = first as unknown as TemplateStringsArray;
     const length = arguments.length;
     const values: ClassValue[] = [];
     for (let index = 1; index < length; index++) values.push(arguments[index]);
-    return mergeTemplate(first as TemplateStringsArray, values);
+    return mergeTemplate(strings, values);
   }
 
   const length = arguments.length;

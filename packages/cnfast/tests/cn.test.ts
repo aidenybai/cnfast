@@ -27,6 +27,13 @@ describe("cn: clsx-style joining", () => {
   it("returns an empty string with no arguments", () => {
     expect(cn()).toBe("");
   });
+
+  it("treats an object with a `raw` key as a class dictionary, not a tagged template", () => {
+    expect(cn({ raw: true })).toBe("raw");
+    expect(cn({ raw: false })).toBe("");
+    expect(cn({ raw: true, "px-4": true })).toBe("raw px-4");
+    expect(cn("flex", { raw: true })).toBe("flex raw");
+  });
 });
 
 describe("cn: tailwind conflict merging", () => {
