@@ -28,6 +28,15 @@ const EXTERNAL_DESCRIPTOR: ClassDescriptor = { isExternal: true, classId: -1, co
  */
 const DESCRIPTOR_CACHE_SIZE = 4096;
 
+/**
+ * Upper bound on distinct interned conflict keys before the registry (and the descriptor caches that
+ * reference its IDs) are reset. A conflict key's `modifierId` can be an arbitrary variant such as
+ * `data-[id=123]:`, so an app generating unbounded distinct variants would otherwise grow the
+ * registry forever. Sized well above the distinct `(modifier, group)` pairs a real app produces, so
+ * the reset never fires in normal use and only caps pathological, dynamically generated variants.
+ */
+const MAX_CONFLICT_KEYS = 16384;
+
 export const createConfigUtils = (config: AnyConfig) => {
   const sortModifiers = createSortModifiers(config);
   const postfixLookupClassGroupIds = createPostfixLookupClassGroupIds(config);
@@ -42,9 +51,11 @@ export const createConfigUtils = (config: AnyConfig) => {
 
   // `mergeClassList` compares interned integer IDs instead of hashing conflict-key strings on
   // every token. `internConflictKey` assigns each `{modifierId}{classGroupId}` pair a dense
-  // integer; the registry is permanent (never evicted) so a key keeps its ID even after its
-  // descriptor leaves the LRU above. Growth is bounded by distinct pairs, NOT arbitrary values
-  // (`w-[123px]` → group `w`), so it stays small in practice.
+  // integer and holds it until the registry is reset. Most apps reuse a small, fixed set of pairs,
+  // so a key keeps its ID for the session. But `modifierId` can be an arbitrary variant
+  // (`data-[id=123]:`), so dynamically generated variants WOULD grow the registry without bound;
+  // `mergeClassList` caps that by resetting the registry (and the descriptor caches that hold its
+  // IDs) once `nextConflictKeyId` passes `MAX_CONFLICT_KEYS`, keeping memory bounded.
   //
   // Claimed keys are tracked by stamping a reusable `Int32Array` (indexed by conflict-key ID)
   // with a per-merge generation counter, instead of allocating a fresh `Set<number>` per call:
@@ -219,6 +230,19 @@ export const createConfigUtils = (config: AnyConfig) => {
     // falls through: the loops below no-op and the rebuild returns "".
     if (classCount === 1) {
       return classNames[0]!;
+    }
+
+    // Keep the conflict-key registry bounded. It never evicts on its own, and arbitrary variants can
+    // make distinct keys unbounded, so reset it once it passes `MAX_CONFLICT_KEYS`. The reset runs
+    // here (between merges, never mid-pass) so interned IDs stay consistent within a single pass, and
+    // the descriptor caches are flushed alongside it because their descriptors hold these IDs. The
+    // monotonic generation counter means reused IDs never read a stale claim from a prior merge.
+    if (nextConflictKeyId > MAX_CONFLICT_KEYS) {
+      conflictKeyIds.clear();
+      nextConflictKeyId = 0;
+      descriptorCache = Object.create(null);
+      previousDescriptorCache = Object.create(null);
+      descriptorCacheSize = 0;
     }
 
     currentGeneration = (currentGeneration + 1) | 0;

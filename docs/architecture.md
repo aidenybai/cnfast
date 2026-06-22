@@ -88,7 +88,7 @@ The `bench/lru.bench.ts` harness compares this design against `Map`-backed LRU, 
 
 A conflict key is a string like `hover:bg` that identifies a group within a modifier context. Comparing these as strings means hashing a string on every membership check. `config-utils.ts` interns each key to a dense integer ID the first time it appears, so the merge loop compares integers instead.
 
-The integer registry never evicts. A key always maps to the same ID even after its descriptor leaves the LRU, which parity depends on. The number of distinct modifier and group pairs bounds growth, not arbitrary values, so the registry stays small in practice.
+Within a session a key keeps the same ID even after its descriptor leaves the LRU, which the merge relies on for consistency inside a pass. Most apps reuse a small, fixed set of `(modifier, group)` pairs, so the registry stays small and stable. The exception is the modifier: it can be an arbitrary variant such as `data-[id=123]:`, so an app generating unbounded distinct variants would grow the registry without bound. To cap that, `mergeClassList` resets the registry (and the descriptor caches that hold its IDs) once the ID count passes `MAX_CONFLICT_KEYS`. The reset runs between merges, never mid-pass, so IDs stay consistent within a single pass; the monotonic generation counter ensures a reused ID never reads a stale claim from an earlier merge. Memory is therefore bounded regardless of input.
 
 ### A generation-stamped claim tracker
 
