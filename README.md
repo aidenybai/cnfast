@@ -93,3 +93,20 @@ cnfast adapts MIT-licensed code from [clsx](https://github.com/lukeed/clsx) (Luk
 ## License
 
 MIT
+
+## Contributing
+
+Thank you for your interest in contributing to cnfast! We welcome contributions from everyone. Please follow the guidelines below to help us maintain a high-quality project.
+
+### How to Contribute
+1. **Fork the repository**: Create a personal copy of the repository by forking it on GitHub.
+2. **Clone your fork**: Clone your forked repository to your local machine.
+3. **Create a new branch**: Use a descriptive name for your branch to indicate the feature or fix you are working on.
+4. **Make your changes**: Implement your feature or fix, ensuring you follow the project's coding style and conventions.
+5. **Run tests**: Ensure all tests pass by running the test suite.
+6. **Commit your changes**: Write a clear and concise commit message following the conventional commits format.
+7. **Push your changes**: Push your branch to your forked repository.
+8. **Open a pull request**: Go to the original repository and create a pull request, describing your changes and why they should be merged.
+
+### Code of Conduct
+Please adhere to our Code of Conduct in all interactions within the project. We strive to create a welcoming and inclusive environment for all contributors.
