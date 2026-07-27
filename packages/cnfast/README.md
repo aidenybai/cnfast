@@ -48,6 +48,20 @@ export { cn } from "cnfast";
 
 cnfast also exports `clsx`, `twMerge`, and `twJoin`.
 
+## Custom Tailwind theme
+
+`cn` bakes in the default tailwind-merge configuration, so utilities from a custom theme are unknown to it: a custom font size such as `text-xxs` reads as a text color and is dropped next to `text-muted-foreground`. `configure` registers the same `{ override, extend }` extension `extendTailwindMerge` accepts.
+
+```ts
+import { cn, configure } from "cnfast";
+
+configure({ extend: { theme: { text: ["xxs"] } } });
+
+cn("text-xxs text-muted-foreground"); // "text-xxs text-muted-foreground"
+```
+
+Call it once, from a module that runs before anything merges classes. Configuring after the first `cn` throws, because the classes already returned were merged under the old configuration.
+
 ## Going even faster
 
 As a tagged template, `cn` caches by call-site identity: a stable call site runs 2.6x faster than the `cn(...)` call form and 7x faster than `tailwind-merge`.
