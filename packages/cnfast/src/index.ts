@@ -245,7 +245,7 @@ export const createCn = (
 
 export { clsx, type ClassValue, type ClassDictionary } from "./clsx.js";
 export { twJoin, type ClassNameValue } from "./lib/tw-join.js";
-export { twMerge } from "./lib/tw-merge.js";
+export { configure, twMerge } from "./lib/tw-merge.js";
 export { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
 export { getDefaultConfig } from "./lib/default-config.js";
 export { mergeConfigs } from "./lib/merge-configs.js";

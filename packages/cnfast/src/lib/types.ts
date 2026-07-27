@@ -559,7 +559,10 @@ export type AnyThemeGroupIds = string;
  */
 export type AnyConfig = Config<AnyClassGroupIds, AnyThemeGroupIds>;
 
-/** `createCn` config: `override` replaces class groups, `extend` appends to them. */
+/**
+ * Configuration for `createCn` and `configure`: `override` replaces config properties and
+ * `extend` appends to them.
+ */
 export interface ConfigExtension {
   override?: Partial<AnyConfig>;
   extend?: Partial<AnyConfig>;
