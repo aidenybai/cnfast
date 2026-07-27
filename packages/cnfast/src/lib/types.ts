@@ -558,3 +558,9 @@ export type AnyThemeGroupIds = string;
  * type of the tailwind-merge configuration that allows for any possible configuration.
  */
 export type AnyConfig = Config<AnyClassGroupIds, AnyThemeGroupIds>;
+
+/** `createCn` config: `override` replaces class groups, `extend` appends to them. */
+export interface ConfigExtension {
+  override?: Partial<AnyConfig>;
+  extend?: Partial<AnyConfig>;
+}
