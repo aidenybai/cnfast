@@ -37,7 +37,6 @@ const countNodes = (node: FrozenNode): number => {
   return total;
 };
 
-// Passing source text prevents esbuild from adding a helper unavailable in the page context.
 const SERIALIZE_SCRIPT = `(() => {
   const MAX_TEXT = 140;
   const SKIP = new Set(["SCRIPT","STYLE","LINK","META","NOSCRIPT","TEMPLATE","SVG","PATH","IFRAME"]);

@@ -11,7 +11,6 @@ export const INTERN_TABLE_INITIAL_SLOTS = 2048;
 export const INTERN_TABLE_MAX_SLOTS = 16384;
 export const INTERN_TABLE_HARD_MAX_SLOTS = 32768;
 
-// JSC verifies longer tokens 2.6 to 5.1 times faster with `startsWith`. V8 does not.
 export const JSC_STARTSWITH_VERIFY_MIN_LENGTH = 12;
 
 export const RESULT_INTERN_SLOTS = 1024;

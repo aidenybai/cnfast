@@ -64,14 +64,12 @@ export const parseClassName = (className: string): ParsedClassName => {
   let baseClassName = baseClassNameWithImportantModifier;
   let hasImportantModifier = false;
 
-  // V8 deoptimizes this function when an empty base name reaches `charCodeAt(-1)`.
   const baseLength = baseClassNameWithImportantModifier.length;
   if (baseLength !== 0) {
     if (baseClassNameWithImportantModifier.charCodeAt(baseLength - 1) === CHAR_EXCLAMATION) {
       baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
       hasImportantModifier = true;
     } else if (baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_EXCLAMATION) {
-      // Tailwind CSS v3 placed the important modifier first, so legacy inputs still need support.
       baseClassName = baseClassNameWithImportantModifier.slice(1);
       hasImportantModifier = true;
     }

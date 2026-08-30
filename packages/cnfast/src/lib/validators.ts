@@ -138,7 +138,6 @@ const isImage = (value: string) => imageRegex.test(value);
 export const isAnyNonArbitrary = (value: string) =>
   !isArbitraryValue(value) && !isArbitraryVariable(value);
 
-// String indexing created temporary characters and repeatedly deoptimized this hot path.
 export const isNamedContainerQuery = (value: string) => {
   const length = value.length;
   return (

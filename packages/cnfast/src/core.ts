@@ -18,10 +18,6 @@ export interface ClassNameFunction {
   (...classValues: ClassValue[]): string;
 }
 
-/**
- * Calls ending in the same class share a flat bucket:
- * `[callCount, otherClassCount, ...otherClasses, result, id, ...]`.
- */
 type ArgumentCacheBucket = (string | number)[];
 
 const trimBucket = (bucket: ArgumentCacheBucket): void => {
@@ -142,7 +138,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return twMerge.mergeString(classList);
   };
 
-  // Keep miss handling outside the cache-hit function so V8 can optimize the smaller function.
   const mergePartsOnMiss = (
     classList: string,
     classValues: ClassValue[],
@@ -156,7 +151,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return twMerge.mergeParts(classList, classListPartsScratch, partCount);
   };
 
-  // Reading two parameters directly avoids the 257-byte array allocated by the generic path.
   const getMergedClassNameForTwoValues = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
@@ -300,7 +294,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
   };
 
-  // Keeping this path separate prevents V8 from deoptimizing the single-value path.
   const getMergedClassNameForManyValues = (classValues: ClassValue[]): string => {
     const classValueCount = classValues.length;
 
@@ -389,8 +382,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         if (classValue) classList += SPACE_CHARACTER + (classValue as string);
       }
 
-      // Collect prepared parts only after the whole-string probe misses. Passing parts through the
-      // hit path reduced multi-value page-replay throughput by 6% to 8% on Node.js.
       let mergedClassName = twMerge.peekString(classList);
       if (mergedClassName === undefined)
         mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
@@ -417,8 +408,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeUncachedClassValues(classValues);
   };
 
-  // V8 can omit the `arguments` allocation on the common paths. A rest parameter always creates
-  // an array.
   /* eslint-disable prefer-rest-params -- a rest param would defeat the allocation-elision this relies on */
   const cn: ClassNameFunction = function (): string {
     const firstClassValue = arguments[0];
@@ -434,7 +423,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (classValueCount === 3)
       return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
 
-    // A preallocated array measured 9% faster than repeated `push` calls here.
     const classValues: ClassValue[] = new Array(classValueCount);
     for (let index = 0; index < classValueCount; index++) classValues[index] = arguments[index];
     return getMergedClassNameForManyValues(classValues);

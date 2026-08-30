@@ -122,8 +122,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   let claimedGeneration = new Int32Array(INITIAL_CLAIM_SLOTS);
   let currentGeneration = 0;
 
-  // Negating a dropped token's end offset avoids a separate keep-flag array. Splitting overwrites
-  // every offset before the next merge.
   let tokenStarts = new Int32Array(INITIAL_TOKEN_SLOTS);
   let tokenEnds = new Int32Array(INITIAL_TOKEN_SLOTS);
   let tokenHashes = new Int32Array(INITIAL_TOKEN_SLOTS);
@@ -387,8 +385,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   };
 
   const computeClassDescriptor = (className: string): ClassDescriptor => {
-    // About 90% of measured tokens contain no syntax that `parseClassName` handles. Bypassing it
-    // for those tokens avoids an array and object allocation.
     const length = className.length;
     let isPlain = true;
     for (let index = 0; index < length; index++) {
@@ -429,7 +425,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     let classGroupId: ReturnType<typeof getClassGroupId>;
 
     if (hasPostfixModifier) {
-      // A slash can be a postfix modifier or part of the class, as in `text-lg/7` and `w-1/2`.
       const baseWithoutPostfix = baseClassName.substring(0, maybePostfixModifierPosition);
       classGroupId = getClassGroupId(baseWithoutPostfix);
 
@@ -522,11 +517,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     internedResultKeys[resultInternSlot] = resultInternKey;
   };
 
-  /**
-   * Prepared parts cache relative token metadata:
-   * `[tokenCount, normalized, (start, end, hash, classId, conflictStart, conflictEnd)*]`.
-   * Registry resets discard them because their conflict IDs are interned.
-   */
   const UNPREPARABLE_PART = new Int32Array(0);
 
   let preparedPartCache = new Map<string, Int32Array>();
@@ -689,7 +679,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     if (nextConflictKeyId > MAX_CONFLICT_KEYS) resetConflictRegistry();
 
     currentGeneration = (currentGeneration + 1) | 0;
-    // Zero marks untouched claims, so skip it when the signed generation counter wraps.
     if (currentGeneration === 0) currentGeneration = 1;
     const generation = currentGeneration;
 
@@ -877,7 +866,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       preparedPartHandles = grownPreparedParts;
     }
 
-    // Prepare every part before writing token arrays because preparation uses them as scratch.
     let tokenCount = 0;
     let areAllPartsNormalized = true;
     for (let partIndex = 0; partIndex < partCount; partIndex++) {

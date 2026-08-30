@@ -29,8 +29,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
   let mergeClassList: MergeClassListEngine["mergeClassList"];
   let mergePreparedParts: MergeClassListEngine["mergePreparedParts"];
 
-  // Count new entries separately from promotions. Otherwise, a cyclic working set between one and
-  // two generations rotates continuously instead of reaching full residency.
   let mergeCache: Record<string, string> = Object.create(null);
   let previousMergeCache: Record<string, string> = Object.create(null);
   let admissionCount = 0;
@@ -63,7 +61,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
 
   const classListPartsScratch: string[] = [];
 
-  // Self-patching keeps initialization lazy without charging later calls for an extra branch.
   const initConfig = (): void => {
     const engine = createMergeClassList(createConfig());
     mergeClassList = engine.mergeClassList;
@@ -107,8 +104,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     return tailwindMergeParts(classList, parts, partCount);
   };
 
-  // Hashing the full class list would erase the cache's benefit. This fingerprint samples three
-  // characters instead. A collision only admits a class list one use early.
   const admitComputedResult = (classList: string, mergedClassName: string): string => {
     const length = classList.length;
     if (length > 0) {
