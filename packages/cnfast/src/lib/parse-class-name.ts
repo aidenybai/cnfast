@@ -1,14 +1,15 @@
+import {
+  CHAR_CLOSE_BRACKET,
+  CHAR_CLOSE_PAREN,
+  CHAR_COLON,
+  CHAR_EXCLAMATION,
+  CHAR_OPEN_BRACKET,
+  CHAR_OPEN_PAREN,
+  CHAR_SLASH,
+} from "./char-codes";
 import { ParsedClassName } from "./types";
 
 export const IMPORTANT_MODIFIER = "!";
-
-const CHAR_MODIFIER_SEPARATOR = 58; // ":"
-const CHAR_POSTFIX_SEPARATOR = 47; // "/"
-const CHAR_OPEN_BRACKET = 91; // "["
-const CHAR_CLOSE_BRACKET = 93; // "]"
-const CHAR_OPEN_PAREN = 40; // "("
-const CHAR_CLOSE_PAREN = 41; // ")"
-const CHAR_IMPORTANT = 33; // "!"
 
 // Single factory so every parse result shares one object shape (identical key order).
 const createResultObject = (
@@ -50,13 +51,13 @@ export const parseClassName = (className: string): ParsedClassName => {
     const charCode = className.charCodeAt(index);
 
     if (bracketDepth === 0 && parenDepth === 0) {
-      if (charCode === CHAR_MODIFIER_SEPARATOR) {
+      if (charCode === CHAR_COLON) {
         (modifiers ??= []).push(className.slice(modifierStart, index));
         modifierStart = index + 1;
         continue;
       }
 
-      if (charCode === CHAR_POSTFIX_SEPARATOR) {
+      if (charCode === CHAR_SLASH) {
         postfixModifierPosition = index;
         continue;
       }
@@ -79,7 +80,7 @@ export const parseClassName = (className: string): ParsedClassName => {
   // slow path and was a recorded recurring "out of bounds" deopt of this function.
   const baseLength = baseClassNameWithImportantModifier.length;
   if (baseLength !== 0) {
-    if (baseClassNameWithImportantModifier.charCodeAt(baseLength - 1) === CHAR_IMPORTANT) {
+    if (baseClassNameWithImportantModifier.charCodeAt(baseLength - 1) === CHAR_EXCLAMATION) {
       baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
       hasImportantModifier = true;
     } else if (
@@ -87,7 +88,7 @@ export const parseClassName = (className: string): ParsedClassName => {
        * In Tailwind CSS v3 the important modifier was at the start of the base class name. This is still supported for legacy reasons.
        * @see https://github.com/dcastil/tailwind-merge/issues/513#issuecomment-2614029864
        */
-      baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_IMPORTANT
+      baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_EXCLAMATION
     ) {
       baseClassName = baseClassNameWithImportantModifier.slice(1);
       hasImportantModifier = true;

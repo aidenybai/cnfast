@@ -1,3 +1,4 @@
+import { CHAR_OPEN_BRACKET } from "./char-codes";
 import { AnyConfig } from "./types";
 
 /**
@@ -8,24 +9,27 @@ import { AnyConfig } from "./types";
 export const createSortModifiers = (config: AnyConfig) => {
   const orderSensitiveModifiers = new Set(config.orderSensitiveModifiers);
 
+  const sortAndFlushSegment = (segment: string[], result: string[]): void => {
+    segment.sort();
+    for (let i = 0; i < segment.length; i++) {
+      result.push(segment[i]!);
+    }
+  };
+
   return (modifiers: readonly string[]): string[] => {
     const result: string[] = [];
     let currentSegment: string[] = [];
 
-    for (let index = 0; index < modifiers.length; index++) {
-      const modifier = modifiers[index]!;
+    for (let i = 0; i < modifiers.length; i++) {
+      const modifier = modifiers[i]!;
 
-      // `charCodeAt` instead of `modifier[0]`: one-char string indexing was a recorded
-      // "wrong map" deopt source. Empty modifiers (from `::`) read in bounds via the guard.
-      const isArbitrary = modifier.length !== 0 && modifier.charCodeAt(0) === 91; /* "[" */
+      // Empty modifiers (from `::`) read in bounds via the length guard.
+      const isArbitrary = modifier.length !== 0 && modifier.charCodeAt(0) === CHAR_OPEN_BRACKET;
       const isOrderSensitive = orderSensitiveModifiers.has(modifier);
 
       if (isArbitrary || isOrderSensitive) {
         if (currentSegment.length > 0) {
-          currentSegment.sort();
-          for (let segmentIndex = 0; segmentIndex < currentSegment.length; segmentIndex++) {
-            result.push(currentSegment[segmentIndex]!);
-          }
+          sortAndFlushSegment(currentSegment, result);
           currentSegment = [];
         }
         result.push(modifier);
@@ -35,10 +39,7 @@ export const createSortModifiers = (config: AnyConfig) => {
     }
 
     if (currentSegment.length > 0) {
-      currentSegment.sort();
-      for (let segmentIndex = 0; segmentIndex < currentSegment.length; segmentIndex++) {
-        result.push(currentSegment[segmentIndex]!);
-      }
+      sortAndFlushSegment(currentSegment, result);
     }
 
     return result;

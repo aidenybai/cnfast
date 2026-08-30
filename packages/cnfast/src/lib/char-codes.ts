@@ -1,0 +1,29 @@
+/**
+ * Char codes for the hot-path scanners. Comparing `charCodeAt` results against these avoids
+ * materializing single-character strings (`value[0] === "["` allocates; the comparison was a
+ * recorded deopt source).
+ */
+export const CHAR_TAB = 9;
+export const CHAR_LINE_FEED = 10;
+export const CHAR_CARRIAGE_RETURN = 13;
+export const CHAR_SPACE = 32;
+export const CHAR_EXCLAMATION = 33;
+export const CHAR_OPEN_PAREN = 40;
+export const CHAR_CLOSE_PAREN = 41;
+export const CHAR_DASH = 45;
+export const CHAR_SLASH = 47;
+export const CHAR_ZERO = 48;
+export const CHAR_NINE = 57;
+export const CHAR_COLON = 58;
+export const CHAR_AT = 64;
+export const CHAR_UPPER_A = 65;
+export const CHAR_UPPER_Z = 90;
+export const CHAR_OPEN_BRACKET = 91;
+export const CHAR_CLOSE_BRACKET = 93;
+export const CHAR_UNDERSCORE = 95;
+export const CHAR_LOWER_A = 97;
+export const CHAR_LOWER_S = 115;
+export const CHAR_LOWER_N = 110;
+export const CHAR_LOWER_Z = 122;
+export const CHAR_LINE_SEPARATOR = 8232;
+export const CHAR_PARAGRAPH_SEPARATOR = 8233;

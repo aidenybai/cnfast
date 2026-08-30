@@ -1,3 +1,26 @@
+import {
+  CHAR_CARRIAGE_RETURN,
+  CHAR_CLOSE_BRACKET,
+  CHAR_CLOSE_PAREN,
+  CHAR_COLON,
+  CHAR_DASH,
+  CHAR_LINE_FEED,
+  CHAR_LINE_SEPARATOR,
+  CHAR_LOWER_A,
+  CHAR_LOWER_N,
+  CHAR_LOWER_S,
+  CHAR_LOWER_Z,
+  CHAR_NINE,
+  CHAR_OPEN_BRACKET,
+  CHAR_OPEN_PAREN,
+  CHAR_PARAGRAPH_SEPARATOR,
+  CHAR_SLASH,
+  CHAR_UNDERSCORE,
+  CHAR_UPPER_A,
+  CHAR_UPPER_Z,
+  CHAR_ZERO,
+} from "./char-codes";
+
 const fractionRegex = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/;
 const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
 const lengthUnitRegex =
@@ -8,43 +31,34 @@ const shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]
 const imageRegex =
   /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
 
-// Hoist global builtins to module-scope bindings (oveo "hoist globals"): plain variable
-// loads instead of repeated global-object property lookups on the per-token validator path.
+// Module-scope bindings load faster than repeated global-object property lookups on the
+// per-token validator path.
 const toNumber = Number;
 const numberIsNaN = Number.isNaN;
 const numberIsInteger = Number.isInteger;
 
-// Hand-rolled replacement for the anchored `/^\[(?:(\w[\w-]*):)?(.+)\]$/i` /
-// `/^\((?:(\w[\w-]*):)?(.+)\)$/i` regex pair. `RegExp.exec` allocates a match array plus two
-// capture substrings per call, and indexing `result[1]`/`result[2]` was the one hot site that
-// kept re-deoptimizing at the same offset (generic keyed access on the match array). The scanner
-// below is allocation-free and its result is memoized per token, so a node's whole validator
-// chain parses `[label:value]`/`(label:value)` at most once.
-const CHAR_OPEN_BRACKET = 91; // "["
-const CHAR_CLOSE_BRACKET = 93; // "]"
-const CHAR_OPEN_PAREN = 40; // "("
-const CHAR_CLOSE_PAREN = 41; // ")"
-const CHAR_COLON = 58; // ":"
-const CHAR_DASH = 45; // "-"
-
-// `\w` of the replaced regexes: [A-Za-z0-9_] (the `i` flag adds nothing to `\w`).
 const isWordCharCode = (charCode: number): boolean =>
-  (charCode >= 97 && charCode <= 122) /* a-z */ ||
-  (charCode >= 65 && charCode <= 90) /* A-Z */ ||
-  (charCode >= 48 && charCode <= 57) /* 0-9 */ ||
-  charCode === 95; /* "_" */
+  (charCode >= CHAR_LOWER_A && charCode <= CHAR_LOWER_Z) ||
+  (charCode >= CHAR_UPPER_A && charCode <= CHAR_UPPER_Z) ||
+  (charCode >= CHAR_ZERO && charCode <= CHAR_NINE) ||
+  charCode === CHAR_UNDERSCORE;
 
 /**
- * Matches `value` against `^<open>(?:(\w[\w-]*):)?(.+)<close>$` without a regex.
+ * Scan an arbitrary token of the form `<open>value<close>` or `<open>label:value<close>`, where
+ * the label is a word character followed by any run of word characters and dashes (`[url:...]`,
+ * `(--my-var:...)`).
  *
- * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:` for a
- * labeled match. Two regex behaviors are load-bearing here:
- * - `.` excludes line terminators, so any inner LF/CR/LS/PS must reject the whole match (tokens
- *   from `splitClassList` can't contain LF/CR, but validators are also part of the public config
- *   surface and get called directly).
- * - Backtracking never shortens the label run: `[\w-]*` chars can't be `:`, so a label exists iff
- *   the maximal word/dash run from index 1 is immediately followed by `:` with at least one value
- *   char before the closing character (`[foo:]` therefore parses as unlabeled value `foo:`).
+ * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:`.
+ *
+ * A charCodeAt scan instead of a regex because `RegExp.exec` allocates a match array plus two
+ * capture substrings per call, and indexing that array was the one hot site that kept
+ * re-deoptimizing at the same offset. Two subtleties keep this byte-compatible with
+ * tailwind-merge's regex semantics:
+ * - An inner line terminator (LF, CR, LS, PS) rejects the whole match. Tokens split from a class
+ *   list can't contain LF/CR, but validators are public config surface and get called directly.
+ * - A label exists only when the maximal word/dash run from index 1 is immediately followed by
+ *   `:` with at least one value character before the closer, so `[foo:]` parses as the unlabeled
+ *   value `foo:`.
  */
 const scanArbitrary = (value: string, openCharCode: number, closeCharCode: number): number => {
   const length = value.length;
@@ -72,10 +86,10 @@ const scanArbitrary = (value: string, openCharCode: number, closeCharCode: numbe
   for (let index = 1; index < length - 1; index++) {
     const charCode = value.charCodeAt(index);
     if (
-      charCode === 10 /* LF */ ||
-      charCode === 13 /* CR */ ||
-      charCode === 8232 /* LS */ ||
-      charCode === 8233 /* PS */
+      charCode === CHAR_LINE_FEED ||
+      charCode === CHAR_CARRIAGE_RETURN ||
+      charCode === CHAR_LINE_SEPARATOR ||
+      charCode === CHAR_PARAGRAPH_SEPARATOR
     ) {
       return -1;
     }
@@ -154,9 +168,9 @@ export const isNamedContainerQuery = (value: string) => {
   const length = value.length;
   return (
     value.startsWith("@container") &&
-    ((length > 11 && value.charCodeAt(10) === 47) /* "/" */ ||
-      (length > 16 && value.charCodeAt(11) === 115 /* "s" */ && value.startsWith("-size/", 10)) ||
-      (length > 18 && value.charCodeAt(11) === 110 /* "n" */ && value.startsWith("-normal/", 10)))
+    ((length > 11 && value.charCodeAt(10) === CHAR_SLASH) ||
+      (length > 16 && value.charCodeAt(11) === CHAR_LOWER_S && value.startsWith("-size/", 10)) ||
+      (length > 18 && value.charCodeAt(11) === CHAR_LOWER_N && value.startsWith("-normal/", 10)))
   );
 };
 

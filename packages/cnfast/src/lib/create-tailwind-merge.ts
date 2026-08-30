@@ -1,9 +1,7 @@
-import { createConfigUtils } from "./config-utils";
 import { DOORKEEPER_RESET_COUNT, DOORKEEPER_SLOTS, MERGE_CACHE_CAPACITY } from "./constants";
+import { createMergeClassList } from "./merge-class-list";
 import { ClassNameValue, twJoin } from "./tw-join";
 import { AnyConfig } from "./types";
-
-type ConfigUtils = ReturnType<typeof createConfigUtils>;
 
 export interface TailwindMerge {
   (...classLists: ClassNameValue[]): string;
@@ -15,8 +13,7 @@ export interface TailwindMerge {
 }
 
 export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerge => {
-  let configUtils: ConfigUtils;
-  let mergeClassList: ConfigUtils["mergeClassList"];
+  let mergeClassList: (classList: string) => string;
 
   // Whole-string result cache, hit once per `cn` call. Inlined as a two-generation null-prototype
   // LRU directly in `tailwindMerge` (rather than behind a `get`/`set` abstraction) so the hottest
@@ -31,8 +28,7 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
   // both the init check and a wrapper-closure hop: hot callers (`cn`) reach the merge through a
   // monomorphic property load that V8 inline-caches.
   const initTailwindMerge = (classList: string) => {
-    configUtils = createConfigUtils(createConfig());
-    mergeClassList = configUtils.mergeClassList;
+    mergeClassList = createMergeClassList(createConfig());
     merge.mergeString = tailwindMerge;
 
     return tailwindMerge(classList);

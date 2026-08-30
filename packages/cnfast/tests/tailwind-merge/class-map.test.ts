@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { ClassPartObject, createClassMap } from "../src/lib/class-group-utils.js";
+import { ClassPartObject, createClassMap } from "../src/lib/class-map.js";
 import { getDefaultConfig } from "../src/lib/default-config.js";
 
 test("class map has correct class groups at first part", () => {
