@@ -26,4 +26,4 @@ for (const step of steps) {
   execFileSync("bun", [step.file], { cwd: root, stdio: "inherit" });
 }
 
-console.log("\nDone. See bench/README.md for how to read these numbers.");
+console.log("\nDone.");

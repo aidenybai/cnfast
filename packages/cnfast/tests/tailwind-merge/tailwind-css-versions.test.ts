@@ -67,6 +67,10 @@ test("supports Tailwind CSS v4.0 features", () => {
   );
   expect(twMerge("bg-linear-to-r bg-linear-45")).toBe("bg-linear-45");
   expect(twMerge("bg-linear-to-r bg-radial-[something] bg-conic-10")).toBe("bg-conic-10");
+  expect(twMerge("bg-conic bg-conic-10")).toBe("bg-conic-10");
+  expect(twMerge("bg-conic-10 bg-conic")).toBe("bg-conic");
+  expect(twMerge("bg-radial bg-conic/decreasing")).toBe("bg-conic/decreasing");
+  expect(twMerge("bg-red-500 bg-conic")).toBe("bg-red-500 bg-conic");
   expect(twMerge("ring-4 ring-orange inset-ring inset-ring-3 inset-ring-blue")).toBe(
     "ring-4 ring-orange inset-ring-3 inset-ring-blue",
   );
@@ -82,6 +86,9 @@ test("supports Tailwind CSS v4.0 features", () => {
   expect(twMerge("via-red-500 via-(length:--mobile-header-gradient)")).toBe(
     "via-red-500 via-(length:--mobile-header-gradient)",
   );
+  expect(twMerge("shadow-inner shadow-lg")).toBe("shadow-lg");
+  expect(twMerge("shadow-lg shadow-inner")).toBe("shadow-inner");
+  expect(twMerge("shadow-initial shadow-inner")).toBe("shadow-initial shadow-inner");
 });
 
 test("supports Tailwind CSS v4.1 features", () => {
@@ -263,6 +270,9 @@ test("supports Tailwind CSS v4.2 features", () => {
   expect(twMerge("max-inline-none max-inline-10")).toBe("max-inline-10");
   expect(twMerge("min-block-auto min-block-lh min-block-10")).toBe("min-block-10");
   expect(twMerge("max-block-none max-block-lh max-block-10")).toBe("max-block-10");
+  expect(twMerge("inline-2xl inline-3xl")).toBe("inline-3xl");
+  expect(twMerge("min-inline-xs min-inline-1/2")).toBe("min-inline-1/2");
+  expect(twMerge("max-inline-svw max-inline-xl")).toBe("max-inline-xl");
 
   expect(twMerge("w-10 inline-20")).toBe("w-10 inline-20");
   expect(twMerge("h-10 block-20")).toBe("h-10 block-20");
