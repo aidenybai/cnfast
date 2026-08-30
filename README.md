@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs **3.8x faster** on average than `tailwind-merge`, up to **7x** on component-heavy code, with byte-identical output. Same API, no code changes.
+cnfast runs [**3x faster**](https://cn.aidenybai.com/) than `tailwind-merge`, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
@@ -47,28 +47,6 @@ export { cn } from "cnfast";
 ```
 
 cnfast also exports `clsx`, `twMerge`, and `twJoin`.
-
-## Comparing against cn
-
-cnfast produces byte-identical output to `tailwind-merge` and computes it faster, with the largest gains on re-rendering call sites where the same class arguments recur:
-
-![cnfast on a re-rendering call site, operations per second](./packages/cnfast/bench/chart.svg)
-
-Across the wider suite, operations per second on V8 (Node and Chrome), best-of-3:
-
-| Workload           | tailwind-merge | cnfast       | Speedup  |
-| ------------------ | -------------- | ------------ | -------- |
-| Cached re-render   | 2,025 ops/s    | 8,709 ops/s  | **4.3x** |
-| Merge engine, cold | 1,440 ops/s    | 5,411 ops/s  | **3.8x** |
-| Component corpus   | 1,585 ops/s    | 6,506 ops/s  | **4.1x** |
-| Page render        | 4,249 ops/s    | 11,908 ops/s | **2.8x** |
-| Live data grid     | 500 ops/s      | 2,185 ops/s  | **4.4x** |
-
-Across 65 workloads the geometric mean is **3.8x**, with 0 mismatches over 113,291 real-world call groups. The bundle is 9.43 KB gzipped against 8.45 KB for the baseline. Figures come from V8.
-
-`cn` runs once per element, so its cost scales with how much you render. Server-rendering a large page calls it across the whole tree; a client app that re-renders often (data grids, virtualized tables, live dashboards) calls it thousands of times per second, where a faster `cn` keeps frames within budget. On a small or rarely updated page, the saving stays within run-to-run noise.
-
-Regenerate the chart with `pnpm --filter cnfast bench:chart`. See the [architecture guide](./docs/architecture.md) for how it works.
 
 ## Development
 

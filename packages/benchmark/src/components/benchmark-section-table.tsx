@@ -1,6 +1,3 @@
-import { ExternalLink } from "lucide-react";
-import { useMemo, useState } from "react";
-
 import { SortableBenchmarkHeader } from "@/components/sortable-benchmark-header";
 import {
   Table,
@@ -10,11 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  BENCHMARK_LIBRARY_COLUMNS,
-  DEFAULT_SORT_COLUMN,
-  DEFAULT_SORT_DIRECTION,
-} from "@/constants";
+import { BENCHMARK_LIBRARY_COLUMNS } from "@/constants";
 import { cn } from "@/lib/utils";
 import { getBenchmarkCellClassName } from "@/utils/get-benchmark-cell-class-name";
 import { sortBenchmarkRows } from "@/utils/sort-benchmark-rows";
@@ -22,28 +15,12 @@ import { sortBenchmarkRows } from "@/utils/sort-benchmark-rows";
 export const BenchmarkSectionTable = ({
   hideHeading = false,
   section,
+  sortState,
 }: BenchmarkSectionTableProps) => {
-  const [sortState, setSortState] = useState<BenchmarkSortState>({
-    column: DEFAULT_SORT_COLUMN,
-    direction: DEFAULT_SORT_DIRECTION,
-  });
-  const sortedRows = useMemo(
-    () => sortBenchmarkRows(section.rows, sortState),
-    [section.rows, sortState],
-  );
+  const sortedRows = sortBenchmarkRows(section.rows, sortState);
   const libraryColumns = section.isCnfastFirst
     ? BENCHMARK_LIBRARY_COLUMNS
     : [...BENCHMARK_LIBRARY_COLUMNS].reverse();
-
-  const handleSort = (column: string): void => {
-    setSortState((currentSortState) => ({
-      column,
-      direction:
-        currentSortState.column === column && currentSortState.direction === "ascending"
-          ? "descending"
-          : "ascending",
-    }));
-  };
 
   return (
     <section>
@@ -75,7 +52,7 @@ export const BenchmarkSectionTable = ({
                 <SortableBenchmarkHeader
                   column="label"
                   label="Benchmark"
-                  onSort={handleSort}
+                  sectionId={section.id}
                   sortState={sortState}
                 />
               </TableHead>
@@ -95,7 +72,7 @@ export const BenchmarkSectionTable = ({
                     alignEnd
                     column={libraryColumn.id}
                     label={libraryColumn.label}
-                    onSort={handleSort}
+                    sectionId={section.id}
                     sortState={sortState}
                   />
                 </TableHead>
@@ -115,7 +92,7 @@ export const BenchmarkSectionTable = ({
                     alignEnd
                     column="comparison"
                     label={section.comparisonLabel}
-                    onSort={handleSort}
+                    sectionId={section.id}
                     sortState={sortState}
                   />
                 </TableHead>
@@ -135,10 +112,20 @@ export const BenchmarkSectionTable = ({
                         target="_blank"
                       >
                         {row.label}
-                        <ExternalLink
+                        <svg
                           aria-hidden
                           className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover/link:opacity-100 group-focus-visible/link:opacity-100"
-                        />
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M15 3h6v6" />
+                          <path d="M10 14 21 3" />
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        </svg>
                       </a>
                     ) : (
                       <span className="font-medium">{row.label}</span>

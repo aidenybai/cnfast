@@ -1,41 +1,57 @@
-import { useEffect, useState } from "react";
+import latestBenchmarkReport from "../../../cnfast/bench/latest.json";
+import { Suspense } from "react";
 
-import latestBenchmarkReport from "../../cnfast/bench/latest.json";
 import { BenchmarkSectionTable } from "@/components/benchmark-section-table";
 import { PerformanceChart } from "@/components/performance-chart";
 import { SiteHeader } from "@/components/site-header";
-import { BENCHMARK_COMMIT_BASE_URL, BENCHMARK_THEME_STORAGE_KEY } from "@/constants";
+import { BENCHMARK_COMMIT_BASE_URL } from "@/constants";
 import generatedBenchmarkData from "@/generated/benchmark-data.json";
 import { createPerformanceSection } from "@/utils/create-performance-section";
 import { formatBenchmarkDate } from "@/utils/format-benchmark-date";
+import { getBenchmarkSortState } from "@/utils/get-benchmark-sort-state";
 
 const benchmarkReport: BenchmarkReport = latestBenchmarkReport;
 const benchmarkSiteData: BenchmarkSiteData = generatedBenchmarkData;
 const performanceSection = createPerformanceSection(benchmarkReport, benchmarkSiteData);
 
-export const BenchmarkViewer = () => {
-  const [isDark, setIsDark] = useState(() => {
-    const storedTheme = window.localStorage.getItem(BENCHMARK_THEME_STORAGE_KEY);
-    return (
-      storedTheme === "dark" ||
-      (storedTheme === null && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    );
-  });
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    window.localStorage.setItem(BENCHMARK_THEME_STORAGE_KEY, isDark ? "dark" : "light");
-  }, [isDark]);
+const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps) => {
+  const resolvedSearchParams = await searchParams;
 
   return (
+    <BenchmarkSectionTable
+      hideHeading
+      section={performanceSection}
+      sortState={getBenchmarkSortState(performanceSection.id, resolvedSearchParams)}
+    />
+  );
+};
+
+const RelatedBenchmarkTables = async ({ searchParams }: BenchmarkTablesProps) => {
+  const resolvedSearchParams = await searchParams;
+
+  return performanceSection.relatedSections?.map((relatedSection) => (
+    <BenchmarkSectionTable
+      key={relatedSection.id}
+      section={relatedSection}
+      sortState={getBenchmarkSortState(relatedSection.id, resolvedSearchParams)}
+    />
+  ));
+};
+
+const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
+  return (
     <div className="min-h-screen">
-      <SiteHeader isDark={isDark} onDarkModeChange={setIsDark} />
+      <SiteHeader />
       <main className="container-wrapper flex flex-1 flex-col px-2">
         <div className="flex scroll-mt-24 items-stretch pb-8 text-[1.05rem] sm:text-[15px] xl:w-full">
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 text-foreground md:px-0 lg:py-8 dark:text-foreground">
               <header className="flex flex-col gap-2">
                 <h1 className="scroll-m-24 text-3xl font-semibold tracking-tight sm:text-3xl">
-                  <code className="font-mono">cn</code> benchmark
+                  <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
+                    cn
+                  </code>{" "}
+                  benchmark
                 </h1>
                 <p className="text-[1.05rem] text-muted-foreground sm:text-base sm:text-balance md:max-w-[80%]">
                   Compare cnfast against clsx + tailwind-merge across real component repositories,
@@ -72,11 +88,29 @@ export const BenchmarkViewer = () => {
               <div className="space-y-10">
                 <section className="space-y-6">
                   <PerformanceChart report={benchmarkReport} />
-                  <BenchmarkSectionTable hideHeading section={performanceSection} />
+                  <Suspense
+                    fallback={
+                      <div
+                        aria-label="Loading performance benchmarks"
+                        className="h-96 animate-pulse rounded-lg border bg-muted/40"
+                        role="status"
+                      />
+                    }
+                  >
+                    <PerformanceBenchmarkTable searchParams={searchParams} />
+                  </Suspense>
                 </section>
-                {performanceSection.relatedSections?.map((relatedSection) => (
-                  <BenchmarkSectionTable key={relatedSection.id} section={relatedSection} />
-                ))}
+                <Suspense
+                  fallback={
+                    <div
+                      aria-label="Loading bundle benchmarks"
+                      className="h-40 animate-pulse rounded-lg border bg-muted/40"
+                      role="status"
+                    />
+                  }
+                >
+                  <RelatedBenchmarkTables searchParams={searchParams} />
+                </Suspense>
               </div>
             </div>
           </div>
@@ -85,3 +119,5 @@ export const BenchmarkViewer = () => {
     </div>
   );
 };
+
+export default BenchmarkPage;

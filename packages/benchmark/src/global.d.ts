@@ -91,6 +91,7 @@ interface BenchmarkSourceUrlMap {
 interface BenchmarkSectionTableProps {
   hideHeading?: boolean;
   section: BenchmarkSection;
+  sortState: BenchmarkSortState;
 }
 
 interface PerformanceChartProps {
@@ -101,20 +102,32 @@ interface SortableBenchmarkHeaderProps {
   alignEnd?: boolean;
   column: string;
   label: string;
-  onSort: (column: string) => void;
+  sectionId: string;
   sortState: BenchmarkSortState;
 }
 
-interface GitHubRepositoryResponse {
-  stargazers_count: number;
+interface BenchmarkSearchParams {
+  section?: string | string[];
+  column?: string | string[];
+  direction?: string | string[];
 }
 
-interface ModeSwitcherProps {
-  isDark: boolean;
-  onDarkModeChange: (isDark: boolean) => void;
+interface BenchmarkPageProps {
+  searchParams: Promise<BenchmarkSearchParams>;
 }
 
-interface SiteHeaderProps {
-  isDark: boolean;
-  onDarkModeChange: (isDark: boolean) => void;
+interface BenchmarkTablesProps {
+  searchParams: Promise<BenchmarkSearchParams>;
+}
+
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+interface ThemeProviderProps {
+  children: React.ReactNode;
+}
+
+interface GitHubLinkContentProps {
+  formattedStarCount?: string;
 }
