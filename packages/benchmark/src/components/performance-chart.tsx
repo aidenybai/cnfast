@@ -15,7 +15,7 @@ export const PerformanceChart = ({ report }: PerformanceChartProps) => {
       <p className="mt-1 text-sm text-muted-foreground">Operations per second. Higher is better.</p>
       <div
         aria-label="Operations per second by library"
-        className="mt-4 space-y-4 rounded-lg border bg-background p-4 sm:p-6"
+        className="mt-4 space-y-3 rounded-lg border bg-background p-4 sm:p-5"
         role="img"
       >
         {report.forms.map((form) => {
@@ -28,13 +28,13 @@ export const PerformanceChart = ({ report }: PerformanceChartProps) => {
 
           return (
             <div
-              className="grid grid-cols-[minmax(8rem,11rem)_minmax(8rem,1fr)] items-center gap-3 sm:grid-cols-[minmax(10rem,13rem)_minmax(12rem,1fr)_auto]"
+              className="grid grid-cols-[minmax(8rem,11rem)_minmax(8rem,1fr)] items-center gap-3 sm:grid-cols-[minmax(10rem,13rem)_minmax(12rem,1fr)_7.5rem]"
               key={form.label}
             >
               <span className="truncate text-sm font-medium">
                 {libraryColumn?.label ?? form.label}
               </span>
-              <div className="h-8 overflow-hidden rounded-sm bg-muted">
+              <div className="h-7 overflow-hidden rounded-sm">
                 <div
                   className="h-full min-w-px rounded-sm"
                   style={{
@@ -43,7 +43,7 @@ export const PerformanceChart = ({ report }: PerformanceChartProps) => {
                   }}
                 />
               </div>
-              <span className="col-start-2 text-right text-sm font-medium tabular-nums sm:col-start-auto sm:min-w-24">
+              <span className="col-start-2 text-right text-sm font-medium tabular-nums sm:col-start-auto">
                 {formatOperationsPerSecond(form.opsPerSec)}
               </span>
             </div>

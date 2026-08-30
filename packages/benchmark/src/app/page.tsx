@@ -48,7 +48,7 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
             <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 text-foreground md:px-0 lg:py-8 dark:text-foreground">
               <header className="flex flex-col gap-2">
                 <h1 className="scroll-m-24 text-3xl font-semibold tracking-tight sm:text-3xl">
-                  <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
+                  <code className="relative rounded bg-muted px-[0.3em] py-[0.125em] font-mono text-[0.85em] font-semibold">
                     cn
                   </code>{" "}
                   benchmark
