@@ -61,7 +61,6 @@ export const getDefaultConfig = () => {
       "left",
       "right",
       "top-left",
-      // Keep Tailwind CSS 4.1 position aliases for backward compatibility.
       "left-top",
       "top-right",
       "right-top",
@@ -172,15 +171,7 @@ export const getDefaultConfig = () => {
   const scaleGradientStopPosition = () =>
     [isPercent, isArbitraryVariableLength, isArbitraryLength] as const;
   const scaleRadius = () =>
-    [
-      // Keep the pre-v4 empty form for backward compatibility.
-      "",
-      "none",
-      "full",
-      themeRadius,
-      isArbitraryVariable,
-      isArbitraryValue,
-    ] as const;
+    ["", "none", "full", themeRadius, isArbitraryVariable, isArbitraryValue] as const;
   const scaleBorderWidth = () =>
     ["", isNumber, isArbitraryVariableLength, isArbitraryLength] as const;
   const scaleLineStyle = () => ["solid", "dashed", "dotted", "double"] as const;
@@ -205,15 +196,7 @@ export const getDefaultConfig = () => {
     ] as const;
   const scaleMaskImagePosition = () =>
     [isNumber, isPercent, isArbitraryVariablePosition, isArbitraryPosition] as const;
-  const scaleBlur = () =>
-    [
-      // Keep the pre-v4 empty form for backward compatibility.
-      "",
-      "none",
-      themeBlur,
-      isArbitraryVariable,
-      isArbitraryValue,
-    ] as const;
+  const scaleBlur = () => ["", "none", themeBlur, isArbitraryVariable, isArbitraryValue] as const;
   const scaleRotate = () => ["none", isNumber, isArbitraryVariable, isArbitraryValue] as const;
   const scaleScale = () => ["none", isNumber, isArbitraryVariable, isArbitraryValue] as const;
   const scaleSkew = () => [isNumber, isArbitraryVariable, isArbitraryValue] as const;
@@ -932,13 +915,7 @@ export const getDefaultConfig = () => {
 
       filter: [
         {
-          filter: [
-            // Keep the pre-v3 empty form for backward compatibility.
-            "",
-            "none",
-            isArbitraryVariable,
-            isArbitraryValue,
-          ],
+          filter: ["", "none", isArbitraryVariable, isArbitraryValue],
         },
       ],
 
@@ -951,7 +928,6 @@ export const getDefaultConfig = () => {
       "drop-shadow": [
         {
           "drop-shadow": [
-            // Keep the pre-v4 empty form for backward compatibility.
             "",
             "none",
             themeDropShadow,
@@ -975,13 +951,7 @@ export const getDefaultConfig = () => {
 
       "backdrop-filter": [
         {
-          "backdrop-filter": [
-            // Keep the pre-v3 empty form for backward compatibility.
-            "",
-            "none",
-            isArbitraryVariable,
-            isArbitraryValue,
-          ],
+          "backdrop-filter": ["", "none", isArbitraryVariable, isArbitraryValue],
         },
       ],
 

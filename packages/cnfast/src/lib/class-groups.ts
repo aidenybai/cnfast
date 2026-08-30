@@ -18,15 +18,10 @@ import { concatArrays } from "../utils/concat-arrays";
 import { createFilledArray } from "../utils/create-filled-array";
 import { COLON_CHARACTER } from "./constants";
 
-// Two dots because a single dot is the class-group prefix used by plugins.
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 
 const EMPTY_CONFLICT_ROW: readonly number[] = [];
 
-/**
- * Dense group IDs made 294 of 303 measured lookups array reads instead of dynamic object property
- * reads. Arbitrary-property groups stay outside this fixed-size index because they are unbounded.
- */
 export const createClassGroupLookup = (config: AnyConfig) => {
   const classMap = createClassMap(config);
   const { conflictingClassGroups, conflictingClassGroupModifiers } = config;
@@ -69,7 +64,6 @@ export const createClassGroupLookup = (config: AnyConfig) => {
   for (const classGroupId in config.classGroups) {
     addGroupIndex(classGroupId);
   }
-  // Custom configs can reference conflict groups without defining their classes.
   for (const classGroupId in conflictingClassGroups) {
     addGroupIndex(classGroupId);
     for (const conflict of conflictingClassGroups[classGroupId]!) addGroupIndex(conflict);

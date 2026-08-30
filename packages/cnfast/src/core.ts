@@ -19,9 +19,8 @@ export interface ClassNameFunction {
 }
 
 /**
- * Calls with the same last class share a flat bucket:
+ * Calls ending in the same class share a flat bucket:
  * `[callCount, otherClassCount, ...otherClasses, result, id, ...]`.
- * Last-class keys kept measured buckets small. Flat entries avoid per-call arrays and objects.
  */
 type ArgumentCacheBucket = (string | number)[];
 
@@ -43,7 +42,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   let previousArgumentCache = new Map<string, ArgumentCacheBucket>();
   let argumentCacheSlotCount = 0;
 
-  // Render order predicts the next entry. Every argument is still verified before a hit.
   const successorIds = new Int32Array(ARGUMENT_CACHE_PREDICTION_SLOTS).fill(-1);
   const predictedAnchors: string[] = createFilledArray(ARGUMENT_CACHE_PREDICTION_SLOTS, "");
   const predictedBuckets: ArgumentCacheBucket[] = createFilledArray(
@@ -79,7 +77,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return entryId;
   };
 
-  // Dynamic arbitrary values rarely repeat, so cache them only after the second use.
   let seenClassListsOnce = new Set<string>();
   let previousSeenClassListsOnce = new Set<string>();
 

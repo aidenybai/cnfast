@@ -25,7 +25,6 @@ const createResultObject = (
   isExternal: undefined,
 });
 
-// Most parsed tokens have no modifiers. Freeze their shared array to expose accidental mutation.
 const EMPTY_MODIFIERS: string[] = [];
 Object.freeze(EMPTY_MODIFIERS);
 

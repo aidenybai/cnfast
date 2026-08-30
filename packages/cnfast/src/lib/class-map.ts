@@ -49,8 +49,6 @@ export interface ClassValidatorObject {
   shapeMask: number;
 }
 
-// Shape masks skip validators that cannot match without running their parsers. Custom validators
-// use every mask because their accepted shapes are unknown.
 export const SHAPE_BRACKET = 1;
 export const SHAPE_PAREN = 2;
 export const SHAPE_OTHER = 4;

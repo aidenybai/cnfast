@@ -42,14 +42,9 @@ const isWordCharCode = (charCode: number): boolean =>
   charCode === CHAR_UNDERSCORE;
 
 /**
- * Scan `<open>value<close>` or `<open>label:value<close>`. Labels contain word characters and
- * dashes.
- *
  * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:`.
- *
- * `RegExp.exec` allocated three objects and repeatedly deoptimized this hot path. Line terminators
- * reject the token for parity with the original regex. `[foo:]` remains an unlabeled `foo:` value
- * because its colon has no following value.
+ * Manual scanning avoids `RegExp.exec` allocations. Line terminators and `[foo:]` preserve the
+ * original regex behavior.
  */
 const scanArbitrary = (value: string, openCharCode: number, closeCharCode: number): number => {
   const length = value.length;
@@ -136,7 +131,7 @@ export const isTshirtSize = (value: string) => tshirtUnitRegex.test(value);
 export const isAny = () => true;
 
 const isLengthOnly = (value: string) =>
-  // Color functions contain percentages, and regex lookbehind lacks sufficient runtime support.
+  // Percentages also appear in colors, so validate the color form separately.
   lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
 
 const isNever = () => false;

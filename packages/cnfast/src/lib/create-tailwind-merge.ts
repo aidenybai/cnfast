@@ -50,8 +50,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     mergeCache = Object.create(null);
   };
 
-  // Repeated admissions beyond capacity show that the active set is larger. Grow both structures
-  // together so the doorkeeper continues to cover the cache.
   const growCacheCapacity = (): void => {
     cacheCapacity *= 2;
     cacheHardBound = cacheCapacity * 2;

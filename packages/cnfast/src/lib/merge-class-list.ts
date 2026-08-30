@@ -128,11 +128,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   let tokenEnds = new Int32Array(INITIAL_TOKEN_SLOTS);
   let tokenHashes = new Int32Array(INITIAL_TOKEN_SLOTS);
 
-  /**
-   * The token table stores `[hash, classId, conflictStart, conflictEnd]` metadata beside canonical
-   * strings. It grows at half occupancy, then rotates generations after reaching its limit.
-   * Frequent promotions permit further growth because they identify a larger live vocabulary.
-   */
   let internSlotCount = INTERN_TABLE_INITIAL_SLOTS;
   let internSlotMask = internSlotCount - 1;
   let previousInternSlotMask = internSlotMask;
@@ -173,8 +168,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     }
   };
 
-  // Growing on the insertion that crosses half occupancy guarantees that probing terminates.
-  // Existing descriptors remain valid because they store integer values, not table references.
   const growOrRotateInternTable = (): void => {
     if (
       internSlotCount < INTERN_TABLE_MAX_SLOTS ||
@@ -266,7 +259,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     let totalTokenLength = 0;
     splitSawNonSpaceWhitespace = false;
 
-    // Treating the end as a separator keeps the final token on the same path as earlier tokens.
     for (let index = 0; index <= length; index++) {
       const charCode = index < length ? classList.charCodeAt(index) : CHAR_SPACE;
 
@@ -305,9 +297,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     return tokenCount;
   };
 
-  // Parity requires exact concatenated conflict keys. For example, `overflow-auto` and
-  // `overflo:w-4` both create `overflow` and must share an ID. A packed pair memo avoids
-  // rebuilding that string after the first lookup.
   const conflictKeyIds = new Map<string, number>();
   const modifierIndexes = new Map<string, number>();
   const packedKeyIdMemo = new Map<number, number>();
@@ -347,7 +336,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   ): ClassDescriptor => {
     const groupIndex = groupIndexes.get(classGroupId);
     if (groupIndex === undefined) {
-      // Arbitrary properties have no conflict rows but still need exact-key collision parity.
       return {
         classId: getConflictKeyId(modifier + classGroupId),
         conflictStart: 0,
@@ -483,8 +471,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     return createDescriptor(classGroupId, modifier, hasPostfixModifier);
   };
 
-  // Result keys reuse token hashes, avoiding another character scan. Every hit receives a full
-  // byte comparison, so hash collisions cannot change output.
   const resultInternMask = RESULT_INTERN_SLOTS - 1;
   const internedResults: (string | null)[] = createFilledArray<string | null>(
     RESULT_INTERN_SLOTS,
@@ -517,8 +503,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     resultInternKey = key;
     if (internedResultKeys[resultInternSlot] !== key) return null;
     const candidate = internedResults[resultInternSlot];
-    // Stored results always use single spaces. Verifying token bytes and total length therefore
-    // verifies their separators too.
     if (candidate === null || candidate.length !== keptCharCount + keptCount - 1) return null;
     let position = 0;
     for (let index = 0; index < classCount; index++) {
@@ -539,14 +523,9 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   };
 
   /**
-   * A prepared part stores one argument's parsed tokens:
-   *
-   *     [tokenCount, normalizedFlag,
-   *      (startInArg, endInArg, tokenHash, classId, conflictStart, conflictEnd)*]
-   *
-   * Reusing it avoids splitting and probing familiar arguments in new combinations. Relative
-   * offsets shift into the joined class list. Registry resets discard these handles because they
-   * contain interned conflict IDs.
+   * Prepared parts cache relative token metadata:
+   * `[tokenCount, normalized, (start, end, hash, classId, conflictStart, conflictEnd)*]`.
+   * Registry resets discard them because their conflict IDs are interned.
    */
   const UNPREPARABLE_PART = new Int32Array(0);
 
@@ -554,8 +533,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   let previousPreparedPartCache = new Map<string, Int32Array>();
   let preparedPartCacheCount = 0;
 
-  // Interpolated arbitrary values rarely repeat. Prepare parts containing `[` after a second use
-  // so stable arbitrary values still enter the cache.
   let preparedPartSeenOnce = new Set<string>();
   let previousPreparedPartSeenOnce = new Set<string>();
 
@@ -573,7 +550,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
 
   const prepareClassListPart = (classListPart: string): Int32Array => {
     const classCount = splitClassList(classListPart);
-    // Non-space whitespace breaks the offset arithmetic used to rebuild the joined class list.
     if (splitSawNonSpaceWhitespace) return UNPREPARABLE_PART;
 
     const preparedPartMetadata = new Int32Array(2 + classCount * 6);
@@ -684,8 +660,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   );
   let partBaseOffsets = new Int32Array(INITIAL_PREPARED_PART_SLOTS);
 
-  // Arbitrary variants can create unlimited conflict IDs. Reset between merges so one pass never
-  // observes IDs from different registries.
   const resetConflictRegistry = (): void => {
     conflictKeyIds.clear();
     modifierIndexes.clear();
@@ -702,7 +676,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   const mergeClassList = (classList: string): string => {
     const classCount = splitClassList(classList);
 
-    // About 60% of measured class lists contain one token and cannot have conflicts.
     if (classCount === 1) {
       const start = tokenStarts[0]!;
       const end = tokenEnds[0]!;
@@ -845,8 +818,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
 
     const internedResult = findInternedResult(classList, classCount);
     if (internedResult !== null) return internedResult;
-    // Reuse the canonical interned string when only one token survives. The fallback handles two
-    // table rotations during the same merge.
     if (keptTokenCount === 1) {
       const start = tokenStarts[lastKeptTokenIndex]!;
       const end = tokenEnds[lastKeptTokenIndex]!;
@@ -880,7 +851,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       return mergedClassName;
     }
 
-    // Non-space whitespace breaks contiguous output offsets, so rebuild those tokens separately.
     for (let index = 0; index < classCount; index++) {
       const end = tokenEnds[index]!;
       if (end < 0) continue;
@@ -954,7 +924,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     }
 
     if (tokenCount > tokenStarts.length) {
-      // Grow all token buffers together to preserve the splitter's single capacity check.
       let capacity = tokenStarts.length;
       while (capacity < tokenCount) capacity *= 2;
       const grownStarts = new Int32Array(capacity);
@@ -1007,8 +976,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
 
     if (!didDrop && areAllPartsNormalized) return classList;
 
-    // Prepared handles store offsets instead of canonical strings, so one survivor still needs a
-    // slice. Result interning unifies it with output from the ordinary path.
     const internedResult = findInternedResult(classList, tokenCount);
     if (internedResult !== null) return internedResult;
     if (keptTokenCount === 1) {
