@@ -9,10 +9,12 @@ import {
   CHAR_TAB,
 } from "./char-codes";
 import { createClassGroupLookup } from "./class-groups";
+import { createFilledArray } from "../utils/create-filled-array";
 import {
-  DESCRIPTOR_CACHE_CAPACITY,
+  INTERN_TABLE_HARD_MAX_SLOTS,
   INTERN_TABLE_INITIAL_SLOTS,
   INTERN_TABLE_MAX_SLOTS,
+  JSC_STARTSWITH_VERIFY_MIN_LENGTH,
   MAX_CONFLICT_KEYS,
   PREPARED_ARG_CACHE_SIZE,
   RESULT_INTERN_SLOTS,
@@ -20,6 +22,8 @@ import {
 import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name";
 import { createSortModifiers } from "./sort-modifiers";
 import { AnyClassGroupIds, AnyConfig } from "./types";
+import { IS_JSC } from "../utils/is-jsc";
+import { sliceFlat } from "../utils/slice-flat";
 
 interface ClassDescriptor {
   /** Interned id of this class's conflict key, or -1 for a non-Tailwind class kept verbatim. */
@@ -116,93 +120,159 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     conflictRowsPostfix,
   } = createClassGroupLookup(config);
 
-  let descriptorCache: Record<string, ClassDescriptor> = Object.create(null);
-  let previousDescriptorCache: Record<string, ClassDescriptor> = Object.create(null);
-  let descriptorCacheSize = 0;
-
   let claimedGeneration = new Int32Array(256);
   let currentGeneration = 0;
 
-  let keepFlags = new Uint8Array(64);
+  // Drops are sign-tagged in place: pass 1 negates a dropped token's `tokenEnds` entry (token
+  // ends are always >= 1), so no separate keep-flag array is stored or re-read. `splitClassList`
+  // overwrites every entry each pass, so a negated end never leaks into the next merge.
   let tokenStarts = new Int32Array(64);
   let tokenEnds = new Int32Array(64);
   let tokenHashes = new Int32Array(64);
-  const canonicalTokens: string[] = new Array(64).fill("");
-  canonicalTokens.length = 0;
 
   /**
    * Token intern table (see step 2 of the algorithm overview).
    *
-   * Open-addressed, linear-probed, load factor capped at 0.5. Parallel arrays: `internedTokens`
-   * holds canonical strings, three Int32Array lanes hold each slot's descriptor. The int lanes
-   * are only read after a token match and every insert writes all lanes, so clearing the token
+   * Open-addressed, linear-probed, load factor capped at 0.5. `internedTokens` holds canonical
+   * strings; one stride-4 Int32Array (`internedTokenMeta`) holds each slot's
+   * [hash, classId, conflictStart, conflictEnd]. The hash lane rejects a mismatched occupied
+   * slot with a single int load, before the string is ever dereferenced; the descriptor lanes
+   * are only read after a token match and every insert writes all four, so clearing the token
    * array alone invalidates a generation.
    *
    * The table doubles in place until INTERN_TABLE_MAX_SLOTS (nothing is discarded while an
    * app's vocabulary still fits), then switches to two generations: the full table becomes the
    * still-probed previous generation, and previous-generation hits are re-promoted so live
-   * tokens survive rotation. Growth or rotation runs on the exact insert that crosses the
-   * half-full threshold, even mid-merge, which is what guarantees the probe loop terminates.
+   * tokens survive rotation. Sustained re-promotion pressure lifts the cap further, up to
+   * INTERN_TABLE_HARD_MAX_SLOTS (see `growOrRotateInternTable`).
    */
   let internSlotCount = INTERN_TABLE_INITIAL_SLOTS;
   let internSlotMask = internSlotCount - 1;
   let previousInternSlotMask = internSlotMask;
-  let internedTokens: (string | null)[] = new Array(INTERN_TABLE_INITIAL_SLOTS).fill(null);
-  let previousInternedTokens: (string | null)[] = new Array(INTERN_TABLE_INITIAL_SLOTS).fill(null);
-  let internedClassIds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-  let internedConflictStarts = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-  let internedConflictEnds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-  let previousInternedClassIds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-  let previousInternedConflictStarts = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-  let previousInternedConflictEnds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
+  let internedTokens: (string | null)[] = createFilledArray<string | null>(
+    INTERN_TABLE_INITIAL_SLOTS,
+    null,
+  );
+  let previousInternedTokens: (string | null)[] = createFilledArray<string | null>(
+    INTERN_TABLE_INITIAL_SLOTS,
+    null,
+  );
+  let internedTokenMeta = new Int32Array(INTERN_TABLE_INITIAL_SLOTS * 4);
+  let previousInternedTokenMeta = new Int32Array(INTERN_TABLE_INITIAL_SLOTS * 4);
   let internedTokenCount = 0;
-
-  // Must produce the same value as the split scan's incremental hash.
-  const getTokenHash = (token: string): number => {
-    let hash = FNV_OFFSET_BASIS;
-    for (let i = 0; i < token.length; i++) {
-      hash = Math.imul(hash ^ token.charCodeAt(i), FNV_PRIME);
-    }
-    return hash;
-  };
+  let rePromotionCount = 0;
 
   const growInternTable = (): void => {
     const oldTokens = internedTokens;
-    const oldClassIds = internedClassIds;
-    const oldConflictStarts = internedConflictStarts;
-    const oldConflictEnds = internedConflictEnds;
+    const oldMeta = internedTokenMeta;
     const oldSlotCount = internSlotCount;
     internSlotCount = oldSlotCount * 2;
     internSlotMask = internSlotCount - 1;
-    internedTokens = new Array(internSlotCount).fill(null);
-    internedClassIds = new Int32Array(internSlotCount);
-    internedConflictStarts = new Int32Array(internSlotCount);
-    internedConflictEnds = new Int32Array(internSlotCount);
+    internedTokens = createFilledArray<string | null>(internSlotCount, null);
+    internedTokenMeta = new Int32Array(internSlotCount * 4);
     for (let i = 0; i < oldSlotCount; i++) {
       const token = oldTokens[i];
       if (token === null) continue;
-      let slot = getTokenHash(token) & internSlotMask;
+      const oldMetaBase = i << 2;
+      const hash = oldMeta[oldMetaBase]!;
+      let slot = hash & internSlotMask;
       while (internedTokens[slot] !== null) slot = (slot + 1) & internSlotMask;
       internedTokens[slot] = token;
-      internedClassIds[slot] = oldClassIds[i]!;
-      internedConflictStarts[slot] = oldConflictStarts[i]!;
-      internedConflictEnds[slot] = oldConflictEnds[i]!;
+      const metaBase = slot << 2;
+      internedTokenMeta[metaBase] = hash;
+      internedTokenMeta[metaBase + 1] = oldMeta[oldMetaBase + 1]!;
+      internedTokenMeta[metaBase + 2] = oldMeta[oldMetaBase + 2]!;
+      internedTokenMeta[metaBase + 3] = oldMeta[oldMetaBase + 3]!;
     }
+  };
+
+  // Runs on the exact insert that crosses the half-full threshold, even mid-merge, which is
+  // what guarantees the probe loops terminate. Tokens already resolved this pass hold direct
+  // references, so rotating cannot invalidate them; the retired arrays are recycled when their
+  // size still matches. The retired meta lanes need no clearing: they are only read behind a
+  // non-null token in the same slot, and every token insert rewrites all four lanes.
+  //
+  // Past the soft max the table still doubles (up to the hard max) when re-promotions prove the
+  // rotation was forced by live capacity rather than churn (rationale on
+  // INTERN_TABLE_HARD_MAX_SLOTS in constants.ts).
+  const growOrRotateInternTable = (): void => {
+    if (
+      internSlotCount < INTERN_TABLE_MAX_SLOTS ||
+      (internSlotCount < INTERN_TABLE_HARD_MAX_SLOTS && rePromotionCount > internSlotCount >> 2)
+    ) {
+      rePromotionCount = 0;
+      growInternTable();
+      return;
+    }
+    rePromotionCount = 0;
+    const recycledTokens = previousInternedTokens;
+    const recycledMeta = previousInternedTokenMeta;
+    previousInternedTokens = internedTokens;
+    previousInternedTokenMeta = internedTokenMeta;
+    previousInternSlotMask = internSlotMask;
+    if (recycledTokens.length === internSlotCount) {
+      recycledTokens.fill(null);
+      internedTokens = recycledTokens;
+      internedTokenMeta = recycledMeta;
+    } else {
+      internedTokens = createFilledArray<string | null>(internSlotCount, null);
+      internedTokenMeta = new Int32Array(internSlotCount * 4);
+    }
+    internedTokenCount = 0;
   };
 
   const flushInternTable = (): void => {
     internSlotCount = INTERN_TABLE_INITIAL_SLOTS;
     internSlotMask = internSlotCount - 1;
     previousInternSlotMask = internSlotMask;
-    internedTokens = new Array(INTERN_TABLE_INITIAL_SLOTS).fill(null);
-    previousInternedTokens = new Array(INTERN_TABLE_INITIAL_SLOTS).fill(null);
-    internedClassIds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-    internedConflictStarts = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-    internedConflictEnds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-    previousInternedClassIds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-    previousInternedConflictStarts = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
-    previousInternedConflictEnds = new Int32Array(INTERN_TABLE_INITIAL_SLOTS);
+    internedTokens = createFilledArray<string | null>(INTERN_TABLE_INITIAL_SLOTS, null);
+    previousInternedTokens = createFilledArray<string | null>(INTERN_TABLE_INITIAL_SLOTS, null);
+    internedTokenMeta = new Int32Array(INTERN_TABLE_INITIAL_SLOTS * 4);
+    previousInternedTokenMeta = new Int32Array(INTERN_TABLE_INITIAL_SLOTS * 4);
     internedTokenCount = 0;
+    rePromotionCount = 0;
+  };
+
+  const getInternedTokenAt = (
+    source: string,
+    start: number,
+    end: number,
+    hash: number,
+  ): string | null => {
+    const tokenLength = end - start;
+    let slot = hash & internSlotMask;
+    let candidate: string | null;
+    while ((candidate = internedTokens[slot]!) !== null) {
+      if (internedTokenMeta[slot << 2] === hash && candidate.length === tokenLength) {
+        let offset = 0;
+        while (
+          offset < tokenLength &&
+          candidate.charCodeAt(offset) === source.charCodeAt(start + offset)
+        ) {
+          offset++;
+        }
+        if (offset === tokenLength) return candidate;
+      }
+      slot = (slot + 1) & internSlotMask;
+    }
+    let previousSlot = hash & previousInternSlotMask;
+    while ((candidate = previousInternedTokens[previousSlot]!) !== null) {
+      if (
+        previousInternedTokenMeta[previousSlot << 2] === hash &&
+        candidate.length === tokenLength
+      ) {
+        let offset = 0;
+        while (
+          offset < tokenLength &&
+          candidate.charCodeAt(offset) === source.charCodeAt(start + offset)
+        ) {
+          offset++;
+        }
+        if (offset === tokenLength) return candidate;
+      }
+      previousSlot = (previousSlot + 1) & previousInternSlotMask;
+    }
+    return null;
   };
 
   let splitSawNonSpaceWhitespace = false;
@@ -450,26 +520,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     return createDescriptor(classGroupId, modifier, hasPostfixModifier);
   };
 
-  const getClassDescriptor = (className: string): ClassDescriptor => {
-    let descriptor = descriptorCache[className];
-    if (descriptor !== undefined) {
-      return descriptor;
-    }
-
-    descriptor = previousDescriptorCache[className];
-    if (descriptor === undefined) {
-      descriptor = computeClassDescriptor(className);
-    }
-
-    descriptorCache[className] = descriptor;
-    if (++descriptorCacheSize > DESCRIPTOR_CACHE_CAPACITY) {
-      descriptorCacheSize = 0;
-      previousDescriptorCache = descriptorCache;
-      descriptorCache = Object.create(null);
-    }
-    return descriptor;
-  };
-
   // Result-intern table (rationale on RESULT_INTERN_SLOTS in constants.ts). The key folds the
   // kept tokens' already-computed FNV-1a hashes (O(kept tokens), never O(chars)); equal result
   // bytes imply an equal kept-token sequence (tokens contain no spaces), so byte-equal results
@@ -477,7 +527,10 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   // ranges guards the hit — the hash alone is never trusted. Entries never need invalidation:
   // keys and values are pure content, independent of the conflict-key registry.
   const resultInternMask = RESULT_INTERN_SLOTS - 1;
-  const internedResults: (string | null)[] = new Array(RESULT_INTERN_SLOTS).fill(null);
+  const internedResults: (string | null)[] = createFilledArray<string | null>(
+    RESULT_INTERN_SLOTS,
+    null,
+  );
   const internedResultKeys = new Int32Array(RESULT_INTERN_SLOTS);
   let resultInternSlot = 0;
   let resultInternKey = 0;
@@ -494,12 +547,12 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     let lastKeptIndex = 0;
     let key = FNV_OFFSET_BASIS;
     for (let index = 0; index < classCount; index++) {
-      if (keepFlags[index] === 1) {
-        keptCount++;
-        keptCharCount += tokenEnds[index]! - tokenStarts[index]!;
-        lastKeptIndex = index;
-        key = Math.imul(key ^ tokenHashes[index]!, FNV_PRIME);
-      }
+      const end = tokenEnds[index]!;
+      if (end < 0) continue;
+      keptCount++;
+      keptCharCount += end - tokenStarts[index]!;
+      lastKeptIndex = index;
+      key = Math.imul(key ^ tokenHashes[index]!, FNV_PRIME);
     }
     keptTokenCount = keptCount;
     lastKeptTokenIndex = lastKeptIndex;
@@ -516,10 +569,10 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     if (candidate === null || candidate.length !== keptCharCount + keptCount - 1) return null;
     let position = 0;
     for (let index = 0; index < classCount; index++) {
-      if (keepFlags[index] !== 1) continue;
+      const end = tokenEnds[index]!;
+      if (end < 0) continue;
       if (position !== 0) position++;
       const start = tokenStarts[index]!;
-      const end = tokenEnds[index]!;
       for (let cursor = start; cursor < end; cursor++) {
         if (candidate.charCodeAt(position++) !== source.charCodeAt(cursor)) return null;
       }
@@ -552,8 +605,8 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
    * shortcut needs. Token offsets are relative to the ARG; the merge shifts them by the arg's base
    * offset in the joined string (pure arithmetic — `joined` is always `parts.join(" ")`), so
    * pass 2 can still slice contiguous kept runs out of the joined input. Handles hold interned
-   * conflict-key ids, so the memo is flushed by the same registry reset that flushes the
-   * descriptor caches.
+   * conflict-key ids, so the memo is flushed by the same registry reset that flushes the token
+   * intern table.
    */
   const UNPREPARABLE = new Int32Array(0);
 
@@ -584,10 +637,10 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   };
 
   // Builds the handle for one argument string. Runs once per unique admitted arg per memo
-  // generation, so it favors simplicity over peak speed: the split reuses the fused scan, and
-  // descriptor resolution probes the intern table READ-ONLY (both generations, no insert/promote
-  // — inserting here would duplicate the grow/rotate machinery for a path that is memoized
-  // anyway) before falling back to slice + `getClassDescriptor`.
+  // generation: the split reuses the fused scan, and descriptor resolution goes through the
+  // intern table — the single token-level memo — promoting previous-generation hits and
+  // interning computed double-misses exactly like `mergeClassList`'s pass 1, so a token pays
+  // `computeClassDescriptor` once regardless of which entry point sees it first.
   const prepareArg = (arg: string): Int32Array => {
     const count = splitClassList(arg);
     // Tabs/newlines make the offset arithmetic diverge from what a split of the joined string
@@ -615,7 +668,7 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       let slot = tokenHash & internSlotMask;
       let internedToken: string | null;
       while ((internedToken = internedTokens[slot]!) !== null) {
-        if (internedToken.length === tokenLength) {
+        if (internedTokenMeta[slot << 2] === tokenHash && internedToken.length === tokenLength) {
           let offset = 0;
           while (
             offset < tokenLength &&
@@ -624,9 +677,10 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
             offset++;
           }
           if (offset === tokenLength) {
-            classId = internedClassIds[slot]!;
-            conflictStart = internedConflictStarts[slot]!;
-            conflictEnd = internedConflictEnds[slot]!;
+            const metaBase = slot << 2;
+            classId = internedTokenMeta[metaBase + 1]!;
+            conflictStart = internedTokenMeta[metaBase + 2]!;
+            conflictEnd = internedTokenMeta[metaBase + 3]!;
             found = true;
             break;
           }
@@ -638,7 +692,10 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
         let previousSlot = tokenHash & previousInternSlotMask;
         let previousToken: string | null;
         while ((previousToken = previousInternedTokens[previousSlot]!) !== null) {
-          if (previousToken.length === tokenLength) {
+          if (
+            previousInternedTokenMeta[previousSlot << 2] === tokenHash &&
+            previousToken.length === tokenLength
+          ) {
             let offset = 0;
             while (
               offset < tokenLength &&
@@ -647,9 +704,18 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
               offset++;
             }
             if (offset === tokenLength) {
-              classId = previousInternedClassIds[previousSlot]!;
-              conflictStart = previousInternedConflictStarts[previousSlot]!;
-              conflictEnd = previousInternedConflictEnds[previousSlot]!;
+              const previousMetaBase = previousSlot << 2;
+              classId = previousInternedTokenMeta[previousMetaBase + 1]!;
+              conflictStart = previousInternedTokenMeta[previousMetaBase + 2]!;
+              conflictEnd = previousInternedTokenMeta[previousMetaBase + 3]!;
+              internedTokens[slot] = previousToken;
+              const metaBase = slot << 2;
+              internedTokenMeta[metaBase] = tokenHash;
+              internedTokenMeta[metaBase + 1] = classId;
+              internedTokenMeta[metaBase + 2] = conflictStart;
+              internedTokenMeta[metaBase + 3] = conflictEnd;
+              rePromotionCount++;
+              if (++internedTokenCount > internSlotCount >> 1) growOrRotateInternTable();
               found = true;
               break;
             }
@@ -659,10 +725,18 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       }
 
       if (!found) {
-        const descriptor = getClassDescriptor(arg.slice(start, end));
+        const token = sliceFlat(arg, start, end);
+        const descriptor = computeClassDescriptor(token);
         classId = descriptor.classId;
         conflictStart = descriptor.conflictStart;
         conflictEnd = descriptor.conflictEnd;
+        internedTokens[slot] = token;
+        const metaBase = slot << 2;
+        internedTokenMeta[metaBase] = tokenHash;
+        internedTokenMeta[metaBase + 1] = classId;
+        internedTokenMeta[metaBase + 2] = conflictStart;
+        internedTokenMeta[metaBase + 3] = conflictEnd;
+        if (++internedTokenCount > internSlotCount >> 1) growOrRotateInternTable();
       }
 
       const handleOffset = 2 + index * 6;
@@ -679,7 +753,7 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
 
   // Reusable scratch for the per-call handle list and part base offsets (grown, never shrunk;
   // `cn` calls are synchronous and non-reentrant so a closure-level scratch is safe).
-  let partHandles: Int32Array[] = new Array(16).fill(UNPREPARABLE);
+  let partHandles: Int32Array[] = createFilledArray(16, UNPREPARABLE);
   let partBases = new Int32Array(16);
 
   // Rare-path body of the `MAX_CONFLICT_KEYS` bound, shared by both merge entry points. The
@@ -695,9 +769,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     conflictRowStarts.clear();
     conflictPoolCount = 0;
     nextConflictKeyId = 0;
-    descriptorCache = Object.create(null);
-    previousDescriptorCache = Object.create(null);
-    descriptorCacheSize = 0;
     preparedArgCache = new Map();
     previousPreparedArgCache = new Map();
     preparedArgCacheCount = 0;
@@ -729,12 +800,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     if (currentGeneration === 0) currentGeneration = 1;
     const generation = currentGeneration;
 
-    if (classCount > keepFlags.length) {
-      let capacity = keepFlags.length;
-      while (capacity < classCount) capacity *= 2;
-      keepFlags = new Uint8Array(capacity);
-    }
-
     let didDrop = false;
     for (let index = classCount - 1; index >= 0; index -= 1) {
       const start = tokenStarts[index]!;
@@ -742,54 +807,90 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       const tokenLength = end - start;
       const tokenHash = tokenHashes[index]!;
 
+      // A hash-and-length match is almost always the token itself, so the verify runs its full
+      // length; on JSC the `startsWith` builtin beats the char loop for longer tokens.
+      const useBuiltinVerify = IS_JSC && tokenLength >= JSC_STARTSWITH_VERIFY_MIN_LENGTH;
+
       let slot = tokenHash & internSlotMask;
       let internedToken: string | null;
       while ((internedToken = internedTokens[slot]!) !== null) {
-        if (internedToken.length === tokenLength) {
-          let offset = 0;
-          while (
-            offset < tokenLength &&
-            internedToken.charCodeAt(offset) === classList.charCodeAt(start + offset)
-          ) {
-            offset++;
+        if (internedTokenMeta[slot << 2] === tokenHash && internedToken.length === tokenLength) {
+          if (useBuiltinVerify) {
+            if (classList.startsWith(internedToken, start)) break;
+          } else {
+            let offset = 0;
+            while (
+              offset < tokenLength &&
+              internedToken.charCodeAt(offset) === classList.charCodeAt(start + offset)
+            ) {
+              offset++;
+            }
+            if (offset === tokenLength) break;
           }
-          if (offset === tokenLength) break;
         }
         slot = (slot + 1) & internSlotMask;
+      }
+
+      // Hit path: the conflict lanes are loaded only when the token actually claims, so a
+      // dropped or external token costs one int load beyond the probe.
+      if (internedToken !== null) {
+        const metaBase = slot << 2;
+        const classId = internedTokenMeta[metaBase + 1]!;
+        if (classId === -1) continue;
+        if (claimedGeneration[classId] === generation) {
+          tokenEnds[index] = -end;
+          didDrop = true;
+          continue;
+        }
+        claimedGeneration[classId] = generation;
+        const conflictEnd = internedTokenMeta[metaBase + 3]!;
+        for (
+          let poolIndex = internedTokenMeta[metaBase + 2]!;
+          poolIndex < conflictEnd;
+          poolIndex++
+        ) {
+          claimedGeneration[conflictPool[poolIndex]!] = generation;
+        }
+        continue;
       }
 
       let classId: number;
       let conflictStart: number;
       let conflictEnd: number;
-      if (internedToken !== null) {
-        classId = internedClassIds[slot]!;
-        conflictStart = internedConflictStarts[slot]!;
-        conflictEnd = internedConflictEnds[slot]!;
-      } else {
+      {
         let previousSlot = tokenHash & previousInternSlotMask;
         let previousToken: string | null;
         while ((previousToken = previousInternedTokens[previousSlot]!) !== null) {
-          if (previousToken.length === tokenLength) {
-            let offset = 0;
-            while (
-              offset < tokenLength &&
-              previousToken.charCodeAt(offset) === classList.charCodeAt(start + offset)
-            ) {
-              offset++;
+          if (
+            previousInternedTokenMeta[previousSlot << 2] === tokenHash &&
+            previousToken.length === tokenLength
+          ) {
+            if (useBuiltinVerify) {
+              if (classList.startsWith(previousToken, start)) break;
+            } else {
+              let offset = 0;
+              while (
+                offset < tokenLength &&
+                previousToken.charCodeAt(offset) === classList.charCodeAt(start + offset)
+              ) {
+                offset++;
+              }
+              if (offset === tokenLength) break;
             }
-            if (offset === tokenLength) break;
           }
           previousSlot = (previousSlot + 1) & previousInternSlotMask;
         }
 
         if (previousToken !== null) {
           internedToken = previousToken;
-          classId = previousInternedClassIds[previousSlot]!;
-          conflictStart = previousInternedConflictStarts[previousSlot]!;
-          conflictEnd = previousInternedConflictEnds[previousSlot]!;
+          const previousMetaBase = previousSlot << 2;
+          classId = previousInternedTokenMeta[previousMetaBase + 1]!;
+          conflictStart = previousInternedTokenMeta[previousMetaBase + 2]!;
+          conflictEnd = previousInternedTokenMeta[previousMetaBase + 3]!;
+          rePromotionCount++;
         } else {
-          internedToken = classList.slice(start, end);
-          const descriptor = getClassDescriptor(internedToken);
+          internedToken = sliceFlat(classList, start, end);
+          const descriptor = computeClassDescriptor(internedToken);
           classId = descriptor.classId;
           conflictStart = descriptor.conflictStart;
           conflictEnd = descriptor.conflictEnd;
@@ -798,50 +899,18 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
         // `slot` is the first empty slot the current-generation probe stopped at, so inserting
         // there keeps the probe chain intact.
         internedTokens[slot] = internedToken;
-        internedClassIds[slot] = classId;
-        internedConflictStarts[slot] = conflictStart;
-        internedConflictEnds[slot] = conflictEnd;
-        if (++internedTokenCount > internSlotCount >> 1) {
-          if (internSlotCount < INTERN_TABLE_MAX_SLOTS) {
-            growInternTable();
-          } else {
-            // Tokens already resolved this pass hold direct references, so rotating cannot
-            // invalidate them; the retired arrays are recycled when their size still matches.
-            const recycledTokens = previousInternedTokens;
-            const recycledClassIds = previousInternedClassIds;
-            const recycledConflictStarts = previousInternedConflictStarts;
-            const recycledConflictEnds = previousInternedConflictEnds;
-            previousInternedTokens = internedTokens;
-            previousInternedClassIds = internedClassIds;
-            previousInternedConflictStarts = internedConflictStarts;
-            previousInternedConflictEnds = internedConflictEnds;
-            previousInternSlotMask = internSlotMask;
-            if (recycledTokens.length === internSlotCount) {
-              recycledTokens.fill(null);
-              internedTokens = recycledTokens;
-              internedClassIds = recycledClassIds;
-              internedConflictStarts = recycledConflictStarts;
-              internedConflictEnds = recycledConflictEnds;
-            } else {
-              internedTokens = new Array(internSlotCount).fill(null);
-              internedClassIds = new Int32Array(internSlotCount);
-              internedConflictStarts = new Int32Array(internSlotCount);
-              internedConflictEnds = new Int32Array(internSlotCount);
-            }
-            internedTokenCount = 0;
-          }
-        }
+        const metaBase = slot << 2;
+        internedTokenMeta[metaBase] = tokenHash;
+        internedTokenMeta[metaBase + 1] = classId;
+        internedTokenMeta[metaBase + 2] = conflictStart;
+        internedTokenMeta[metaBase + 3] = conflictEnd;
+        if (++internedTokenCount > internSlotCount >> 1) growOrRotateInternTable();
       }
 
-      canonicalTokens[index] = internedToken;
-
-      if (classId === -1) {
-        keepFlags[index] = 1;
-        continue;
-      }
+      if (classId === -1) continue;
 
       if (claimedGeneration[classId] === generation) {
-        keepFlags[index] = 0;
+        tokenEnds[index] = -end;
         didDrop = true;
         continue;
       }
@@ -850,8 +919,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       for (let poolIndex = conflictStart; poolIndex < conflictEnd; poolIndex++) {
         claimedGeneration[conflictPool[poolIndex]!] = generation;
       }
-
-      keepFlags[index] = 1;
     }
 
     // Nothing dropped and whitespace was exactly `classCount - 1` single spaces: the input is
@@ -866,9 +933,15 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
 
     const internedResult = findInternedResult(classList, classCount);
     if (internedResult !== null) return internedResult;
-    // A single surviving token needs no rebuild and no table: pass 1 already interned its
-    // canonical string (byte-verified against the input range), so return that object directly.
-    if (keptTokenCount === 1) return canonicalTokens[lastKeptTokenIndex]!;
+    // A single surviving token needs no rebuild: pass 1 interned its canonical string
+    // (byte-verified against the input range), so re-probing returns that object without
+    // allocating. The fallback slice is only reachable when the table rotated twice mid-pass.
+    if (keptTokenCount === 1) {
+      const start = tokenStarts[lastKeptTokenIndex]!;
+      const end = tokenEnds[lastKeptTokenIndex]!;
+      const interned = getInternedTokenAt(classList, start, end, tokenHashes[lastKeptTokenIndex]!);
+      return interned !== null ? interned : classList.slice(start, end);
+    }
 
     let result = "";
 
@@ -876,17 +949,17 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       let runStart = -1;
       let runEnd = 0;
       for (let index = 0; index < classCount; index++) {
-        if (keepFlags[index] === 1) {
-          const start = tokenStarts[index]!;
-          if (runStart === -1) {
-            runStart = start;
-          } else if (start !== runEnd + 1) {
-            if (result) result += " ";
-            result += classList.slice(runStart, runEnd);
-            runStart = start;
-          }
-          runEnd = tokenEnds[index]!;
+        const end = tokenEnds[index]!;
+        if (end < 0) continue;
+        const start = tokenStarts[index]!;
+        if (runStart === -1) {
+          runStart = start;
+        } else if (start !== runEnd + 1) {
+          if (result) result += " ";
+          result += classList.slice(runStart, runEnd);
+          runStart = start;
         }
+        runEnd = end;
       }
       if (runStart !== -1) {
         if (result) result += " ";
@@ -896,13 +969,13 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       return result;
     }
 
-    // Tabs or newlines between tokens: input offsets no longer mirror the output, so rebuild
-    // from the canonical per-token strings.
+    // Tabs or newlines between tokens: input offsets no longer mirror the output, so each kept
+    // token is sliced on demand (byte-equal to its interned canonical by construction).
     for (let index = 0; index < classCount; index++) {
-      if (keepFlags[index] === 1) {
-        if (result) result += " ";
-        result += canonicalTokens[index];
-      }
+      const end = tokenEnds[index]!;
+      if (end < 0) continue;
+      if (result) result += " ";
+      result += classList.slice(tokenStarts[index]!, end);
     }
 
     storeInternedResult(result);
@@ -924,7 +997,7 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       let capacity = partBases.length;
       while (capacity < partCount) capacity *= 2;
       partBases = new Int32Array(capacity);
-      const grownHandles: Int32Array[] = new Array(capacity).fill(UNPREPARABLE);
+      const grownHandles: Int32Array[] = createFilledArray(capacity, UNPREPARABLE);
       partHandles = grownHandles;
     }
 
@@ -978,11 +1051,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       }
     }
 
-    if (classCount > keepFlags.length) {
-      let capacity = keepFlags.length;
-      while (capacity < classCount) capacity *= 2;
-      keepFlags = new Uint8Array(capacity);
-    }
     if (classCount > tokenStarts.length) {
       // Grown as a trio so `splitClassList`'s single capacity check stays valid.
       let capacity = tokenStarts.length;
@@ -1013,14 +1081,14 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       for (let token = handle[0]! - 1; token >= 0; token--) {
         const handleOffset = 2 + token * 6;
         tokenStarts[index] = base + handle[handleOffset]!;
-        tokenEnds[index] = base + handle[handleOffset + 1]!;
+        const end = base + handle[handleOffset + 1]!;
         tokenHashes[index] = handle[handleOffset + 2]!;
 
         const classId = handle[handleOffset + 3]!;
         if (classId === -1) {
-          keepFlags[index] = 1;
+          tokenEnds[index] = end;
         } else if (claimedGeneration[classId] === generation) {
-          keepFlags[index] = 0;
+          tokenEnds[index] = -end;
           didDrop = true;
         } else {
           claimedGeneration[classId] = generation;
@@ -1028,7 +1096,7 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
           for (let poolIndex = handle[handleOffset + 4]!; poolIndex < conflictEnd; poolIndex++) {
             claimedGeneration[conflictPool[poolIndex]!] = generation;
           }
-          keepFlags[index] = 1;
+          tokenEnds[index] = end;
         }
         index--;
       }
@@ -1052,17 +1120,17 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     let runStart = -1;
     let runEnd = 0;
     for (let tokenIndex = 0; tokenIndex < classCount; tokenIndex++) {
-      if (keepFlags[tokenIndex] === 1) {
-        const start = tokenStarts[tokenIndex]!;
-        if (runStart === -1) {
-          runStart = start;
-        } else if (start !== runEnd + 1) {
-          if (result) result += " ";
-          result += joined.slice(runStart, runEnd);
-          runStart = start;
-        }
-        runEnd = tokenEnds[tokenIndex]!;
+      const end = tokenEnds[tokenIndex]!;
+      if (end < 0) continue;
+      const start = tokenStarts[tokenIndex]!;
+      if (runStart === -1) {
+        runStart = start;
+      } else if (start !== runEnd + 1) {
+        if (result) result += " ";
+        result += joined.slice(runStart, runEnd);
+        runStart = start;
       }
+      runEnd = end;
     }
     if (runStart !== -1) {
       if (result) result += " ";

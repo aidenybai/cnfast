@@ -15,6 +15,7 @@ import {
 } from "./class-map";
 import { AnyClassGroupIds, AnyConfig } from "./types";
 import { concatArrays } from "../utils/concat-arrays";
+import { createFilledArray } from "../utils/create-filled-array";
 
 // Two dots because a single dot is the class-group prefix used by plugins.
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
@@ -90,13 +91,13 @@ export const createClassGroupLookup = (config: AnyConfig) => {
 
   const createConflictRow = (ids: readonly AnyClassGroupIds[]): readonly number[] => {
     if (ids.length === 0) return EMPTY_CONFLICT_ROW;
-    const row: number[] = new Array(ids.length);
-    for (let i = 0; i < ids.length; i++) row[i] = groupIndexes.get(ids[i]!)!;
+    const row: number[] = [];
+    for (let i = 0; i < ids.length; i++) row.push(groupIndexes.get(ids[i]!)!);
     return row;
   };
-  const conflictRowsBase: (readonly number[])[] = new Array(groupCount);
-  const conflictRowsPostfix: (readonly number[])[] = new Array(groupCount);
-  const groupNames: AnyClassGroupIds[] = new Array(groupCount);
+  const conflictRowsBase = createFilledArray<readonly number[]>(groupCount, EMPTY_CONFLICT_ROW);
+  const conflictRowsPostfix = createFilledArray<readonly number[]>(groupCount, EMPTY_CONFLICT_ROW);
+  const groupNames = createFilledArray<AnyClassGroupIds>(groupCount, "");
   for (const [classGroupId, groupIndex] of groupIndexes) {
     groupNames[groupIndex] = classGroupId;
     conflictRowsBase[groupIndex] = createConflictRow(getConflictingGroupIds(classGroupId, false));

@@ -27,12 +27,6 @@ export const MERGE_CACHE_CAPACITY_MAX = 8192;
 export const DOORKEEPER_SLOTS = 8192;
 
 /**
- * Per-token descriptor cache (`config-utils.ts`). Larger than the whole-string cache because
- * individual tokens are more numerous but cheaper to store.
- */
-export const DESCRIPTOR_CACHE_CAPACITY = 4096;
-
-/**
  * Distinct interned conflict keys before the registry (and every cache holding its IDs) resets.
  * A conflict key's modifier can be an arbitrary variant such as `data-[id=123]:`, so an app
  * generating unbounded distinct variants would otherwise grow the registry forever. Sized well
@@ -51,14 +45,28 @@ export const MAX_CONFLICT_KEYS = 16384;
 export const PREPARED_ARG_CACHE_SIZE = 2048;
 
 /**
- * Token intern table (`config-utils.ts`): starts small and doubles until the max, so apps with a
- * modest class vocabulary never pay for more, while the largest real app corpora measured
- * (~12k unique tokens) fit without eviction churn. These are slot counts; the table grows (or at
- * max size rotates generations) when the entry count crosses half the slots, capping load factor
- * at 0.5 so linear probing always terminates.
+ * Token intern table (`merge-class-list.ts`): starts small and doubles until the max, so apps
+ * with a modest class vocabulary never pay for more. These are slot counts; the table grows (or
+ * at max size rotates generations) when the entry count crosses half the slots, capping load
+ * factor at 0.5 so linear probing always terminates.
+ *
+ * The hard max is demand-gated: past INTERN_TABLE_MAX_SLOTS the table only doubles further when
+ * re-promotions since the last grow/rotate exceed a quarter of the slots — proof that live
+ * repeating tokens (the largest real corpora measured hold ~12k) forced the rotation, not
+ * one-off churn. Apps under ~8k unique tokens never rotate, so the counter never increments and
+ * behavior is byte-for-byte unchanged. Worst case at the hard max is two generations of 32768
+ * slots (~1.5MB of lanes plus the token strings), reclaimed by the conflict-registry reset.
  */
 export const INTERN_TABLE_INITIAL_SLOTS = 2048;
 export const INTERN_TABLE_MAX_SLOTS = 16384;
+export const INTERN_TABLE_HARD_MAX_SLOTS = 32768;
+
+/**
+ * Intern-probe verification (`merge-class-list.ts`): on JSC the `startsWith` builtin beats the
+ * per-char verify loop from roughly this token length (measured 2.6-5.1x at realistic lengths on
+ * Bun); on V8 it measures ~1.0x, so the char loop stays the universal path there.
+ */
+export const JSC_STARTSWITH_VERIFY_MIN_LENGTH = 12;
 
 /**
  * Result-intern table (`merge-class-list.ts`): direct-mapped slots canonicalizing rebuild

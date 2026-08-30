@@ -5,6 +5,7 @@ import {
   ARG_CACHE_ROTATION_SLOTS,
   ARG_CACHE_SEEN_ONCE_CAPACITY,
 } from "./lib/constants.js";
+import { createFilledArray } from "./utils/create-filled-array.js";
 import { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
 import { getDefaultConfig } from "./lib/default-config.js";
 import { mergeConfigs } from "./lib/merge-configs.js";
@@ -83,8 +84,9 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   // shift, rotation, wrapped id stolen by a newer entry) falls through to the normal paths, which
   // re-record the entry and heal the chain.
   const successorIds = new Int32Array(ARG_CACHE_PREDICTION_SLOTS).fill(-1);
-  const predictedAnchors: string[] = new Array(ARG_CACHE_PREDICTION_SLOTS).fill("");
-  const predictedBuckets: ArgCacheBucket[] = new Array(ARG_CACHE_PREDICTION_SLOTS).fill(
+  const predictedAnchors: string[] = createFilledArray(ARG_CACHE_PREDICTION_SLOTS, "");
+  const predictedBuckets: ArgCacheBucket[] = createFilledArray(
+    ARG_CACHE_PREDICTION_SLOTS,
     EMPTY_BUCKET,
   );
   const predictedPositions = new Int32Array(ARG_CACHE_PREDICTION_SLOTS);
