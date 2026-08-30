@@ -131,8 +131,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
       tailwind-merge:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: 3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb
+        version: 3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb
       tinybench:
         specifier: ^6.0.2
         version: 6.0.2
@@ -3814,6 +3814,9 @@ packages:
 
   tailwind-merge@3.6.0:
     resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
+
+  tailwind-merge@3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb:
+    resolution: {integrity: sha512-u3fT41PYM6Y6V4vR5uobNSodxtkoP6tzY7BXbqELbI/g9P7fYt5l8yb403nIEWQ+KLGcJ/yTLYGVJLn4kMviVg==}
 
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
@@ -7692,6 +7695,8 @@ snapshots:
   tagged-tag@1.0.0: {}
 
   tailwind-merge@3.6.0: {}
+
+  tailwind-merge@3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb: {}
 
   tailwindcss@4.3.3: {}
 

@@ -101,7 +101,7 @@
     "publint": "^0.3.24",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "tailwind-merge": "^3.6.0",
+    "tailwind-merge": "3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb",
     "tinybench": "^6.0.2",
     "tinyglobby": "^0.2.10",
     "vega": "^6.2.0",

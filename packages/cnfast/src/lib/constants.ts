@@ -1,1 +1,0 @@
-export const REUSABLE_TOKEN_BUFFER_MIN_CHARS = 32;
