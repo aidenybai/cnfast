@@ -44,6 +44,15 @@ describe("createCn: honors a custom tailwind-merge config", () => {
   });
 });
 
+describe("createCn: preserves static classes when overriding theme scales", () => {
+  it("keeps leading-none in the line-height group", () => {
+    const themed = createCn({ override: { theme: { leading: ["tight"] } } });
+    expect(themed("leading-tight leading-none")).toBe("leading-none");
+    expect(themed("leading-none leading-tight")).toBe("leading-tight");
+    expect(themed("leading-4 leading-none")).toBe("leading-none");
+  });
+});
+
 describe("createCn: every call shape keeps the config", () => {
   const themed = createCn(config);
 
