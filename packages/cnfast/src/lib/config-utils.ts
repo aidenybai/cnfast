@@ -1,5 +1,4 @@
 import { createClassGroupUtils } from "./class-group-utils";
-import { REUSABLE_TOKEN_BUFFER_MIN_CHARS } from "./constants";
 import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name";
 import { createSortModifiers } from "./sort-modifiers";
 import { AnyClassGroupIds, AnyConfig } from "./types";
@@ -74,47 +73,13 @@ export const createConfigUtils = (config: AnyConfig) => {
   // The no-op shortcut in `mergeClassList` can only return the raw input when every separator is a
   // plain space, since the rebuild always joins with `" "`.
   let splitSawNonSpaceWhitespace = false;
-  const reusableClassNames: string[] = [];
+  const classNames: string[] = [];
 
   // Splits on runs of ASCII whitespace (space, tab, LF, VT, FF, CR) the same way `/\s+/` does for
   // any realistic class string, while skipping leading/trailing runs so no separate `trim()` pass
   // (and its string allocation) is needed. Tailwind class tokens are ASCII, so this never diverges
   // from the reference on real input; the parity + fuzz suites guard against regressions.
-  const splitClassList = (classList: string): string[] => {
-    const tokens: string[] = [];
-    const length = classList.length;
-    let tokenStart = -1;
-    splitSawNonSpaceWhitespace = false;
-
-    for (let index = 0; index < length; index++) {
-      const charCode = classList.charCodeAt(index);
-
-      if (charCode === 32) {
-        if (tokenStart !== -1) {
-          tokens.push(classList.slice(tokenStart, index));
-          tokenStart = -1;
-        }
-      } else if (charCode >= 9 && charCode <= 13) {
-        splitSawNonSpaceWhitespace = true;
-        if (tokenStart !== -1) {
-          tokens.push(classList.slice(tokenStart, index));
-          tokenStart = -1;
-        }
-      } else if (tokenStart === -1) {
-        tokenStart = index;
-      }
-    }
-
-    if (tokenStart !== -1) {
-      tokens.push(classList.slice(tokenStart));
-    }
-
-    return tokens;
-  };
-
-  // Fresh short arrays stay allocation-elided on JSC; reuse only wins once longer token lists
-  // create enough garbage to outweigh the indexed writes into an escaping buffer.
-  const splitClassListReusable = (classList: string): string[] => {
+  const splitClassList = (classList: string): number => {
     const length = classList.length;
     let tokenStart = -1;
     let tokenCount = 0;
@@ -125,13 +90,13 @@ export const createConfigUtils = (config: AnyConfig) => {
 
       if (charCode === 32) {
         if (tokenStart !== -1) {
-          reusableClassNames[tokenCount++] = classList.slice(tokenStart, index);
+          classNames[tokenCount++] = classList.slice(tokenStart, index);
           tokenStart = -1;
         }
       } else if (charCode >= 9 && charCode <= 13) {
         splitSawNonSpaceWhitespace = true;
         if (tokenStart !== -1) {
-          reusableClassNames[tokenCount++] = classList.slice(tokenStart, index);
+          classNames[tokenCount++] = classList.slice(tokenStart, index);
           tokenStart = -1;
         }
       } else if (tokenStart === -1) {
@@ -140,11 +105,11 @@ export const createConfigUtils = (config: AnyConfig) => {
     }
 
     if (tokenStart !== -1) {
-      reusableClassNames[tokenCount++] = classList.slice(tokenStart);
+      classNames[tokenCount++] = classList.slice(tokenStart);
     }
 
-    reusableClassNames.length = tokenCount;
-    return reusableClassNames;
+    classNames.length = tokenCount;
+    return tokenCount;
   };
 
   const conflictKeyIds = new Map<string, number>();
@@ -258,11 +223,7 @@ export const createConfigUtils = (config: AnyConfig) => {
   // (no `claim`/`check`/`begin` closure calls per token). `claimedGeneration` is read fresh on
   // every access, so a mid-loop `getClassDescriptor` miss that grows the array stays correct.
   const mergeClassList = (classList: string): string => {
-    const classNames =
-      classList.length < REUSABLE_TOKEN_BUFFER_MIN_CHARS
-        ? splitClassList(classList)
-        : splitClassListReusable(classList);
-    const classCount = classNames.length;
+    const classCount = splitClassList(classList);
 
     // A single token cannot conflict with itself, so it is always kept verbatim. ~60% of real class
     // lists reduce to one token, and this skips descriptor resolution (including a full compute on a
