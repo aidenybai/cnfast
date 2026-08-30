@@ -88,8 +88,11 @@ export const createConfigUtils = (config: AnyConfig) => {
 
   // Canonical (interned) token strings for the current merge, indexed by token position. Filled
   // during pass 1 so the rebuild can concatenate already-allocated strings instead of slicing
-  // fresh ones out of the input.
-  const classNames: string[] = [];
+  // fresh ones out of the input. Presized so the first real class lists don't pay elements-store
+  // growth while the function is still in unoptimized tiers; the trailing `length = 0` keeps
+  // packed-elements kind (no holes) while V8 retains the backing-store capacity.
+  const classNames: string[] = new Array(64).fill("");
+  classNames.length = 0;
 
   // Per-token boundaries and FNV-1a hashes recorded by the fused scan in `mergeClassList`, indexed
   // by token position. Offsets let the single-token fast path and true intern misses slice lazily
@@ -294,63 +297,13 @@ export const createConfigUtils = (config: AnyConfig) => {
   let conflictPoolCount = 0;
   const conflictRowRefMemo = new Map<number, number>();
 
-  const computeClassDescriptor = (originalClassName: string): ClassDescriptor => {
-    const {
-      isExternal,
-      modifiers,
-      hasImportantModifier,
-      baseClassName,
-      maybePostfixModifierPosition,
-    } = parseClassName(originalClassName);
-
-    if (isExternal) {
-      return EXTERNAL_DESCRIPTOR;
-    }
-
-    let hasPostfixModifier = Boolean(maybePostfixModifierPosition);
-    let classGroupId: ReturnType<typeof getClassGroupId>;
-
-    if (hasPostfixModifier) {
-      const baseClassNameWithoutPostfix = baseClassName.substring(0, maybePostfixModifierPosition);
-      classGroupId = getClassGroupId(baseClassNameWithoutPostfix);
-
-      const classGroupIdWithPostfix =
-        classGroupId && postfixLookupClassGroupIds[classGroupId]
-          ? getClassGroupId(baseClassName)
-          : undefined;
-      if (classGroupIdWithPostfix && classGroupIdWithPostfix !== classGroupId) {
-        classGroupId = classGroupIdWithPostfix;
-        hasPostfixModifier = false;
-      }
-    } else {
-      classGroupId = getClassGroupId(baseClassName);
-    }
-
-    if (!classGroupId) {
-      if (!hasPostfixModifier) {
-        return EXTERNAL_DESCRIPTOR;
-      }
-
-      classGroupId = getClassGroupId(baseClassName);
-
-      if (!classGroupId) {
-        return EXTERNAL_DESCRIPTOR;
-      }
-
-      hasPostfixModifier = false;
-    }
-
-    const variantModifier =
-      modifiers.length === 0
-        ? ""
-        : modifiers.length === 1
-          ? modifiers[0]!
-          : sortModifiers(modifiers).join(":");
-
-    const modifierId = hasImportantModifier
-      ? variantModifier + IMPORTANT_MODIFIER
-      : variantModifier;
-
+  // Shared descriptor-building tail for both compute paths below: resolves the (modifier, group,
+  // postfix) triple into an interned classId and a deduplicated conflict-pool range.
+  const buildDescriptor = (
+    classGroupId: AnyClassGroupIds,
+    modifierId: string,
+    hasPostfixModifier: boolean,
+  ): ClassDescriptor => {
     const groupIndex = groupIndexes.get(classGroupId);
     if (groupIndex === undefined) {
       // Dynamic arbitrary-property group: not part of the config's enumerated groups and never
@@ -411,6 +364,98 @@ export const createConfigUtils = (config: AnyConfig) => {
     }
 
     return { classId, conflictStart, conflictEnd: conflictStart + rowLength };
+  };
+
+  const computeClassDescriptor = (originalClassName: string): ClassDescriptor => {
+    // Plain-token fast path: a token containing none of `:` `/` `[` `(` `!` can't have variant
+    // modifiers, a postfix modifier, an important marker, or an arbitrary value, so parseClassName
+    // would only confirm { modifiers: [], base: token } at the cost of an array + object
+    // allocation. ~90% of real-world tokens are plain, and full-miss compute is the dominant
+    // fully-dynamic/cold-start cost, so they go straight to the group lookup. `]`/`)` without
+    // their openers don't affect parseClassName's output when these five chars are absent, and
+    // with an empty modifier the conflict keys are the raw group-id strings (`"" + id`), matching
+    // what the general path below interns.
+    const plainScanLength = originalClassName.length;
+    let isPlain = true;
+    for (let index = 0; index < plainScanLength; index++) {
+      const charCode = originalClassName.charCodeAt(index);
+      if (
+        charCode === 58 /* ":" */ ||
+        charCode === 47 /* "/" */ ||
+        charCode === 91 /* "[" */ ||
+        charCode === 40 /* "(" */ ||
+        charCode === 33 /* "!" */
+      ) {
+        isPlain = false;
+        break;
+      }
+    }
+
+    if (isPlain) {
+      const plainClassGroupId = getClassGroupId(originalClassName);
+      if (!plainClassGroupId) {
+        return EXTERNAL_DESCRIPTOR;
+      }
+      return buildDescriptor(plainClassGroupId, "", false);
+    }
+
+    const {
+      isExternal,
+      modifiers,
+      hasImportantModifier,
+      baseClassName,
+      maybePostfixModifierPosition,
+    } = parseClassName(originalClassName);
+
+    if (isExternal) {
+      return EXTERNAL_DESCRIPTOR;
+    }
+
+    let hasPostfixModifier = Boolean(maybePostfixModifierPosition);
+    let classGroupId: ReturnType<typeof getClassGroupId>;
+
+    if (hasPostfixModifier) {
+      const baseClassNameWithoutPostfix = baseClassName.substring(0, maybePostfixModifierPosition);
+      classGroupId = getClassGroupId(baseClassNameWithoutPostfix);
+
+      const classGroupIdWithPostfix =
+        classGroupId && postfixLookupClassGroupIds[classGroupId]
+          ? getClassGroupId(baseClassName)
+          : undefined;
+      if (classGroupIdWithPostfix && classGroupIdWithPostfix !== classGroupId) {
+        classGroupId = classGroupIdWithPostfix;
+        hasPostfixModifier = false;
+      }
+    } else {
+      classGroupId = getClassGroupId(baseClassName);
+    }
+
+    if (!classGroupId) {
+      if (!hasPostfixModifier) {
+        return EXTERNAL_DESCRIPTOR;
+      }
+
+      classGroupId = getClassGroupId(baseClassName);
+
+      if (!classGroupId) {
+        return EXTERNAL_DESCRIPTOR;
+      }
+
+      hasPostfixModifier = false;
+    }
+
+    const variantModifier =
+      modifiers.length === 0
+        ? ""
+        : modifiers.length === 1
+          ? modifiers[0]!
+          : sortModifiers(modifiers).join(":");
+
+    const modifierId = hasImportantModifier
+      ? variantModifier + IMPORTANT_MODIFIER
+      : variantModifier;
+
+    return buildDescriptor(classGroupId, modifierId, hasPostfixModifier);
   };
 
   const getClassDescriptor = (originalClassName: string): ClassDescriptor => {

@@ -1,5 +1,3 @@
-const arbitraryValueRegex = /^\[(?:(\w[\w-]*):)?(.+)\]$/i;
-const arbitraryVariableRegex = /^\((?:(\w[\w-]*):)?(.+)\)$/i;
 const fractionRegex = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/;
 const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
 const lengthUnitRegex =
@@ -15,6 +13,109 @@ const imageRegex =
 const toNumber = Number;
 const numberIsNaN = Number.isNaN;
 const numberIsInteger = Number.isInteger;
+
+// Hand-rolled replacement for the anchored `/^\[(?:(\w[\w-]*):)?(.+)\]$/i` /
+// `/^\((?:(\w[\w-]*):)?(.+)\)$/i` regex pair. `RegExp.exec` allocates a match array plus two
+// capture substrings per call, and indexing `result[1]`/`result[2]` was the one hot site that
+// kept re-deoptimizing at the same offset (generic keyed access on the match array). The scanner
+// below is allocation-free and its result is memoized per token, so a node's whole validator
+// chain parses `[label:value]`/`(label:value)` at most once.
+const CHAR_OPEN_BRACKET = 91; // "["
+const CHAR_CLOSE_BRACKET = 93; // "]"
+const CHAR_OPEN_PAREN = 40; // "("
+const CHAR_CLOSE_PAREN = 41; // ")"
+const CHAR_COLON = 58; // ":"
+const CHAR_DASH = 45; // "-"
+
+// `\w` of the replaced regexes: [A-Za-z0-9_] (the `i` flag adds nothing to `\w`).
+const isWordCharCode = (charCode: number): boolean =>
+  (charCode >= 97 && charCode <= 122) ||
+  (charCode >= 65 && charCode <= 90) ||
+  (charCode >= 48 && charCode <= 57) ||
+  charCode === 95;
+
+/**
+ * Matches `value` against `^<open>(?:(\w[\w-]*):)?(.+)<close>$` without a regex.
+ *
+ * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:` for a
+ * labeled match. Two regex behaviors are load-bearing here:
+ * - `.` excludes line terminators, so any inner LF/CR/LS/PS must reject the whole match (tokens
+ *   from `splitClassList` can't contain LF/CR, but validators are also part of the public config
+ *   surface and get called directly).
+ * - Backtracking never shortens the label run: `[\w-]*` chars can't be `:`, so a label exists iff
+ *   the maximal word/dash run from index 1 is immediately followed by `:` with at least one value
+ *   char before the closing character (`[foo:]` therefore parses as unlabeled value `foo:`).
+ */
+const scanArbitrary = (value: string, openCharCode: number, closeCharCode: number): number => {
+  const length = value.length;
+  if (
+    length < 3 ||
+    value.charCodeAt(0) !== openCharCode ||
+    value.charCodeAt(length - 1) !== closeCharCode
+  ) {
+    return -1;
+  }
+
+  let colonIndex = 0;
+  if (isWordCharCode(value.charCodeAt(1))) {
+    let runEnd = 2;
+    while (runEnd < length - 1) {
+      const charCode = value.charCodeAt(runEnd);
+      if (isWordCharCode(charCode) || charCode === CHAR_DASH) runEnd++;
+      else break;
+    }
+    if (runEnd < length - 2 && value.charCodeAt(runEnd) === CHAR_COLON) {
+      colonIndex = runEnd;
+    }
+  }
+
+  for (let index = 1; index < length - 1; index++) {
+    const charCode = value.charCodeAt(index);
+    if (charCode === 10 || charCode === 13 || charCode === 8232 || charCode === 8233) {
+      return -1;
+    }
+  }
+
+  return colonIndex;
+};
+
+// One-entry memos, keyed by token content. A trie node's validator chain probes the same
+// `classRest` string against up to ~17 arbitrary-value/-variable validators; memoizing the parse
+// collapses those to one scan plus (for a match) at most two slices per token. The label/value
+// callbacks never re-enter these parsers, and strings are immutable, so the memo cannot go stale
+// mid-chain. A label is never the empty string (`\w[\w-]*` needs one char), so `colon > 0` alone
+// distinguishes labeled matches.
+let lastBracketValue: string | null = null;
+let bracketColonIndex = -1;
+let bracketLabel = "";
+let bracketInnerValue = "";
+
+const parseBracketToken = (value: string): void => {
+  if (value === lastBracketValue) return;
+  lastBracketValue = value;
+  const colonIndex = scanArbitrary(value, CHAR_OPEN_BRACKET, CHAR_CLOSE_BRACKET);
+  bracketColonIndex = colonIndex;
+  if (colonIndex > 0) {
+    bracketLabel = value.slice(1, colonIndex);
+    bracketInnerValue = value.slice(colonIndex + 1, value.length - 1);
+  } else if (colonIndex === 0) {
+    bracketInnerValue = value.slice(1, -1);
+  }
+};
+
+let lastParenValue: string | null = null;
+let parenColonIndex = -1;
+let parenLabel = "";
+
+const parseParenToken = (value: string): void => {
+  if (value === lastParenValue) return;
+  lastParenValue = value;
+  const colonIndex = scanArbitrary(value, CHAR_OPEN_PAREN, CHAR_CLOSE_PAREN);
+  parenColonIndex = colonIndex;
+  if (colonIndex > 0) {
+    parenLabel = value.slice(1, colonIndex);
+  }
+};
 
 export const isFraction = (value: string) => fractionRegex.test(value);
 
@@ -43,15 +144,24 @@ const isImage = (value: string) => imageRegex.test(value);
 export const isAnyNonArbitrary = (value: string) =>
   !isArbitraryValue(value) && !isArbitraryVariable(value);
 
-export const isNamedContainerQuery = (value: string) =>
-  value.startsWith("@container") &&
-  ((value[10] === "/" && value[11] !== undefined) ||
-    (value[11] === "s" && value[16] !== undefined && value.startsWith("-size/", 10)) ||
-    (value[11] === "n" && value[18] !== undefined && value.startsWith("-normal/", 10)));
+// `charCodeAt` + length compares instead of one-char string indexing: `value[10]` materializes a
+// single-char string and its map check was a recorded "wrong map" deopt source.
+export const isNamedContainerQuery = (value: string) => {
+  const length = value.length;
+  return (
+    value.startsWith("@container") &&
+    ((length > 11 && value.charCodeAt(10) === 47) /* "/" */ ||
+      (length > 16 && value.charCodeAt(11) === 115 /* "s" */ && value.startsWith("-size/", 10)) ||
+      (length > 18 && value.charCodeAt(11) === 110 /* "n" */ && value.startsWith("-normal/", 10)))
+  );
+};
 
 export const isArbitrarySize = (value: string) => getIsArbitraryValue(value, isLabelSize, isNever);
 
-export const isArbitraryValue = (value: string) => arbitraryValueRegex.test(value);
+export const isArbitraryValue = (value: string) => {
+  parseBracketToken(value);
+  return bracketColonIndex >= 0;
+};
 
 export const isArbitraryLength = (value: string) =>
   getIsArbitraryValue(value, isLabelLength, isLengthOnly);
@@ -74,7 +184,10 @@ export const isArbitraryImage = (value: string) =>
 export const isArbitraryShadow = (value: string) =>
   getIsArbitraryValue(value, isLabelShadow, isShadow);
 
-export const isArbitraryVariable = (value: string) => arbitraryVariableRegex.test(value);
+export const isArbitraryVariable = (value: string) => {
+  parseParenToken(value);
+  return parenColonIndex >= 0;
+};
 
 export const isArbitraryVariableLength = (value: string) =>
   getIsArbitraryVariable(value, isLabelLength);
@@ -102,17 +215,15 @@ const getIsArbitraryValue = (
   testLabel: (label: string) => boolean,
   testValue: (value: string) => boolean,
 ) => {
-  const result = arbitraryValueRegex.exec(value);
+  parseBracketToken(value);
 
-  if (result) {
-    if (result[1]) {
-      return testLabel(result[1]);
-    }
-
-    return testValue(result[2]!);
+  if (bracketColonIndex < 0) {
+    return false;
   }
-
-  return false;
+  if (bracketColonIndex > 0) {
+    return testLabel(bracketLabel);
+  }
+  return testValue(bracketInnerValue);
 };
 
 const getIsArbitraryVariable = (
@@ -120,16 +231,15 @@ const getIsArbitraryVariable = (
   testLabel: (label: string) => boolean,
   shouldMatchNoLabel = false,
 ) => {
-  const result = arbitraryVariableRegex.exec(value);
+  parseParenToken(value);
 
-  if (result) {
-    if (result[1]) {
-      return testLabel(result[1]);
-    }
-    return shouldMatchNoLabel;
+  if (parenColonIndex < 0) {
+    return false;
   }
-
-  return false;
+  if (parenColonIndex > 0) {
+    return testLabel(parenLabel);
+  }
+  return shouldMatchNoLabel;
 };
 
 const isLabelPosition = (label: string) => label === "position" || label === "percentage";

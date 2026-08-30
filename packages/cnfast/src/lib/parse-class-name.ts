@@ -30,8 +30,15 @@ const createResultObject = (
  * Inspired by `splitAtTopLevelOnly` used in Tailwind CSS
  * @see https://github.com/tailwindlabs/tailwindcss/blob/v3.2.2/src/util/splitAtTopLevelOnly.js
  */
+// Shared result for the modifier-less case (most tokens reaching this parser carry an arbitrary
+// value or important marker but no variant). Frozen so an accidental consumer mutation throws
+// instead of corrupting every later parse; no caller mutates parse results.
+const EMPTY_MODIFIERS: string[] = Object.freeze([]) as unknown as string[];
+
 export const parseClassName = (className: string): ParsedClassName => {
-  const modifiers: string[] = [];
+  // Materialized lazily: allocating `[]` up front costs an array on every parse even though most
+  // tokens have no modifiers at all.
+  let modifiers: string[] | null = null;
 
   let bracketDepth = 0;
   let parenDepth = 0;
@@ -44,7 +51,7 @@ export const parseClassName = (className: string): ParsedClassName => {
 
     if (bracketDepth === 0 && parenDepth === 0) {
       if (charCode === CHAR_MODIFIER_SEPARATOR) {
-        modifiers.push(className.slice(modifierStart, index));
+        (modifiers ??= []).push(className.slice(modifierStart, index));
         modifierStart = index + 1;
         continue;
       }
@@ -62,24 +69,29 @@ export const parseClassName = (className: string): ParsedClassName => {
   }
 
   const baseClassNameWithImportantModifier =
-    modifiers.length === 0 ? className : className.slice(modifierStart);
+    modifiers === null ? className : className.slice(modifierStart);
 
   let baseClassName = baseClassNameWithImportantModifier;
   let hasImportantModifier = false;
 
-  const lastIndex = baseClassNameWithImportantModifier.length - 1;
-  if (baseClassNameWithImportantModifier.charCodeAt(lastIndex) === CHAR_IMPORTANT) {
-    baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
-    hasImportantModifier = true;
-  } else if (
-    /**
-     * In Tailwind CSS v3 the important modifier was at the start of the base class name. This is still supported for legacy reasons.
-     * @see https://github.com/dcastil/tailwind-merge/issues/513#issuecomment-2614029864
-     */
-    baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_IMPORTANT
-  ) {
-    baseClassName = baseClassNameWithImportantModifier.slice(1);
-    hasImportantModifier = true;
+  // The length guard keeps `charCodeAt` in bounds for empty base names (e.g. the token `:`):
+  // an out-of-bounds `charCodeAt(-1)` returns NaN and stays correct, but forces V8 through the
+  // slow path and was a recorded recurring "out of bounds" deopt of this function.
+  const baseLength = baseClassNameWithImportantModifier.length;
+  if (baseLength !== 0) {
+    if (baseClassNameWithImportantModifier.charCodeAt(baseLength - 1) === CHAR_IMPORTANT) {
+      baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
+      hasImportantModifier = true;
+    } else if (
+      /**
+       * In Tailwind CSS v3 the important modifier was at the start of the base class name. This is still supported for legacy reasons.
+       * @see https://github.com/dcastil/tailwind-merge/issues/513#issuecomment-2614029864
+       */
+      baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_IMPORTANT
+    ) {
+      baseClassName = baseClassNameWithImportantModifier.slice(1);
+      hasImportantModifier = true;
+    }
   }
 
   const maybePostfixModifierPosition =
@@ -88,7 +100,7 @@ export const parseClassName = (className: string): ParsedClassName => {
       : undefined;
 
   return createResultObject(
-    modifiers,
+    modifiers === null ? EMPTY_MODIFIERS : modifiers,
     hasImportantModifier,
     baseClassName,
     maybePostfixModifierPosition,

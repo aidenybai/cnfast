@@ -15,7 +15,9 @@ export const createSortModifiers = (config: AnyConfig) => {
     for (let index = 0; index < modifiers.length; index++) {
       const modifier = modifiers[index]!;
 
-      const isArbitrary = modifier[0] === "[";
+      // `charCodeAt` instead of `modifier[0]`: one-char string indexing was a recorded
+      // "wrong map" deopt source. Empty modifiers (from `::`) read in bounds via the guard.
+      const isArbitrary = modifier.length !== 0 && modifier.charCodeAt(0) === 91; /* "[" */
       const isOrderSensitive = orderSensitiveModifiers.has(modifier);
 
       if (isArbitrary || isOrderSensitive) {

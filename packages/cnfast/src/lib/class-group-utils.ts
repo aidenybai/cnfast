@@ -9,6 +9,33 @@ import {
   ThemeObject,
 } from "./types";
 import { concatArrays } from "./utils";
+import {
+  isAny,
+  isAnyNonArbitrary,
+  isArbitraryFamilyName,
+  isArbitraryImage,
+  isArbitraryLength,
+  isArbitraryNumber,
+  isArbitraryPosition,
+  isArbitraryShadow,
+  isArbitrarySize,
+  isArbitraryValue,
+  isArbitraryVariable,
+  isArbitraryVariableFamilyName,
+  isArbitraryVariableImage,
+  isArbitraryVariableLength,
+  isArbitraryVariablePosition,
+  isArbitraryVariableShadow,
+  isArbitraryVariableSize,
+  isArbitraryVariableWeight,
+  isArbitraryWeight,
+  isFraction,
+  isInteger,
+  isNamedContainerQuery,
+  isNumber,
+  isPercent,
+  isTshirtSize,
+} from "./validators";
 
 export interface ClassPartObject {
   nextPart: Map<string, ClassPartObject>;
@@ -19,7 +46,56 @@ export interface ClassPartObject {
 interface ClassValidatorObject {
   classGroupId: AnyClassGroupIds;
   validator: ClassValidator;
+  /** Shape-gate: bitmask of token shapes (SHAPE_*) this validator could possibly match. */
+  shapeMask: number;
 }
+
+// Token shape classes for validator shape-gating. A node's validator chain runs both anchored
+// arbitrary parsers on every candidate (`bg-` alone carries ~17 validators), yet most validators
+// can only ever match one first/last-char shape: the `isArbitraryValue` family demands `[...]`,
+// the `isArbitraryVariable` family `(...)`, and the plain-value validators (`isNumber`,
+// `isPercent`, ...) can never match either bracket shape. Annotating each validator with a mask
+// at classMap build time lets the lookup loop skip impossible validators with one integer test.
+const SHAPE_BRACKET = 1; // `[` ... `]`, at least one inner char
+const SHAPE_PAREN = 2; // `(` ... `)`, at least one inner char
+const SHAPE_OTHER = 4; // everything else
+const SHAPE_ALL = SHAPE_BRACKET | SHAPE_PAREN | SHAPE_OTHER;
+// Not `[...]`/`(...)` shaped. Safe for validators whose match demands a first/last char the
+// bracket shapes can't provide (digit/letter/%/@ starts, %/letter ends, `Number()` parses).
+const SHAPE_NOT_ARBITRARY = SHAPE_OTHER;
+
+// Masks are a SUPERSET of matchability: skipping is only allowed when a validator provably cannot
+// return true for the shape. Notably `isAnyNonArbitrary` stays SHAPE_ALL: a `[...]`-shaped token
+// containing a line terminator fails both arbitrary parsers (`.` excludes line terminators), so it
+// CAN be "non-arbitrary" despite its bracket shape. Unknown validators (custom `createCn`
+// configs) default to SHAPE_ALL and are never skipped.
+const VALIDATOR_SHAPE_MASKS = new Map<ClassValidator, number>([
+  [isArbitraryValue, SHAPE_BRACKET],
+  [isArbitrarySize, SHAPE_BRACKET],
+  [isArbitraryLength, SHAPE_BRACKET],
+  [isArbitraryNumber, SHAPE_BRACKET],
+  [isArbitraryWeight, SHAPE_BRACKET],
+  [isArbitraryFamilyName, SHAPE_BRACKET],
+  [isArbitraryPosition, SHAPE_BRACKET],
+  [isArbitraryImage, SHAPE_BRACKET],
+  [isArbitraryShadow, SHAPE_BRACKET],
+  [isArbitraryVariable, SHAPE_PAREN],
+  [isArbitraryVariableLength, SHAPE_PAREN],
+  [isArbitraryVariableFamilyName, SHAPE_PAREN],
+  [isArbitraryVariablePosition, SHAPE_PAREN],
+  [isArbitraryVariableSize, SHAPE_PAREN],
+  [isArbitraryVariableImage, SHAPE_PAREN],
+  [isArbitraryVariableShadow, SHAPE_PAREN],
+  [isArbitraryVariableWeight, SHAPE_PAREN],
+  [isFraction, SHAPE_NOT_ARBITRARY], // `^\d`...`\d$`
+  [isNumber, SHAPE_NOT_ARBITRARY], // Number("[...]"/"(...)") is always NaN
+  [isInteger, SHAPE_NOT_ARBITRARY],
+  [isPercent, SHAPE_NOT_ARBITRARY], // must end with `%`
+  [isTshirtSize, SHAPE_NOT_ARBITRARY], // must end with a size letter
+  [isNamedContainerQuery, SHAPE_NOT_ARBITRARY], // must start with `@`
+  [isAny, SHAPE_ALL],
+  [isAnyNonArbitrary, SHAPE_ALL],
+]);
 
 // Factory function ensures consistent object shapes
 const createClassValidatorObject = (
@@ -28,6 +104,7 @@ const createClassValidatorObject = (
 ): ClassValidatorObject => ({
   classGroupId,
   validator,
+  shapeMask: VALIDATOR_SHAPE_MASKS.get(validator) ?? SHAPE_ALL,
 });
 
 // Factory ensures consistent ClassPartObject shape
@@ -54,13 +131,23 @@ export const createClassGroupUtils = (config: AnyConfig) => {
   const { conflictingClassGroups, conflictingClassGroupModifiers } = config;
 
   const getClassGroupId = (className: string) => {
-    if (className[0] === "[" && className[className.length - 1] === "]") {
+    // `charCodeAt` compares instead of `className[0] === "["`: one-char string indexing
+    // materializes a string and was a recorded "wrong map" deopt source on this path. The length
+    // guard keeps the reads in bounds for the empty base name (deopt-free slow-path avoidance).
+    const length = className.length;
+    if (
+      length !== 0 &&
+      className.charCodeAt(0) === 91 /* "[" */ &&
+      className.charCodeAt(length - 1) === 93 /* "]" */
+    ) {
       return getGroupIdForArbitraryProperty(className);
     }
 
     const classParts = className.split(CLASS_PART_SEPARATOR);
-    // Classes like `-inset-1` produce an empty string as first classPart. We assume that classes for negative values are used correctly and skip it.
-    const startIndex = classParts[0] === "" && classParts.length > 1 ? 1 : 0;
+    // Classes like `-inset-1` produce an empty string as first classPart (equivalently: the class
+    // starts with `-`). We assume that classes for negative values are used correctly and skip it.
+    const startIndex =
+      classParts.length > 1 && className.charCodeAt(0) === 45 /* "-" */ ? 1 : 0;
     return getGroupRecursive(classParts, startIndex, classMap);
   };
 
@@ -181,9 +268,26 @@ const getGroupRecursive = (
       : classParts.slice(startIndex).join(CLASS_PART_SEPARATOR);
   const validatorsLength = validators.length;
 
+  // Classify the candidate's shape once, then let one integer AND per validator skip the ones
+  // that can't match it (see VALIDATOR_SHAPE_MASKS). The `> 2` guard mirrors the arbitrary
+  // parsers' minimum match length (`[x]`), so e.g. `[]` counts as SHAPE_OTHER.
+  let shape = SHAPE_OTHER;
+  const restLength = classRest.length;
+  if (restLength > 2) {
+    const firstCharCode = classRest.charCodeAt(0);
+    if (firstCharCode === 91 /* "[" */ && classRest.charCodeAt(restLength - 1) === 93 /* "]" */) {
+      shape = SHAPE_BRACKET;
+    } else if (
+      firstCharCode === 40 /* "(" */ &&
+      classRest.charCodeAt(restLength - 1) === 41 /* ")" */
+    ) {
+      shape = SHAPE_PAREN;
+    }
+  }
+
   for (let index = 0; index < validatorsLength; index++) {
     const validatorObject = validators[index]!;
-    if (validatorObject.validator(classRest)) {
+    if ((validatorObject.shapeMask & shape) !== 0 && validatorObject.validator(classRest)) {
       return validatorObject.classGroupId;
     }
   }
