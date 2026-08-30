@@ -47,6 +47,8 @@ const EMPTY_CONFLICTS: readonly AnyClassGroupIds[] = [];
 // I use two dots here because one dot is used as prefix for class groups in plugins
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 
+const EMPTY_CONFLICT_ROW: readonly number[] = [];
+
 export const createClassGroupUtils = (config: AnyConfig) => {
   const classMap = createClassMap(config);
   const { conflictingClassGroups, conflictingClassGroupModifiers } = config;
@@ -82,9 +84,71 @@ export const createClassGroupUtils = (config: AnyConfig) => {
     return conflictingClassGroups[classGroupId] || EMPTY_CONFLICTS;
   };
 
+  // Dense integer IDs for every class group named in the config. IC profiling showed
+  // `conflictingClassGroups[classGroupId]` / `conflictingClassGroupModifiers[classGroupId]` were
+  // 294 of 303 megamorphic sites in the library (string-keyed loads over hundreds of distinct
+  // keys, permanently N-state). Enumerating the groups once at config-build time turns every
+  // steady-state conflict lookup into a monomorphic array-index load and lets the descriptor layer
+  // memoize interned conflict-key IDs under packed numeric `(modifierIdx, groupIdx)` keys instead
+  // of concatenating + hashing a string per conflict. Group IDs produced dynamically at lookup time (arbitrary
+  // properties like `[color:red]` -> `arbitrary..color`) are deliberately NOT interned here: they
+  // never have conflict rows, so callers fall back to their string path for them and this map
+  // stays fixed-size for the life of the config.
+  const groupIndexes = new Map<AnyClassGroupIds, number>();
+  const internGroupIndex = (classGroupId: AnyClassGroupIds): number => {
+    let index = groupIndexes.get(classGroupId);
+    if (index === undefined) {
+      index = groupIndexes.size;
+      groupIndexes.set(classGroupId, index);
+    }
+    return index;
+  };
+  for (const classGroupId in config.classGroups) {
+    internGroupIndex(classGroupId);
+  }
+  // Conflict values may (in exotic custom configs) name groups that have no class definitions;
+  // intern those too so every row entry below resolves to an index.
+  for (const classGroupId in conflictingClassGroups) {
+    internGroupIndex(classGroupId);
+    for (const conflict of conflictingClassGroups[classGroupId]!) internGroupIndex(conflict);
+  }
+  for (const classGroupId in conflictingClassGroupModifiers) {
+    internGroupIndex(classGroupId);
+    for (const conflict of conflictingClassGroupModifiers[classGroupId]!) {
+      internGroupIndex(conflict);
+    }
+  }
+  const groupCount = groupIndexes.size;
+
+  // Precomputed per-group conflict rows as packed index arrays, one variant per
+  // `hasPostfixModifier` value, mirroring `getConflictingClassGroupIds` exactly (including the
+  // base-then-modifier concat order). Indexed by group index; rows share `EMPTY_CONFLICT_ROW` so
+  // conflict-free groups cost nothing.
+  const toConflictRow = (ids: readonly AnyClassGroupIds[] | undefined): readonly number[] => {
+    if (!ids || ids.length === 0) return EMPTY_CONFLICT_ROW;
+    const row: number[] = new Array(ids.length);
+    for (let index = 0; index < ids.length; index++) row[index] = groupIndexes.get(ids[index]!)!;
+    return row;
+  };
+  const conflictRowsBase: (readonly number[])[] = new Array(groupCount);
+  const conflictRowsPostfix: (readonly number[])[] = new Array(groupCount);
+  const groupNames: AnyClassGroupIds[] = new Array(groupCount);
+  for (const [classGroupId, groupIndex] of groupIndexes) {
+    groupNames[groupIndex] = classGroupId;
+    conflictRowsBase[groupIndex] = toConflictRow(conflictingClassGroups[classGroupId]);
+    conflictRowsPostfix[groupIndex] = toConflictRow(
+      getConflictingClassGroupIds(classGroupId, true),
+    );
+  }
+
   return {
     getClassGroupId,
     getConflictingClassGroupIds,
+    groupIndexes,
+    groupCount,
+    groupNames,
+    conflictRowsBase,
+    conflictRowsPostfix,
   };
 };
 
