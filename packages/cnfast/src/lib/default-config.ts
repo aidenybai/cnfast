@@ -49,8 +49,6 @@ export const getDefaultConfig = () => {
   const themeEase = createThemeReference("ease");
   const themeAnimate = createThemeReference("animate");
 
-  // Each scale builder returns a new array so a custom configuration can mutate one scale
-  // without changing another class group that started with the same values.
   const scaleBreak = () =>
     ["auto", "avoid", "all", "avoid-page", "page", "left", "right", "column"] as const;
   const scalePosition = () =>

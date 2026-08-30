@@ -1,7 +1,6 @@
 import { SPACE_CHARACTER } from "./lib/constants.js";
 
 export interface ClassDictionary {
-  // `unknown` rejects render functions accepted by clsx, including Base UI class-name callbacks.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional clsx type parity
   [className: string]: any;
 }
@@ -16,7 +15,6 @@ export type ClassValue =
   | ClassValue[]
   | ClassDictionary;
 
-// A local binding avoids a global-object property read on every recursive call.
 const isArray = Array.isArray;
 
 export const resolveClassValue = (value: ClassValue): string => {

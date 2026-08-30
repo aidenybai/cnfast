@@ -30,7 +30,6 @@ const shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]
 const imageRegex =
   /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
 
-// Local bindings avoid global-object property reads for every validated token.
 const toNumber = Number;
 const numberIsNaN = Number.isNaN;
 const numberIsInteger = Number.isInteger;
@@ -41,12 +40,11 @@ const isWordCharCode = (charCode: number): boolean =>
   (charCode >= CHAR_ZERO && charCode <= CHAR_NINE) ||
   charCode === CHAR_UNDERSCORE;
 
-/**
- * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:`.
- * Manual scanning avoids `RegExp.exec` allocations. Line terminators and `[foo:]` preserve the
- * original regex behavior.
- */
-const scanArbitrary = (value: string, openCharCode: number, closeCharCode: number): number => {
+const getArbitraryLabelColonIndex = (
+  value: string,
+  openCharCode: number,
+  closeCharCode: number,
+): number => {
   const length = value.length;
   if (
     length < 3 ||
@@ -84,8 +82,6 @@ const scanArbitrary = (value: string, openCharCode: number, closeCharCode: numbe
   return colonIndex;
 };
 
-// A trie node can run 17 validators against the same token. Remembering the last parse reduces
-// that chain to one scan and at most two slices.
 let lastBracketValue: string | null = null;
 let bracketColonIndex = -1;
 let bracketLabel = "";
@@ -94,7 +90,7 @@ let bracketInnerValue = "";
 const parseBracketToken = (value: string): void => {
   if (value === lastBracketValue) return;
   lastBracketValue = value;
-  const colonIndex = scanArbitrary(value, CHAR_OPEN_BRACKET, CHAR_CLOSE_BRACKET);
+  const colonIndex = getArbitraryLabelColonIndex(value, CHAR_OPEN_BRACKET, CHAR_CLOSE_BRACKET);
   bracketColonIndex = colonIndex;
   if (colonIndex > 0) {
     bracketLabel = value.slice(1, colonIndex);
@@ -111,7 +107,7 @@ let parenLabel = "";
 const parseParenToken = (value: string): void => {
   if (value === lastParenValue) return;
   lastParenValue = value;
-  const colonIndex = scanArbitrary(value, CHAR_OPEN_PAREN, CHAR_CLOSE_PAREN);
+  const colonIndex = getArbitraryLabelColonIndex(value, CHAR_OPEN_PAREN, CHAR_CLOSE_PAREN);
   parenColonIndex = colonIndex;
   if (colonIndex > 0) {
     parenLabel = value.slice(1, colonIndex);
@@ -131,7 +127,6 @@ export const isTshirtSize = (value: string) => tshirtUnitRegex.test(value);
 export const isAny = () => true;
 
 const isLengthOnly = (value: string) =>
-  // Percentages also appear in colors, so validate the color form separately.
   lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
 
 const isNever = () => false;

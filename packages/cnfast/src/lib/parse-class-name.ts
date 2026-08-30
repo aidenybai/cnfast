@@ -11,7 +11,6 @@ import { ParsedClassName } from "./types";
 
 export const IMPORTANT_MODIFIER = "!";
 
-// One factory preserves a monomorphic result shape.
 const createResultObject = (
   modifiers: string[],
   hasImportantModifier: boolean,
