@@ -1,9 +1,6 @@
 import { benchRun, keepAlive } from "./lib/harness";
 import { gridWorkloads } from "./lib/workloads";
 
-// A virtualized data grid re-rendering every frame: the realistic cn HOT PATH. Every visible cell
-// recomputes its className with genuinely conflicting classes, so the merge engine has real work.
-// Reuses the shared (DCE-safe) grid workloads but frames the result as a 60fps frame budget.
 const FRAME_60_MS = 1000 / 60;
 const ROWS = Number(process.env.GRID_ROWS ?? 200);
 const COLS = Number(process.env.GRID_COLS ?? 60);

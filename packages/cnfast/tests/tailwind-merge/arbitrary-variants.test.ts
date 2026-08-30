@@ -20,7 +20,6 @@ test("arbitrary variants with modifiers", () => {
   expect(twMerge("dark:lg:hover:[&>*]:underline dark:hover:lg:[&>*]:line-through")).toBe(
     "dark:hover:lg:[&>*]:line-through",
   );
-  // Whether a modifier is before or after arbitrary variant matters
   expect(twMerge("hover:[&>*]:underline [&>*]:hover:line-through")).toBe(
     "hover:[&>*]:underline [&>*]:hover:line-through",
   );

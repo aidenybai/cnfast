@@ -1,11 +1,9 @@
 export type ClassListArgs = (string | false | null)[];
 
-// Functions whose string arguments are (almost) always Tailwind class lists.
 const CLASS_CALL_REGEX = /\b(?:cn|clsx|cx|cva|twMerge|twJoin|classNames|classnames)\s*\(/g;
 const CLASSNAME_ATTR_REGEX = /\bclassName\s*=\s*(["'])((?:\\.|(?!\1).)*)\1/g;
 
-// Heuristic: every whitespace-delimited token must look like a Tailwind class
-// (alnum plus the punctuation Tailwind allows). Filters out prose, URLs, etc.
+// Requiring Tailwind punctuation filters prose and URLs from harvested string arguments.
 const CLASS_TOKEN_REGEX = /^[\w[\](){}!:/.,#%&+*~<>=@$?-]+$/;
 
 const looksLikeClassList = (value: string): boolean => {
@@ -18,9 +16,6 @@ const looksLikeClassList = (value: string): boolean => {
   return true;
 };
 
-// Reads a string/template literal starting at `start` (the opening quote).
-// Returns the static text and the index just past the closing quote. For
-// template literals only the static spans are kept; `${...}` holes are skipped.
 const readStringLiteral = (source: string, start: number): { value: string; end: number } => {
   const quote = source[start]!;
   let value = "";
@@ -73,9 +68,6 @@ const collectCallArgs = (source: string, openParenIndex: number): ClassListArgs 
   return args;
 };
 
-// Harvests realistic class-list argument groups from a single source file:
-// every cn()/clsx()/cva()/... call (preserving its multi-arg shape) plus plain
-// className="..." literals. Dedupes into the shared `into` map keyed by content.
 export const harvestClassGroups = (source: string, into: Map<string, ClassListArgs>): void => {
   CLASS_CALL_REGEX.lastIndex = 0;
   let scannedUntil = -1;

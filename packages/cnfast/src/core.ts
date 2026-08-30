@@ -1,9 +1,11 @@
 import { type ClassValue, resolveClassValue } from "./clsx.js";
 import {
-  ARG_CACHE_BUCKET_ENTRIES,
-  ARG_CACHE_PREDICTION_SLOTS,
-  ARG_CACHE_ROTATION_SLOTS,
-  ARG_CACHE_SEEN_ONCE_CAPACITY,
+  ARGUMENT_CACHE_BUCKET_ENTRIES,
+  ARGUMENT_CACHE_PREDICTION_SLOTS,
+  ARGUMENT_CACHE_ROTATION_SLOTS,
+  ARGUMENT_CACHE_SEEN_ONCE_CAPACITY,
+  OPEN_BRACKET_CHARACTER,
+  SPACE_CHARACTER,
 } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 import { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
@@ -13,351 +15,343 @@ import { twMerge } from "./lib/tw-merge.js";
 import type { AnyConfig, ConfigExtension } from "./lib/types.js";
 
 export interface ClassNameFunction {
-  /** Standard variadic form: `cn("px-2", active && "bg-blue-500")`. */
-  (...inputs: ClassValue[]): string;
+  (...classValues: ClassValue[]): string;
 }
 
 /**
- * Variadic-call result cache bucket: every entry sharing one anchor arg — the LAST truthy string
- * arg of the call — laid out flat as
+ * An argument-cache bucket contains calls with the same last truthy class name.
  *
- *     [restLen, rest0..restN-1, result, entryId, restLen, ...]
+ *     [entryCount, restLength, ...rest, mergedClassName, entryId, ...]
  *
- * where `restLen` counts the truthy string args before the anchor, `result` is the merged output
- * for that exact truthy-arg sequence, and `entryId` is the entry's successor-prediction id (see
- * the side arrays in `buildCn`). The anchor is the last arg (not the first) because
- * call sites overwhelmingly share leading utility classes and differ in their trailing
- * variant/override arg: first-arg keying measured single buckets needing 542-1195 slots on real
- * pages (permanent trim thrash on 17-52% of their calls), while last-arg keying fits every
- * measured bucket. Rest args are verified back-to-front for the same reason — shared prefixes
- * mismatch on the first compare. `bucket[0]` is a header holding the bucket's entry count, so the
- * overflow budget counts entries rather than slots and a high-arity call site keeps the same
- * effective capacity as a low-arity one.
+ * Real call sites reuse leading classes and vary the last class. First-argument keys required
+ * buckets of 542 to 1,195 slots on measured pages. Last-argument keys kept every bucket within
+ * its limit. Comparing the remaining classes from right to left also rejects shared prefixes
+ * sooner.
  *
- * The cache exists because probing a plain `cache[joinedClassList]` re-hashes the fresh join on
- * every call — engines cache a string's hash only on the object that first computed it, and the
- * join is a new string each render (~112 ns of a 180 ns warm call on Bun, which also re-flattens
- * the rope). The individual arg strings are stable across renders (JSX literals) with cached
- * hashes, so keying on them makes a hit pure pointer compares: `Map.get(anchorArg)`, then an
- * entry-to-entry walk with stride `restLen + 3`.
- *
- * The flat layout replaced a `{rest, result}[]` shape: sequential element loads instead of a
- * dependent object load per entry, and an insert pushes slots instead of allocating an entry
- * object plus a rest array. The object layout was ~2x slower on JSC; the flat one measures faster
- * than plain resolve+join there too, so the cache runs unconditionally on every engine.
+ * Flat entries avoid two arrays and one object allocation per insertion. This layout measured
+ * twice as fast as object entries on JavaScriptCore.
  */
-type ArgCacheBucket = (string | number)[];
+type ArgumentCacheBucket = (string | number)[];
 
-/** Drops the oldest half of the bucket's entries, preserving entry boundaries and the header. */
-const trimBucket = (bucket: ArgCacheBucket): void => {
+const trimBucket = (bucket: ArgumentCacheBucket): void => {
   const entryCount = bucket[0] as number;
   const dropCount = entryCount >> 1;
   let position = 1;
-  for (let i = 0; i < dropCount; i++) position += (bucket[position] as number) + 3;
+  for (let index = 0; index < dropCount; index++) position += (bucket[position] as number) + 3;
   bucket.copyWithin(1, position);
   bucket.length -= position - 1;
   bucket[0] = entryCount - dropCount;
 };
 
-const PREDICTION_ID_MASK = ARG_CACHE_PREDICTION_SLOTS - 1;
-const EMPTY_BUCKET: ArgCacheBucket = [0];
+const ARGUMENT_CACHE_PREDICTION_ID_MASK = ARGUMENT_CACHE_PREDICTION_SLOTS - 1;
+const EMPTY_BUCKET: ArgumentCacheBucket = [0];
 
-// Factory (not inlined) so a configured `cn` from `createCn` keeps the default's fast paths: each
-// instance owns its arg cache; only the bound `twMerge` differs.
-const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
-  // Keyed on the ordered truthy-string arg sequence, which fully determines the result (the join
-  // drops falsy args and separates the rest with single spaces). Two-generation rotation bounds
-  // growth like every other cache here.
-  let argCache = new Map<string, ArgCacheBucket>();
-  let previousArgCache = new Map<string, ArgCacheBucket>();
-  let argCacheCount = 0;
+const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
+  let argumentCache = new Map<string, ArgumentCacheBucket>();
+  let previousArgumentCache = new Map<string, ArgumentCacheBucket>();
+  let argumentCacheSlotCount = 0;
 
-  // Successor prediction: renders replay call sites in a stable document order, so the entry hit
-  // by the NEXT call is highly predictable from the entry hit by THIS one. Each entry carries a
-  // wrapping id (last slot of its bucket entry); the side arrays record where that id's entry
-  // lives, and `successorIds[lastHitId]` is probed before the normal Map probe + bucket scan. A
-  // prediction is trusted only after full verification against the call's truthy-arg sequence:
-  // the recorded anchor must === the last truthy arg, the recorded position must hold the wanted
-  // restLen (numbers appear only at entry boundaries and the header — rest/result slots are
-  // strings — so a trim-staled position cannot fake a boundary while `restLen >= 1` forces at
-  // least one string compare), and every rest arg must === its stored slot. Any mismatch (trim
-  // shift, rotation, wrapped id stolen by a newer entry) falls through to the normal paths, which
-  // re-record the entry and heal the chain.
-  const successorIds = new Int32Array(ARG_CACHE_PREDICTION_SLOTS).fill(-1);
-  const predictedAnchors: string[] = createFilledArray(ARG_CACHE_PREDICTION_SLOTS, "");
-  const predictedBuckets: ArgCacheBucket[] = createFilledArray(
-    ARG_CACHE_PREDICTION_SLOTS,
+  // Component renders repeat class-name calls in a stable order. Each hit records the next entry
+  // ID, avoiding a map lookup when that order repeats. The lookup still compares every class name.
+  // Trimming, rotation, and reused IDs therefore cause misses instead of incorrect results.
+  const successorIds = new Int32Array(ARGUMENT_CACHE_PREDICTION_SLOTS).fill(-1);
+  const predictedAnchors: string[] = createFilledArray(ARGUMENT_CACHE_PREDICTION_SLOTS, "");
+  const predictedBuckets: ArgumentCacheBucket[] = createFilledArray(
+    ARGUMENT_CACHE_PREDICTION_SLOTS,
     EMPTY_BUCKET,
   );
-  const predictedPositions = new Int32Array(ARG_CACHE_PREDICTION_SLOTS);
+  const predictedPositions = new Int32Array(ARGUMENT_CACHE_PREDICTION_SLOTS);
   let lastHitId = 0;
   let nextEntryId = 0;
 
   const recordEntryHit = (
-    anchorKey: string,
-    bucket: ArgCacheBucket,
+    anchorClassName: string,
+    bucket: ArgumentCacheBucket,
     position: number,
     entryId: number,
   ): void => {
-    predictedAnchors[entryId] = anchorKey;
+    predictedAnchors[entryId] = anchorClassName;
     predictedBuckets[entryId] = bucket;
     predictedPositions[entryId] = position;
     successorIds[lastHitId] = entryId;
     lastHitId = entryId;
   };
 
-  const mintEntryId = (anchorKey: string, bucket: ArgCacheBucket, position: number): number => {
+  const createEntryId = (
+    anchorClassName: string,
+    bucket: ArgumentCacheBucket,
+    position: number,
+  ): number => {
     const entryId = nextEntryId;
-    nextEntryId = (entryId + 1) & PREDICTION_ID_MASK;
+    nextEntryId = (entryId + 1) & ARGUMENT_CACHE_PREDICTION_ID_MASK;
     successorIds[entryId] = -1;
-    recordEntryHit(anchorKey, bucket, position, entryId);
+    recordEntryHit(anchorClassName, bucket, position, entryId);
     return entryId;
   };
 
-  // Second-sighting doorkeeper for arbitrary-value sequences. A call like
-  // `cn(base, `bg-[rgb(${r}_${g}_${b})]`)` never repeats, and caching such sequences filled hot
-  // buckets with dead entries (~18% off the fully-dynamic grid on Bun). But '[' alone cannot
-  // distinguish a fresh interpolation from a stable literal like `w-[350px]` (43% of real
-  // multi-arg call sites), so '['-containing joins are admitted only on their second sighting;
-  // non-'[' sequences skip the check (overwhelmingly stable, and the extra hash would tax every
-  // real miss).
-  let seenOnce = new Set<string>();
-  let previousSeenOnce = new Set<string>();
+  // Interpolated arbitrary values rarely repeat and reduced dynamic-grid throughput by 18% when
+  // cached immediately. Class lists containing `[` enter the argument cache after a second use.
+  let seenClassListsOnce = new Set<string>();
+  let previousSeenClassListsOnce = new Set<string>();
 
-  // Reused carrier handing the truthy string args of an arity>=4 call to `twMerge.mergeParts`
-  // without allocating per call (`cn` is synchronous and non-reentrant; the merge only reads it
-  // before returning).
-  const partsScratch: string[] = [];
+  // Reuse one array for calls with four or more values. Merges are synchronous and read the array
+  // before returning.
+  const classListPartsScratch: string[] = [];
 
-  const admitToArgCache = (joined: string): boolean => {
-    if (joined.indexOf("[") === -1) return true;
-    if (seenOnce.has(joined) || previousSeenOnce.has(joined)) return true;
-    seenOnce.add(joined);
-    if (seenOnce.size > ARG_CACHE_SEEN_ONCE_CAPACITY) {
-      previousSeenOnce = seenOnce;
-      seenOnce = new Set();
+  const shouldCacheArguments = (classList: string): boolean => {
+    if (classList.indexOf(OPEN_BRACKET_CHARACTER) === -1) return true;
+    if (seenClassListsOnce.has(classList) || previousSeenClassListsOnce.has(classList)) return true;
+    seenClassListsOnce.add(classList);
+    if (seenClassListsOnce.size > ARGUMENT_CACHE_SEEN_ONCE_CAPACITY) {
+      previousSeenClassListsOnce = seenClassListsOnce;
+      seenClassListsOnce = new Set();
     }
     return false;
   };
 
-  // A bucket found only in the previous generation is promoted by reference into the current Map:
-  // without this a hot call site fell off a cliff on every rotation, and a later miss-insert would
-  // shadow the surviving bucket with a fresh empty one.
-  const findBucket = (anchorKey: string): ArgCacheBucket | undefined => {
-    const bucket = argCache.get(anchorKey);
+  // Promote previous-generation buckets by reference. An empty replacement would hide surviving
+  // entries after the next insertion.
+  const getArgumentCacheBucket = (anchorClassName: string): ArgumentCacheBucket | undefined => {
+    const bucket = argumentCache.get(anchorClassName);
     if (bucket !== undefined) return bucket;
-    const previous = previousArgCache.get(anchorKey);
-    if (previous !== undefined) argCache.set(anchorKey, previous);
+    const previous = previousArgumentCache.get(anchorClassName);
+    if (previous !== undefined) argumentCache.set(anchorClassName, previous);
     return previous;
   };
 
-  const noteInsert = (slotCount: number): void => {
-    argCacheCount += slotCount;
-    if (argCacheCount > ARG_CACHE_ROTATION_SLOTS) {
-      argCacheCount = 0;
-      previousArgCache = argCache;
-      argCache = new Map();
+  const recordCacheInsert = (slotCount: number): void => {
+    argumentCacheSlotCount += slotCount;
+    if (argumentCacheSlotCount > ARGUMENT_CACHE_ROTATION_SLOTS) {
+      argumentCacheSlotCount = 0;
+      previousArgumentCache = argumentCache;
+      argumentCache = new Map();
     }
   };
 
-  const bucketForInsert = (
-    anchorKey: string,
-    bucket: ArgCacheBucket | undefined,
-  ): ArgCacheBucket => {
+  const getBucketForInsert = (
+    anchorClassName: string,
+    bucket: ArgumentCacheBucket | undefined,
+  ): ArgumentCacheBucket => {
     if (bucket === undefined) {
       bucket = [0];
-      argCache.set(anchorKey, bucket);
-    } else if ((bucket[0] as number) >= ARG_CACHE_BUCKET_ENTRIES) {
+      argumentCache.set(anchorClassName, bucket);
+    } else if ((bucket[0] as number) >= ARGUMENT_CACHE_BUCKET_ENTRIES) {
       trimBucket(bucket);
     }
     return bucket;
   };
 
-  // Fallback for any call whose truthy args are not all strings: an object/array arg is mutable —
-  // its resolved classes can change between calls at the same identity — so the result is not
-  // determined by arg identity and must bypass `argCache`.
-  const mergeResolvedList = (inputs: ClassValue[]): string => {
-    const length = inputs.length;
-    let result = "";
-    for (let index = 0; index < length; index++) {
-      const item = inputs[index];
-      if (!item) continue;
-      const resolved = typeof item === "string" ? item : resolveClassValue(item);
-      if (resolved) {
-        if (result) result += " ";
-        result += resolved;
+  // Mutable arrays and objects can resolve differently without changing identity. Bypass the
+  // argument cache when a truthy value is not a string.
+  const mergeResolvedList = (classValues: ClassValue[]): string => {
+    const classValueCount = classValues.length;
+    let classList = "";
+    for (let index = 0; index < classValueCount; index++) {
+      const classValue = classValues[index];
+      if (!classValue) continue;
+      const resolvedClassName =
+        typeof classValue === "string" ? classValue : resolveClassValue(classValue);
+      if (resolvedClassName) {
+        if (classList) classList += SPACE_CHARACTER;
+        classList += resolvedClassName;
       }
     }
 
-    return twMerge.mergeString(result);
+    return twMerge.mergeString(classList);
   };
 
-  // Computed-miss tail of the variadic (arity >= 4) route: collect the truthy string args into
-  // the reused scratch and run the prepared-parts merge. Out-of-line so `mergeVariadicCached`'s
-  // hot cache-hit body stays small.
-  const mergePartsOnMiss = (joined: string, inputs: ClassValue[], firstIndex: number): string => {
+  // Keep miss handling outside the cache-hit function so V8 can optimize the smaller function.
+  const mergePartsOnMiss = (
+    classList: string,
+    classValues: ClassValue[],
+    firstClassNameIndex: number,
+  ): string => {
     let partCount = 0;
-    for (let index = firstIndex, length = inputs.length; index < length; index++) {
-      const item = inputs[index];
-      if (item) partsScratch[partCount++] = item as string;
+    for (let index = firstClassNameIndex, length = classValues.length; index < length; index++) {
+      const classValue = classValues[index];
+      if (classValue) classListPartsScratch[partCount++] = classValue as string;
     }
-    return twMerge.mergeParts(joined, partsScratch, partCount);
+    return twMerge.mergeParts(classList, classListPartsScratch, partCount);
   };
 
-  // Arity-2 fast path: probes the arg cache straight off the argument values, so a hit touches no
-  // allocation at all (the old path materialized an args copy per call — 257 B and 25-36% of
-  // hit-path self-time). Falsy shapes reduce to smaller call shapes exactly as the generic
-  // truthy-scan would.
-  const cnTwoArgs = (a: ClassValue, b: ClassValue): string => {
-    if (typeof a === "string" && a !== "") {
-      if (typeof b === "string" && b !== "") {
+  // Reading two parameters directly avoids the 257-byte array allocated by the generic path.
+  const getMergedClassNameForTwoValues = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+  ): string => {
+    if (typeof firstClassValue === "string" && firstClassValue !== "") {
+      if (typeof secondClassValue === "string" && secondClassValue !== "") {
         const predictedId = successorIds[lastHitId]!;
-        if (predictedId !== -1 && predictedAnchors[predictedId] === b) {
+        if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
           const predictedBucket = predictedBuckets[predictedId]!;
           const predictedPosition = predictedPositions[predictedId]!;
           if (
             predictedBucket[predictedPosition] === 1 &&
-            predictedBucket[predictedPosition + 1] === a
+            predictedBucket[predictedPosition + 1] === firstClassValue
           ) {
             lastHitId = predictedId;
             return predictedBucket[predictedPosition + 2] as string;
           }
         }
-        const bucket = findBucket(b);
+        const bucket = getArgumentCacheBucket(secondClassValue);
         if (bucket !== undefined) {
           for (let position = 1, slots = bucket.length; position < slots; ) {
             const restLength = bucket[position] as number;
-            if (restLength === 1 && bucket[position + 1] === a) {
-              recordEntryHit(b, bucket, position, bucket[position + 3] as number);
+            if (restLength === 1 && bucket[position + 1] === firstClassValue) {
+              recordEntryHit(secondClassValue, bucket, position, bucket[position + 3] as number);
               return bucket[position + 2] as string;
             }
             position += restLength + 3;
           }
         }
-        const joined = a + " " + b;
-        const result = twMerge.mergeParts2(joined, a, b);
-        if (admitToArgCache(joined)) {
-          const target = bucketForInsert(b, bucket);
-          target.push(1, a, result, mintEntryId(b, target, target.length));
-          target[0] = (target[0] as number) + 1;
-          noteInsert(3);
+        const classList = firstClassValue + SPACE_CHARACTER + secondClassValue;
+        const mergedClassName = twMerge.mergeParts2(classList, firstClassValue, secondClassValue);
+        if (shouldCacheArguments(classList)) {
+          const cacheBucket = getBucketForInsert(secondClassValue, bucket);
+          cacheBucket.push(
+            1,
+            firstClassValue,
+            mergedClassName,
+            createEntryId(secondClassValue, cacheBucket, cacheBucket.length),
+          );
+          cacheBucket[0] = (cacheBucket[0] as number) + 1;
+          recordCacheInsert(3);
         }
-        return result;
+        return mergedClassName;
       }
-      if (!b) return twMerge.mergeString(a);
-      return mergeResolvedList([a, b]);
+      if (!secondClassValue) return twMerge.mergeString(firstClassValue);
+      return mergeResolvedList([firstClassValue, secondClassValue]);
     }
-    if (!a) {
-      if (!b) return "";
-      if (typeof b === "string") return twMerge.mergeString(b);
-      return mergeResolvedList([a, b]);
+    if (!firstClassValue) {
+      if (!secondClassValue) return "";
+      if (typeof secondClassValue === "string") return twMerge.mergeString(secondClassValue);
+      return mergeResolvedList([firstClassValue, secondClassValue]);
     }
-    return mergeResolvedList([a, b]);
+    return mergeResolvedList([firstClassValue, secondClassValue]);
   };
 
-  // Arity-3 fast path; single-falsy shapes reduce to `cnTwoArgs`/single-string so the reduced
-  // truthy sequence shares cache entries with calls that pass it directly.
-  const cnThreeArgs = (a: ClassValue, b: ClassValue, c: ClassValue): string => {
-    if (typeof a === "string" && a !== "") {
-      if (typeof b === "string" && b !== "") {
-        if (typeof c === "string" && c !== "") {
+  // Reduce falsy values to the two-value path so equivalent calls share cache entries.
+  const getMergedClassNameForThreeValues = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+    thirdClassValue: ClassValue,
+  ): string => {
+    if (typeof firstClassValue === "string" && firstClassValue !== "") {
+      if (typeof secondClassValue === "string" && secondClassValue !== "") {
+        if (typeof thirdClassValue === "string" && thirdClassValue !== "") {
           const predictedId = successorIds[lastHitId]!;
-          if (predictedId !== -1 && predictedAnchors[predictedId] === c) {
+          if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
             const predictedBucket = predictedBuckets[predictedId]!;
             const predictedPosition = predictedPositions[predictedId]!;
             if (
               predictedBucket[predictedPosition] === 2 &&
-              predictedBucket[predictedPosition + 2] === b &&
-              predictedBucket[predictedPosition + 1] === a
+              predictedBucket[predictedPosition + 2] === secondClassValue &&
+              predictedBucket[predictedPosition + 1] === firstClassValue
             ) {
               lastHitId = predictedId;
               return predictedBucket[predictedPosition + 3] as string;
             }
           }
-          const bucket = findBucket(c);
+          const bucket = getArgumentCacheBucket(thirdClassValue);
           if (bucket !== undefined) {
             for (let position = 1, slots = bucket.length; position < slots; ) {
               const restLength = bucket[position] as number;
-              if (restLength === 2 && bucket[position + 2] === b && bucket[position + 1] === a) {
-                recordEntryHit(c, bucket, position, bucket[position + 4] as number);
+              if (
+                restLength === 2 &&
+                bucket[position + 2] === secondClassValue &&
+                bucket[position + 1] === firstClassValue
+              ) {
+                recordEntryHit(thirdClassValue, bucket, position, bucket[position + 4] as number);
                 return bucket[position + 3] as string;
               }
               position += restLength + 3;
             }
           }
-          const joined = a + " " + b + " " + c;
-          const result = twMerge.mergeParts3(joined, a, b, c);
-          if (admitToArgCache(joined)) {
-            const target = bucketForInsert(c, bucket);
-            target.push(2, a, b, result, mintEntryId(c, target, target.length));
-            target[0] = (target[0] as number) + 1;
-            noteInsert(4);
+          const classList =
+            firstClassValue +
+            SPACE_CHARACTER +
+            secondClassValue +
+            SPACE_CHARACTER +
+            thirdClassValue;
+          const mergedClassName = twMerge.mergeParts3(
+            classList,
+            firstClassValue,
+            secondClassValue,
+            thirdClassValue,
+          );
+          if (shouldCacheArguments(classList)) {
+            const cacheBucket = getBucketForInsert(thirdClassValue, bucket);
+            cacheBucket.push(
+              2,
+              firstClassValue,
+              secondClassValue,
+              mergedClassName,
+              createEntryId(thirdClassValue, cacheBucket, cacheBucket.length),
+            );
+            cacheBucket[0] = (cacheBucket[0] as number) + 1;
+            recordCacheInsert(4);
           }
-          return result;
+          return mergedClassName;
         }
-        if (!c) return cnTwoArgs(a, b);
-        return mergeResolvedList([a, b, c]);
+        if (!thirdClassValue)
+          return getMergedClassNameForTwoValues(firstClassValue, secondClassValue);
+        return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
       }
-      if (!b) {
-        if (!c) return twMerge.mergeString(a);
-        if (typeof c === "string") return cnTwoArgs(a, c);
-        return mergeResolvedList([a, b, c]);
+      if (!secondClassValue) {
+        if (!thirdClassValue) return twMerge.mergeString(firstClassValue);
+        if (typeof thirdClassValue === "string")
+          return getMergedClassNameForTwoValues(firstClassValue, thirdClassValue);
+        return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
       }
-      return mergeResolvedList([a, b, c]);
+      return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
     }
-    if (!a) return cnTwoArgs(b, c);
-    return mergeResolvedList([a, b, c]);
+    if (!firstClassValue) return getMergedClassNameForTwoValues(secondClassValue, thirdClassValue);
+    return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
   };
 
-  // Arity >= 4, split out of `cn` so the hot single-arg dispatch stays small — folding this body
-  // inline measurably deopts the single-arg path. `inputs` is a materialized copy, never the live
-  // `arguments` object (which would defeat its allocation elision in `cn`).
-  const mergeVariadicCached = (inputs: ClassValue[]): string => {
-    const length = inputs.length;
+  // Keeping this path separate prevents V8 from deoptimizing the single-value path.
+  const getMergedClassNameForManyValues = (classValues: ClassValue[]): string => {
+    const classValueCount = classValues.length;
 
-    // The result is fully determined by the truthy-string sequence (and cacheable) only when every
-    // truthy arg is a string; any other shape falls through to resolve+join+merge.
-    let firstKey = "";
-    let anchorKey = "";
-    let firstKeyIndex = -1;
-    let anchorKeyIndex = -1;
+    let firstClassName = "";
+    let anchorClassName = "";
+    let firstClassNameIndex = -1;
+    let anchorClassNameIndex = -1;
     let truthyStringCount = 0;
     let everyTruthyIsString = true;
-    for (let index = 0; index < length; index++) {
-      const item = inputs[index];
-      if (!item) continue;
-      if (typeof item !== "string") {
+    for (let index = 0; index < classValueCount; index++) {
+      const classValue = classValues[index];
+      if (!classValue) continue;
+      if (typeof classValue !== "string") {
         everyTruthyIsString = false;
         break;
       }
-      if (firstKeyIndex === -1) {
-        firstKey = item;
-        firstKeyIndex = index;
+      if (firstClassNameIndex === -1) {
+        firstClassName = classValue;
+        firstClassNameIndex = index;
       }
-      anchorKey = item;
-      anchorKeyIndex = index;
+      anchorClassName = classValue;
+      anchorClassNameIndex = index;
       truthyStringCount++;
     }
 
     if (everyTruthyIsString) {
       if (truthyStringCount === 0) return "";
-      // A lone truthy string is a stable arg with a cached hash, so the whole-string lookup is
-      // cheap without a separate arg-cache entry.
-      if (truthyStringCount === 1) return twMerge.mergeString(firstKey);
+      if (truthyStringCount === 1) return twMerge.mergeString(firstClassName);
 
       const restLengthWanted = truthyStringCount - 1;
 
       const predictedId = successorIds[lastHitId]!;
-      if (predictedId !== -1 && predictedAnchors[predictedId] === anchorKey) {
+      if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
         const predictedBucket = predictedBuckets[predictedId]!;
         const predictedPosition = predictedPositions[predictedId]!;
         if (predictedBucket[predictedPosition] === restLengthWanted) {
           let restIndex = predictedPosition + restLengthWanted;
           let isMatch = true;
-          for (let index = anchorKeyIndex - 1; index >= firstKeyIndex; index--) {
-            const item = inputs[index];
-            if (!item) continue;
-            if (item !== predictedBucket[restIndex--]) {
+          for (let index = anchorClassNameIndex - 1; index >= firstClassNameIndex; index--) {
+            const classValue = classValues[index];
+            if (!classValue) continue;
+            if (classValue !== predictedBucket[restIndex--]) {
               isMatch = false;
               break;
             }
@@ -369,24 +363,24 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
         }
       }
 
-      const bucket = findBucket(anchorKey);
+      const bucket = getArgumentCacheBucket(anchorClassName);
       if (bucket !== undefined) {
         for (let position = 1, slots = bucket.length; position < slots; ) {
           const restLength = bucket[position] as number;
           if (restLength === restLengthWanted) {
             let restIndex = position + restLength;
             let isMatch = true;
-            for (let index = anchorKeyIndex - 1; index >= firstKeyIndex; index--) {
-              const item = inputs[index];
-              if (!item) continue;
-              if (item !== bucket[restIndex--]) {
+            for (let index = anchorClassNameIndex - 1; index >= firstClassNameIndex; index--) {
+              const classValue = classValues[index];
+              if (!classValue) continue;
+              if (classValue !== bucket[restIndex--]) {
                 isMatch = false;
                 break;
               }
             }
             if (isMatch) {
               recordEntryHit(
-                anchorKey,
+                anchorClassName,
                 bucket,
                 position,
                 bucket[position + restLength + 2] as number,
@@ -398,83 +392,71 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
         }
       }
 
-      let joined = firstKey;
-      for (let index = firstKeyIndex + 1; index < length; index++) {
-        const item = inputs[index];
-        if (item) joined += " " + (item as string);
+      let classList = firstClassName;
+      for (let index = firstClassNameIndex + 1; index < classValueCount; index++) {
+        const classValue = classValues[index];
+        if (classValue) classList += SPACE_CHARACTER + (classValue as string);
       }
 
-      // Probe the whole-string cache with a bare single-arg call first, and only on a computed
-      // miss collect the parts (in an out-of-line helper, keeping this hot body small) and take
-      // the prepared-parts route. Folding the two into one parts-carrying call measured ~6-8%
-      // slower on node's multi-arg page replays — both a store-as-you-join scratch fill and a
-      // pass-`inputs`-through variant — so the hit path is kept byte-identical in shape to the
-      // old `mergeString` probe.
-      let result = twMerge.peekString(joined);
-      if (result === undefined) result = mergePartsOnMiss(joined, inputs, firstKeyIndex);
+      // Collect prepared parts only after the whole-string probe misses. Passing parts through the
+      // hit path reduced multi-value page-replay throughput by 6% to 8% on Node.js.
+      let mergedClassName = twMerge.peekString(classList);
+      if (mergedClassName === undefined)
+        mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
 
-      if (admitToArgCache(joined)) {
-        const target = bucketForInsert(anchorKey, bucket);
-        const entryPosition = target.length;
-        target.push(restLengthWanted);
-        for (let index = firstKeyIndex; index < anchorKeyIndex; index++) {
-          const item = inputs[index];
-          if (item) target.push(item as string);
+      if (shouldCacheArguments(classList)) {
+        const cacheBucket = getBucketForInsert(anchorClassName, bucket);
+        const entryPosition = cacheBucket.length;
+        cacheBucket.push(restLengthWanted);
+        for (let index = firstClassNameIndex; index < anchorClassNameIndex; index++) {
+          const classValue = classValues[index];
+          if (classValue) cacheBucket.push(classValue as string);
         }
-        target.push(result, mintEntryId(anchorKey, target, entryPosition));
-        target[0] = (target[0] as number) + 1;
-        noteInsert(restLengthWanted + 2);
+        cacheBucket.push(
+          mergedClassName,
+          createEntryId(anchorClassName, cacheBucket, entryPosition),
+        );
+        cacheBucket[0] = (cacheBucket[0] as number) + 1;
+        recordCacheInsert(restLengthWanted + 2);
       }
 
-      return result;
+      return mergedClassName;
     }
 
-    return mergeResolvedList(inputs);
+    return mergeResolvedList(classValues);
   };
 
-  // A `function` reading `arguments` (not an arrow with a rest param) on purpose: a rest param
-  // forces V8 to allocate an array per call, whereas `arguments` accessed only via `.length`/index
-  // never escapes here and gets elided. Arity 1 is the common shape (`cn("...")` and every
-  // cache-miss merge); arities 2/3 hand their values to dedicated fast paths with no array.
+  // V8 can omit the `arguments` allocation on the common paths. A rest parameter always creates
+  // an array.
   /* eslint-disable prefer-rest-params -- a rest param would defeat the allocation-elision this relies on */
   const cn: ClassNameFunction = function (): string {
-    const first = arguments[0];
+    const firstClassValue = arguments[0];
+    const classValueCount = arguments.length;
 
-    const length = arguments.length;
-
-    if (length === 1) {
-      return typeof first === "string"
-        ? twMerge.mergeString(first)
-        : twMerge.mergeString(resolveClassValue(first));
+    if (classValueCount === 1) {
+      return typeof firstClassValue === "string"
+        ? twMerge.mergeString(firstClassValue)
+        : twMerge.mergeString(resolveClassValue(firstClassValue));
     }
 
-    if (length === 2) return cnTwoArgs(first, arguments[1]);
-    if (length === 3) return cnThreeArgs(first, arguments[1], arguments[2]);
+    if (classValueCount === 2) return getMergedClassNameForTwoValues(firstClassValue, arguments[1]);
+    if (classValueCount === 3)
+      return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
 
-    // Copy args by index into a presized array — never forward the live `arguments` object, which
-    // would defeat its elision on the hot shapes above (`new Array(length)` + indexed stores
-    // measured ~9% faster than push-growing).
-    const inputs: ClassValue[] = new Array(length);
-    for (let index = 0; index < length; index++) inputs[index] = arguments[index];
-    return mergeVariadicCached(inputs);
+    // A preallocated array measured 9% faster than repeated `push` calls here.
+    const classValues: ClassValue[] = new Array(classValueCount);
+    for (let index = 0; index < classValueCount; index++) classValues[index] = arguments[index];
+    return getMergedClassNameForManyValues(classValues);
   };
   /* eslint-enable prefer-rest-params */
 
   return cn;
 };
 
-export const cn: ClassNameFunction = buildCn(twMerge);
+export const cn: ClassNameFunction = createClassNameFunction(twMerge);
 
 export default cn;
 
-/**
- * Configurable counterpart to the default `cn`. Accepts the same `{ override, extend }` extension as
- * tailwind-merge's `extendTailwindMerge`, or a `(defaultConfig) => config` function.
- *
- * @example
- * const cn = createCn({ extend: { classGroups: { "font-size": ["text-24-regular"] } } });
- * cn("text-foreground text-24-regular"); // keeps both — different groups
- */
 export const createCn = (
   config: ConfigExtension | ((defaultConfig: AnyConfig) => AnyConfig),
 ): ClassNameFunction => {
@@ -482,5 +464,5 @@ export const createCn = (
     typeof config === "function"
       ? () => config(getDefaultConfig())
       : () => mergeConfigs(getDefaultConfig(), config);
-  return buildCn(createTailwindMerge(createConfig));
+  return createClassNameFunction(createTailwindMerge(createConfig));
 };

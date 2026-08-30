@@ -31,16 +31,12 @@ import {
   ClassGroup,
   ClassValidator,
   Config,
-  ThemeGetter,
+  ThemeReference,
   ThemeObject,
 } from "./types";
 
 export const CLASS_PART_SEPARATOR = "-";
 
-/**
- * One node of the class-name trie. `bg-red-500` walks bg -> red -> 500; a node's `classGroupId`
- * answers exact matches and its `validators` answer dynamic remainders (`bg-[url(...)]`).
- */
 export interface ClassPartObject {
   nextPart: Map<string, ClassPartObject>;
   validators: ClassValidatorObject[] | null;
@@ -53,23 +49,13 @@ export interface ClassValidatorObject {
   shapeMask: number;
 }
 
-/**
- * Token shapes for validator gating. A trie node can carry ~17 validators (`bg-` does), yet most
- * can only ever match one shape: the `isArbitraryValue` family demands `[...]`, the
- * `isArbitraryVariable` family `(...)`, and the plain-value validators can match neither.
- * Tagging each validator with the shapes it could match lets the lookup loop skip the rest with
- * one integer test instead of running every parser.
- */
-export const SHAPE_BRACKET = 1; // [ ... ] with at least one inner char
-export const SHAPE_PAREN = 2; // ( ... ) with at least one inner char
+// Shape masks skip validators that cannot match without running their parsers. Custom validators
+// use every mask because their accepted shapes are unknown.
+export const SHAPE_BRACKET = 1;
+export const SHAPE_PAREN = 2;
 export const SHAPE_OTHER = 4;
 export const SHAPE_ALL = SHAPE_BRACKET | SHAPE_PAREN | SHAPE_OTHER;
 
-// Masks must be a SUPERSET of matchability: a validator may only be skipped when it provably
-// cannot match the shape. `isAnyNonArbitrary` stays SHAPE_ALL because a `[...]`-shaped token
-// containing a line terminator fails both arbitrary parsers and therefore IS "non-arbitrary"
-// despite its bracket shape. Validators from custom `createCn` configs are unknown here, default
-// to SHAPE_ALL, and are never skipped.
 const VALIDATOR_SHAPE_MASKS = new Map<ClassValidator, number>([
   [isArbitraryValue, SHAPE_BRACKET],
   [isArbitrarySize, SHAPE_BRACKET],
@@ -113,6 +99,8 @@ const createClassPartObject = (): ClassPartObject => ({
   classGroupId: undefined,
 });
 
+const EMPTY_CLASS_GROUP: ClassGroup<AnyThemeGroupIds> = [];
+
 export const createClassMap = (
   config: Config<AnyClassGroupIds, AnyThemeGroupIds>,
 ): ClassPartObject => {
@@ -132,12 +120,11 @@ const addClassGroup = (
   classGroupId: AnyClassGroupIds,
   theme: ThemeObject<AnyThemeGroupIds>,
 ): void => {
-  for (let i = 0; i < classGroup.length; i++) {
-    addClassDefinition(classGroup[i]!, classPartObject, classGroupId, theme);
+  for (let index = 0; index < classGroup.length; index++) {
+    addClassDefinition(classGroup[index]!, classPartObject, classGroupId, theme);
   }
 };
 
-// One dispatch function per definition type keeps each call site monomorphic.
 const addClassDefinition = (
   classDefinition: ClassGroup<AnyThemeGroupIds>[number],
   classPartObject: ClassPartObject,
@@ -150,7 +137,17 @@ const addClassDefinition = (
   }
 
   if (typeof classDefinition === "function") {
-    addFunctionDefinition(classDefinition, classPartObject, classGroupId, theme);
+    addValidatorDefinition(classDefinition, classPartObject, classGroupId);
+    return;
+  }
+
+  if (isThemeReference(classDefinition)) {
+    addClassGroup(
+      theme[classDefinition.themeGroupId] || EMPTY_CLASS_GROUP,
+      classPartObject,
+      classGroupId,
+      theme,
+    );
     return;
   }
 
@@ -172,23 +169,15 @@ const addStringDefinition = (
   target.classGroupId = classGroupId;
 };
 
-const addFunctionDefinition = (
-  classDefinition: ClassValidator | ThemeGetter,
+const addValidatorDefinition = (
+  classDefinition: ClassValidator,
   classPartObject: ClassPartObject,
   classGroupId: AnyClassGroupIds,
-  theme: ThemeObject<AnyThemeGroupIds>,
 ): void => {
-  if (isThemeGetter(classDefinition)) {
-    addClassGroup(classDefinition(theme), classPartObject, classGroupId, theme);
-    return;
-  }
-
   if (classPartObject.validators === null) {
     classPartObject.validators = [];
   }
-  classPartObject.validators.push(
-    createClassValidatorObject(classGroupId, classDefinition as ClassValidator),
-  );
+  classPartObject.validators.push(createClassValidatorObject(classGroupId, classDefinition));
 };
 
 const addObjectDefinition = (
@@ -198,8 +187,8 @@ const addObjectDefinition = (
   theme: ThemeObject<AnyThemeGroupIds>,
 ): void => {
   const entries = Object.entries(classDefinition);
-  for (let i = 0; i < entries.length; i++) {
-    const [key, value] = entries[i]!;
+  for (let index = 0; index < entries.length; index++) {
+    const [key, value] = entries[index]!;
     addClassGroup(value, getPart(classPartObject, key), classGroupId, theme);
   }
 };
@@ -208,8 +197,8 @@ const getPart = (classPartObject: ClassPartObject, path: string): ClassPartObjec
   let current = classPartObject;
   const parts = path.split(CLASS_PART_SEPARATOR);
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i]!;
+  for (let index = 0; index < parts.length; index++) {
+    const part = parts[index]!;
     let next = current.nextPart.get(part);
     if (!next) {
       next = createClassPartObject();
@@ -221,7 +210,7 @@ const getPart = (classPartObject: ClassPartObject, path: string): ClassPartObjec
   return current;
 };
 
-const isThemeGetter = (
-  classDefinition: ClassValidator | ThemeGetter,
-): classDefinition is ThemeGetter =>
-  "isThemeGetter" in classDefinition && (classDefinition as ThemeGetter).isThemeGetter === true;
+const isThemeReference = (
+  classDefinition: ThemeReference | Record<string, ClassGroup<AnyThemeGroupIds>>,
+): classDefinition is ThemeReference =>
+  "themeGroupId" in classDefinition && typeof classDefinition.themeGroupId === "string";

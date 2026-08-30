@@ -1,4 +1,3 @@
-/** Concatenates two arrays into a presized array, faster than array spread. */
 export const concatArrays = <T, U>(
   array1: readonly T[],
   array2: readonly U[],

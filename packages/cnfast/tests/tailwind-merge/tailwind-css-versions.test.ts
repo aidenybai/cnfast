@@ -108,31 +108,18 @@ test("supports Tailwind CSS v4.1 features", () => {
   expect(twMerge("mask-add mask-subtract")).toBe("mask-subtract");
   expect(
     twMerge(
-      // mask-image
       "mask-(--foo) mask-[foo] mask-none",
-      // mask-image-linear-pos
       "mask-linear-1 mask-linear-2",
-      // mask-image-linear-from-pos
       "mask-linear-from-[position:test] mask-linear-from-3",
-      // mask-image-linear-to-pos
       "mask-linear-to-[position:test] mask-linear-to-3",
-      // mask-image-linear-from-color
       "mask-linear-from-color-red mask-linear-from-color-3",
-      // mask-image-linear-to-color
       "mask-linear-to-color-red mask-linear-to-color-3",
-      // mask-image-t-from-pos
       "mask-t-from-[position:test] mask-t-from-3",
-      // mask-image-t-to-pos
       "mask-t-to-[position:test] mask-t-to-3",
-      // mask-image-t-from-color
       "mask-t-from-color-red mask-t-from-color-3",
-      // mask-image-radial
       "mask-radial-(--test) mask-radial-[test]",
-      // mask-image-radial-from-pos
       "mask-radial-from-[position:test] mask-radial-from-3",
-      // mask-image-radial-to-pos
       "mask-radial-to-[position:test] mask-radial-to-3",
-      // mask-image-radial-from-color
       "mask-radial-from-color-red mask-radial-from-color-3",
     ),
   ).toBe(
@@ -140,17 +127,13 @@ test("supports Tailwind CSS v4.1 features", () => {
   );
   expect(
     twMerge(
-      // mask-image
       "mask-(--something) mask-[something]",
-      // mask-position
       "mask-top-left mask-center mask-(position:--var) mask-[position:1px_1px] mask-position-(--var) mask-position-[1px_1px]",
     ),
   ).toBe("mask-[something] mask-position-[1px_1px]");
   expect(
     twMerge(
-      // mask-image
       "mask-(--something) mask-[something]",
-      // mask-size
       "mask-auto mask-[size:foo] mask-(size:--foo) mask-size-[foo] mask-size-(--foo) mask-cover mask-contain",
     ),
   ).toBe("mask-[something] mask-contain");
@@ -172,8 +155,6 @@ test("supports Tailwind CSS v4.1.5 features", () => {
 });
 
 test("supports Tailwind CSS v4.2 features", () => {
-  // Logical inset utilities
-
   expect(twMerge("inset-s-1 inset-s-2")).toBe("inset-s-2");
   expect(twMerge("inset-e-1 inset-e-2")).toBe("inset-e-2");
   expect(twMerge("inset-bs-1 inset-bs-2")).toBe("inset-bs-2");
@@ -192,8 +173,6 @@ test("supports Tailwind CSS v4.2 features", () => {
     "top-1 inset-bs-2 bottom-3 inset-be-4",
   );
 
-  // Logical spacing utilities
-
   expect(twMerge("pbs-1 pbs-2")).toBe("pbs-2");
   expect(twMerge("pbe-1 pbe-2")).toBe("pbe-2");
   expect(twMerge("mbs-1 mbs-2")).toBe("mbs-2");
@@ -211,8 +190,6 @@ test("supports Tailwind CSS v4.2 features", () => {
 
   expect(twMerge("py-1 pbs-2 pbe-3")).toBe("py-1 pbs-2 pbe-3");
   expect(twMerge("my-1 mbs-2 mbe-3")).toBe("my-1 mbs-2 mbe-3");
-
-  // Logical scroll spacing utilities
 
   expect(twMerge("scroll-pbs-1 scroll-pbs-2")).toBe("scroll-pbs-2");
   expect(twMerge("scroll-pbe-1 scroll-pbe-2")).toBe("scroll-pbe-2");
@@ -240,8 +217,6 @@ test("supports Tailwind CSS v4.2 features", () => {
     "scroll-my-1 scroll-mbs-2 scroll-mbe-3",
   );
 
-  // Logical border block utilities
-
   expect(twMerge("border-bs-1 border-bs-2")).toBe("border-bs-2");
   expect(twMerge("border-be-1 border-be-2")).toBe("border-be-2");
   expect(twMerge("border-bs-red border-bs-blue")).toBe("border-bs-blue");
@@ -262,8 +237,6 @@ test("supports Tailwind CSS v4.2 features", () => {
     "border-y-red border-bs-blue border-be-green",
   );
 
-  // Logical size utilities
-
   expect(twMerge("inline-1/2 inline-3/4")).toBe("inline-3/4");
   expect(twMerge("block-1/2 block-3/4")).toBe("block-3/4");
   expect(twMerge("min-inline-auto min-inline-full")).toBe("min-inline-full");
@@ -280,8 +253,6 @@ test("supports Tailwind CSS v4.2 features", () => {
   expect(twMerge("min-w-10 min-inline-20")).toBe("min-w-10 min-inline-20");
   expect(twMerge("max-h-10 max-block-20")).toBe("max-h-10 max-block-20");
 
-  // Font feature settings utilities
-
   expect(twMerge('font-features-["smcp"] font-features-["onum"]')).toBe('font-features-["onum"]');
   expect(twMerge('font-features-[var(--font-features)] font-features-["liga","dlig"]')).toBe(
     'font-features-["liga","dlig"]',
@@ -291,8 +262,6 @@ test("supports Tailwind CSS v4.2 features", () => {
   );
   expect(twMerge('font-features-["smcp"] normal-nums')).toBe('font-features-["smcp"] normal-nums');
   expect(twMerge('font-sans font-features-["smcp"]')).toBe('font-sans font-features-["smcp"]');
-
-  // Fractions with decimal numerator/denominator
 
   expect(twMerge("aspect-8/11 aspect-8.5/11")).toBe("aspect-8.5/11");
   expect(twMerge("w-8/11 w-8.5/11")).toBe("w-8.5/11");

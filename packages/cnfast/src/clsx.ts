@@ -1,7 +1,7 @@
+import { SPACE_CHARACTER } from "./lib/constants.js";
+
 export interface ClassDictionary {
-  // Mirrors clsx's `Record<string, any>`: `unknown` here would reject render-function
-  // classNames (e.g. Base UI / Radix `className={(state) => ...}`) that structurally
-  // satisfy `any` but not an `unknown`-valued index signature, breaking drop-in parity.
+  // `unknown` rejects render functions accepted by clsx, including Base UI class-name callbacks.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional clsx type parity
   [className: string]: any;
 }
@@ -16,46 +16,42 @@ export type ClassValue =
   | ClassValue[]
   | ClassDictionary;
 
-// Hoist the global builtin to a module-scope binding (oveo "hoist globals"): turns a
-// repeated global-object property load into a plain variable load on the join hot path.
+// A local binding avoids a global-object property read on every recursive call.
 const isArray = Array.isArray;
 
-// Exported for `cn`, which passes its collected rest-args array straight in to avoid
-// a second spread + array allocation that `clsx(...inputs)` would incur per call.
 export const resolveClassValue = (value: ClassValue): string => {
   if (!value) return "";
 
   if (typeof value === "string") return value;
   if (typeof value === "number") return "" + value;
 
-  let result = "";
+  let classList = "";
 
   if (isArray(value)) {
     const length = value.length;
     for (let index = 0; index < length; index++) {
-      const item = value[index];
-      // Skip falsy items (null/false/undefined/0/"") without a recursive call, and take the
-      // string fast path directly: most arguments to `cn`/`clsx` are plain class strings.
-      if (!item) continue;
-      const resolved = typeof item === "string" ? item : resolveClassValue(item);
-      if (resolved) {
-        if (result) result += " ";
-        result += resolved;
+      const classValue = value[index];
+      if (!classValue) continue;
+      const resolvedClassName =
+        typeof classValue === "string" ? classValue : resolveClassValue(classValue);
+      if (resolvedClassName) {
+        if (classList) classList += SPACE_CHARACTER;
+        classList += resolvedClassName;
       }
     }
-    return result;
+    return classList;
   }
 
   if (typeof value === "object") {
     for (const key in value) {
       if (value[key]) {
-        if (result) result += " ";
-        result += key;
+        if (classList) classList += SPACE_CHARACTER;
+        classList += key;
       }
     }
   }
 
-  return result;
+  return classList;
 };
 
-export const clsx = (...inputs: ClassValue[]): string => resolveClassValue(inputs);
+export const clsx = (...classValues: ClassValue[]): string => resolveClassValue(classValues);

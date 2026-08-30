@@ -2,6 +2,6 @@
 // into an empty literal yields PACKED elements, which hot indexed reads depend on.
 export const createFilledArray = <Value>(count: number, value: Value): Value[] => {
   const slots: Value[] = [];
-  for (let i = 0; i < count; i++) slots.push(value);
+  for (let index = 0; index < count; index++) slots.push(value);
   return slots;
 };

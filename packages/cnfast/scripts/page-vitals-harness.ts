@@ -25,8 +25,7 @@ if (pageNames.length === 0) {
 
 const INTERACTION_COUNT = Number(process.env.WV_INTERACTIONS ?? 8);
 const RUNS = Number(process.env.WV_RUNS ?? 2);
-// Comma-separated CPU throttle multipliers, e.g. WV_CPU_SLOWDOWN=6,20 sweeps a
-// mid-range and a very low-end device. 1 = no throttle.
+// Comma-separated multipliers model different CPU speeds. A value of 1 disables throttling.
 const SLOWDOWNS = (process.env.WV_CPU_SLOWDOWN ?? "6,20")
   .split(",")
   .map((value) => Math.max(1, Number(value.trim())))
@@ -38,9 +37,6 @@ const countNodes = (node: FrozenNode): number => {
   return total;
 };
 
-// Rebuilds the real page tree, computing every element's className via one cn()
-// call over its captured class list -> cn runs once per real node, in real
-// nesting. The cold re-render appends a unique token per node so the LRU misses.
 const pageHtml = (cnBundle: string, treeJson: string): string => `<!doctype html>
 <html><head><meta charset="utf-8"></head>
 <body>

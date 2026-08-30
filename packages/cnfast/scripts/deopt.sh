@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# Surface V8 deoptimizations and non-optimized functions in the merge hot path.
-# Primary: node --trace-deopt (zero-install, greppable).
-# For a richer GUI, run `npx dexnode bench/cn.bench.ts` and open the isolate log
-# in the deopt-explorer VS Code extension.
+# Reports V8 deoptimizations in merge hot paths with `node --trace-deopt`.
+# For a GUI, open a dexnode isolate log in the deopt-explorer extension.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo "== tracing deopts (best-of-1, short run) =="
-# V8 logs deopts by JSFunction name, not file. Match the hot-path functions and
-# collapse addresses/ids so repeated (steady-state) deopts are easy to spot.
 BENCH_BEST_OF=1 BENCH_TIME_MS=300 \
   node --import tsx --trace-deopt bench/cn.bench.ts 2>&1 \
   | grep -i "deoptimizing" \

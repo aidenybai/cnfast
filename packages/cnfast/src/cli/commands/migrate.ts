@@ -61,7 +61,7 @@ export const migrate = new Command()
       }
 
       if (opts.dryRun) {
-        logger.info("Dry run — no files were changed.");
+        logger.info("Dry run: no files were changed.");
         return;
       }
 

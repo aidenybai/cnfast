@@ -1,18 +1,8 @@
 import { runSuite, type ClassListArgs, type Workload } from "./lib/harness";
 
-// Conditional-classname toggle family: React re-render patterns of the shape
-// `cn(base, cond && "variant")` where the SAME call sites re-run every frame but their boolean
-// flags flip between frames. Falsy args contribute nothing to the output, so the arg cache keys
-// on the truthy-filtered sequence (falsy-canonical keys): every flag combination of a call site
-// collapses onto a handful of shared truthy-sequence entries instead of one entry per raw arg
-// pattern, and a single-truthy frame routes to the whole-string cache. These cells exist to keep
-// that property measured — a regression shows up as toggle-rate-dependent slowdown (higher toggle
-// rates would thrash the arg cache) instead of flat hit-path cost across rates.
-
 const SITES = 200;
 const FRAMES = 32;
 
-// Deterministic LCG so every run (and both impls) sees the identical flag schedule.
 const makeRandom = (seed: number): (() => number) => {
   let state = seed >>> 0;
   return () => {
@@ -21,7 +11,6 @@ const makeRandom = (seed: number): (() => number) => {
   };
 };
 
-// Per-site stable class fragments (JSX-literal analogs: identity-stable across frames).
 const bases: string[] = [];
 const variantA: string[] = [];
 const variantB: string[] = [];
@@ -33,9 +22,6 @@ for (let site = 0; site < SITES; site++) {
   variantC.push(`ring-2 ring-offset-${site % 4}`);
 }
 
-// Precomputed flag schedule: flags[frame][site * 3 + slot]. Each flag flips between consecutive
-// frames with probability `toggleRate` (frame 0 starts random at 50/50), so the workload models
-// "N% of conditions changed since the last render".
 const makeFlagSchedule = (toggleRate: number, seed: number): boolean[][] => {
   const random = makeRandom(seed);
   const frames: boolean[][] = [];
@@ -57,7 +43,6 @@ const toggleWorkloads = (): Workload[] => {
   for (const rate of [0.1, 0.3, 0.5]) {
     const label = `${Math.round(rate * 100)}%`;
 
-    // Arity 2: cn(base, active && variant) — the canonical shadcn conditional.
     const flags2 = makeFlagSchedule(rate, 0xc0ffee);
     workloads.push({
       group: "toggle",
@@ -75,7 +60,6 @@ const toggleWorkloads = (): Workload[] => {
       },
     });
 
-    // Arity 3: two independent conditions.
     const flags3 = makeFlagSchedule(rate, 0xbadf00d);
     workloads.push({
       group: "toggle",
@@ -97,7 +81,6 @@ const toggleWorkloads = (): Workload[] => {
       },
     });
 
-    // Arity 5 (variadic path): three conditions plus a trailing stable arg.
     const flags5 = makeFlagSchedule(rate, 0x5eed);
     workloads.push({
       group: "toggle",
@@ -122,9 +105,6 @@ const toggleWorkloads = (): Workload[] => {
     });
   }
 
-  // Control cell: 0% toggle (all flags permanently truthy). If canonicalization works, the toggle
-  // cells above cost roughly the same per call as this pure-hit control; a gap that grows with
-  // toggle rate means falsy variants are being keyed separately again.
   workloads.push({
     group: "toggle",
     name: "all-truthy control",
@@ -140,7 +120,6 @@ const toggleWorkloads = (): Workload[] => {
     },
   });
 
-  // All-falsy tails: every conditional off — the single-truthy fast-path cell.
   workloads.push({
     group: "toggle",
     name: "all-falsy tail",

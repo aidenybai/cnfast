@@ -11,7 +11,7 @@ import { ParsedClassName } from "./types";
 
 export const IMPORTANT_MODIFIER = "!";
 
-// Single factory so every parse result shares one object shape (identical key order).
+// One factory preserves a monomorphic result shape.
 const createResultObject = (
   modifiers: string[],
   hasImportantModifier: boolean,
@@ -25,20 +25,12 @@ const createResultObject = (
   isExternal: undefined,
 });
 
-// Shared result for the modifier-less case (most tokens reaching this parser carry an arbitrary
-// value or important marker but no variant). Frozen so an accidental consumer mutation throws
-// instead of corrupting every later parse; no caller mutates parse results.
-const EMPTY_MODIFIERS: string[] = Object.freeze([]) as unknown as string[];
+// Most parsed tokens have no modifiers. Freeze their shared array to expose accidental mutation.
+const EMPTY_MODIFIERS: string[] = [];
+Object.freeze(EMPTY_MODIFIERS);
 
-/**
- * Parse a class name into modifiers, base name, important flag, and postfix-modifier position.
- *
- * Inspired by `splitAtTopLevelOnly` used in Tailwind CSS
- * @see https://github.com/tailwindlabs/tailwindcss/blob/v3.2.2/src/util/splitAtTopLevelOnly.js
- */
 export const parseClassName = (className: string): ParsedClassName => {
-  // Materialized lazily: allocating `[]` up front costs an array on every parse even though most
-  // tokens have no modifiers at all.
+  // Allocate a modifier array only when the parser finds one.
   let modifiers: string[] | null = null;
 
   let bracketDepth = 0;
@@ -75,21 +67,14 @@ export const parseClassName = (className: string): ParsedClassName => {
   let baseClassName = baseClassNameWithImportantModifier;
   let hasImportantModifier = false;
 
-  // The length guard keeps `charCodeAt` in bounds for empty base names (e.g. the token `:`):
-  // an out-of-bounds `charCodeAt(-1)` returns NaN and stays correct, but forces V8 through the
-  // slow path and was a recorded recurring "out of bounds" deopt of this function.
+  // V8 deoptimizes this function when an empty base name reaches `charCodeAt(-1)`.
   const baseLength = baseClassNameWithImportantModifier.length;
   if (baseLength !== 0) {
     if (baseClassNameWithImportantModifier.charCodeAt(baseLength - 1) === CHAR_EXCLAMATION) {
       baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
       hasImportantModifier = true;
-    } else if (
-      /**
-       * In Tailwind CSS v3 the important modifier was at the start of the base class name. This is still supported for legacy reasons.
-       * @see https://github.com/dcastil/tailwind-merge/issues/513#issuecomment-2614029864
-       */
-      baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_EXCLAMATION
-    ) {
+    } else if (baseClassNameWithImportantModifier.charCodeAt(0) === CHAR_EXCLAMATION) {
+      // Tailwind CSS v3 placed the important modifier first, so legacy inputs still need support.
       baseClassName = baseClassNameWithImportantModifier.slice(1);
       hasImportantModifier = true;
     }

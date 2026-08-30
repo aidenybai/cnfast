@@ -79,9 +79,7 @@ const workloads = [
 const results = await runSuite(workloads, "chart");
 const bundle = await measureBundles();
 
-// Same stable call site rendered two ways, so the ops/s are directly comparable: the baseline
-// (clsx + tailwind-merge) and cnfast's variadic call. Both run inside ONE Bench so they share
-// warmup/timing and the ratio is stable across runs.
+// Running both implementations in one benchmark gives them the same warmup and timing conditions.
 const RENDER_VARIANTS: (string | false)[] = ["bg-blue-500", false, "bg-red-500", false];
 const RENDER_BASE = "rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm";
 let formSink = 0;

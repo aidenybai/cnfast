@@ -26,13 +26,11 @@ const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
 const lengthUnitRegex =
   /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
 const colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
-// Shadow always begins with x and y offset separated by underscore optionally prepended by inset
 const shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
 const imageRegex =
   /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
 
-// Module-scope bindings load faster than repeated global-object property lookups on the
-// per-token validator path.
+// Local bindings avoid global-object property reads for every validated token.
 const toNumber = Number;
 const numberIsNaN = Number.isNaN;
 const numberIsInteger = Number.isInteger;
@@ -44,21 +42,14 @@ const isWordCharCode = (charCode: number): boolean =>
   charCode === CHAR_UNDERSCORE;
 
 /**
- * Scan an arbitrary token of the form `<open>value<close>` or `<open>label:value<close>`, where
- * the label is a word character followed by any run of word characters and dashes (`[url:...]`,
- * `(--my-var:...)`).
+ * Scan `<open>value<close>` or `<open>label:value<close>`. Labels contain word characters and
+ * dashes.
  *
  * Returns -1 for no match, 0 for a match without a label, or the index of the label's `:`.
  *
- * A charCodeAt scan instead of a regex because `RegExp.exec` allocates a match array plus two
- * capture substrings per call, and indexing that array was the one hot site that kept
- * re-deoptimizing at the same offset. Two subtleties keep this byte-compatible with
- * tailwind-merge's regex semantics:
- * - An inner line terminator (LF, CR, LS, PS) rejects the whole match. Tokens split from a class
- *   list can't contain LF/CR, but validators are public config surface and get called directly.
- * - A label exists only when the maximal word/dash run from index 1 is immediately followed by
- *   `:` with at least one value character before the closer, so `[foo:]` parses as the unlabeled
- *   value `foo:`.
+ * `RegExp.exec` allocated three objects and repeatedly deoptimized this hot path. Line terminators
+ * reject the token for parity with the original regex. `[foo:]` remains an unlabeled `foo:` value
+ * because its colon has no following value.
  */
 const scanArbitrary = (value: string, openCharCode: number, closeCharCode: number): number => {
   const length = value.length;
@@ -98,12 +89,8 @@ const scanArbitrary = (value: string, openCharCode: number, closeCharCode: numbe
   return colonIndex;
 };
 
-// One-entry memos, keyed by token content. A trie node's validator chain probes the same
-// `classRest` string against up to ~17 arbitrary-value/-variable validators; memoizing the parse
-// collapses those to one scan plus (for a match) at most two slices per token. The label/value
-// callbacks never re-enter these parsers, and strings are immutable, so the memo cannot go stale
-// mid-chain. A label is never the empty string (`\w[\w-]*` needs one char), so `colon > 0` alone
-// distinguishes labeled matches.
+// A trie node can run 17 validators against the same token. Remembering the last parse reduces
+// that chain to one scan and at most two slices.
 let lastBracketValue: string | null = null;
 let bracketColonIndex = -1;
 let bracketLabel = "";
@@ -149,8 +136,7 @@ export const isTshirtSize = (value: string) => tshirtUnitRegex.test(value);
 export const isAny = () => true;
 
 const isLengthOnly = (value: string) =>
-  // Color functions contain percentages (`hsl(0 0% 0%)`) that `lengthUnitRegex` would otherwise
-  // classify as lengths; a lookbehind in the regex isn't supported widely enough.
+  // Color functions contain percentages, and regex lookbehind lacks sufficient runtime support.
   lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
 
 const isNever = () => false;
@@ -162,8 +148,7 @@ const isImage = (value: string) => imageRegex.test(value);
 export const isAnyNonArbitrary = (value: string) =>
   !isArbitraryValue(value) && !isArbitraryVariable(value);
 
-// `charCodeAt` + length compares instead of one-char string indexing: `value[10]` materializes a
-// single-char string and its map check was a recorded "wrong map" deopt source.
+// Character indexing created a string and caused a recurring wrong-map deoptimization.
 export const isNamedContainerQuery = (value: string) => {
   const length = value.length;
   return (

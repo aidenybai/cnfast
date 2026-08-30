@@ -1,10 +1,6 @@
 /**
- * The code in this file is copied from https://github.com/lukeed/clsx and modified to suit the needs of tailwind-merge better.
- *
- * Specifically:
- * - Tests from https://github.com/lukeed/clsx/blob/v1.2.1/test/index.js
- *
- * Original code has MIT license: Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)
+ * Adapted from clsx v1.2.1 tests.
+ * MIT License. Copyright Luke Edwards <luke.edwards05@gmail.com>.
  */
 
 import { expect, test } from "vitest";

@@ -1,8 +1,4 @@
-/**
- * Char codes for the hot-path scanners. Comparing `charCodeAt` results against these avoids
- * materializing single-character strings (`value[0] === "["` allocates; the comparison was a
- * recorded deopt source).
- */
+// Character indexing allocated one-character strings and caused a recurring deoptimization.
 export const CHAR_TAB = 9;
 export const CHAR_LINE_FEED = 10;
 export const CHAR_CARRIAGE_RETURN = 13;

@@ -16,6 +16,7 @@ import {
 import { AnyClassGroupIds, AnyConfig } from "./types";
 import { concatArrays } from "../utils/concat-arrays";
 import { createFilledArray } from "../utils/create-filled-array";
+import { COLON_CHARACTER } from "./constants";
 
 // Two dots because a single dot is the class-group prefix used by plugins.
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
@@ -23,16 +24,8 @@ const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 const EMPTY_CONFLICT_ROW: readonly number[] = [];
 
 /**
- * Build the class-name -> class-group lookup for one config, plus dense integer group ids with
- * precomputed conflict rows.
- *
- * The dense ids exist because IC profiling showed the reference's string-keyed
- * `conflictingClassGroups[classGroupId]` loads were 294 of the library's 303 megamorphic sites.
- * Enumerating every group once at build time turns each steady-state conflict lookup into an
- * array-index load, and lets the descriptor layer memoize interned conflict keys under packed
- * numeric (modifierIndex, groupIndex) keys instead of concatenating and hashing a string per
- * lookup. Groups minted dynamically (`[color:red]` -> `arbitrary..color`) never have conflict
- * rows and are deliberately not interned, so the map stays fixed-size for the config's life.
+ * Dense group IDs replaced 294 of 303 measured megamorphic property loads with indexed array
+ * reads. Dynamic arbitrary-property groups stay outside this fixed-size index.
  */
 export const createClassGroupLookup = (config: AnyConfig) => {
   const classMap = createClassMap(config);
@@ -49,7 +42,6 @@ export const createClassGroupLookup = (config: AnyConfig) => {
     }
 
     const classParts = className.split(CLASS_PART_SEPARATOR);
-    // A leading `-` (negative value, `-inset-1`) yields an empty first part; skip it.
     const startIndex = classParts.length > 1 && className.charCodeAt(0) === CHAR_DASH ? 1 : 0;
     return getGroupIdRecursive(classParts, startIndex, classMap);
   };
@@ -77,8 +69,7 @@ export const createClassGroupLookup = (config: AnyConfig) => {
   for (const classGroupId in config.classGroups) {
     addGroupIndex(classGroupId);
   }
-  // Exotic custom configs may name conflict groups that have no class definitions; index those
-  // too so every row entry below resolves.
+  // Custom configs can reference conflict groups without defining their classes.
   for (const classGroupId in conflictingClassGroups) {
     addGroupIndex(classGroupId);
     for (const conflict of conflictingClassGroups[classGroupId]!) addGroupIndex(conflict);
@@ -89,11 +80,13 @@ export const createClassGroupLookup = (config: AnyConfig) => {
   }
   const groupCount = groupIndexes.size;
 
-  const createConflictRow = (ids: readonly AnyClassGroupIds[]): readonly number[] => {
-    if (ids.length === 0) return EMPTY_CONFLICT_ROW;
-    const row: number[] = [];
-    for (let i = 0; i < ids.length; i++) row.push(groupIndexes.get(ids[i]!)!);
-    return row;
+  const createConflictRow = (classGroupIds: readonly AnyClassGroupIds[]): readonly number[] => {
+    if (classGroupIds.length === 0) return EMPTY_CONFLICT_ROW;
+    const conflictRow: number[] = [];
+    for (let index = 0; index < classGroupIds.length; index++) {
+      conflictRow.push(groupIndexes.get(classGroupIds[index]!)!);
+    }
+    return conflictRow;
   };
   const conflictRowsBase = createFilledArray<readonly number[]>(groupCount, EMPTY_CONFLICT_ROW);
   const conflictRowsPostfix = createFilledArray<readonly number[]>(groupCount, EMPTY_CONFLICT_ROW);
@@ -141,10 +134,7 @@ const getGroupIdRecursive = (
       ? classParts.join(CLASS_PART_SEPARATOR)
       : classParts.slice(startIndex).join(CLASS_PART_SEPARATOR);
 
-  // Classify the candidate's shape once so one integer AND per validator can skip the parsers
-  // that cannot match it (see SHAPE_* in class-map.ts). The `> 2` guard mirrors the arbitrary
-  // parsers' minimum match (`[x]`), so `[]` counts as SHAPE_OTHER.
-  let shape = SHAPE_OTHER;
+  let classNameShape = SHAPE_OTHER;
   const restLength = classRest.length;
   if (restLength > 2) {
     const firstCharCode = classRest.charCodeAt(0);
@@ -152,18 +142,21 @@ const getGroupIdRecursive = (
       firstCharCode === CHAR_OPEN_BRACKET &&
       classRest.charCodeAt(restLength - 1) === CHAR_CLOSE_BRACKET
     ) {
-      shape = SHAPE_BRACKET;
+      classNameShape = SHAPE_BRACKET;
     } else if (
       firstCharCode === CHAR_OPEN_PAREN &&
       classRest.charCodeAt(restLength - 1) === CHAR_CLOSE_PAREN
     ) {
-      shape = SHAPE_PAREN;
+      classNameShape = SHAPE_PAREN;
     }
   }
 
-  for (let i = 0; i < validators.length; i++) {
-    const validatorObject = validators[i]!;
-    if ((validatorObject.shapeMask & shape) !== 0 && validatorObject.validator(classRest)) {
+  for (let index = 0; index < validators.length; index++) {
+    const validatorObject = validators[index]!;
+    if (
+      (validatorObject.shapeMask & classNameShape) !== 0 &&
+      validatorObject.validator(classRest)
+    ) {
       return validatorObject.classGroupId;
     }
   }
@@ -171,10 +164,9 @@ const getGroupIdRecursive = (
   return undefined;
 };
 
-// `className` is guaranteed by the caller to start with `[` and end with `]`.
 const getArbitraryPropertyGroupId = (className: string): AnyClassGroupIds | undefined => {
   const content = className.slice(1, -1);
-  const colonIndex = content.indexOf(":");
+  const colonIndex = content.indexOf(COLON_CHARACTER);
   if (colonIndex === -1) {
     return undefined;
   }

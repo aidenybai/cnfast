@@ -36,25 +36,16 @@ describe("cn: clsx-style joining", () => {
   });
 });
 
-// The arity-2/3 fast paths and the variadic (arity >= 4) path each canonicalize falsy args away
-// before probing the arg cache (the cache key is the truthy-string sequence, not the raw arg
-// list). These tests pin the equivalence: every falsy placement/arity of the same truthy sequence
-// must produce the identical string, including on repeat calls that hit the cache entries the
-// first round populated.
 describe("cn: falsy-canonical arg shapes across arities", () => {
   it("treats falsy args as absent at every arity", () => {
-    // Run twice: the first pass populates caches, the second must hit them with identical output.
     for (let round = 0; round < 2; round++) {
-      // arity 2 (cnTwoArgs path)
       expect(cn("px-2", false)).toBe("px-2");
       expect(cn(0, "px-2")).toBe("px-2");
       expect(cn("", "")).toBe("");
-      // arity 3 (cnThreeArgs path) — every falsy placement reduces to the same truthy sequence
       expect(cn("px-2", false, "px-4")).toBe("px-4");
       expect(cn(false, "px-2", "px-4")).toBe("px-4");
       expect(cn("px-2", "px-4", null)).toBe("px-4");
       expect(cn("px-2", undefined, 0)).toBe("px-2");
-      // arity >= 4 (variadic path) — same truthy sequence again
       expect(cn("px-2", false, "px-4", null)).toBe("px-4");
       expect(cn(null, 0, "", "px-4")).toBe("px-4");
       expect(cn(false, null, undefined, 0, "")).toBe("");
@@ -79,7 +70,6 @@ describe("cn: falsy-canonical arg shapes across arities", () => {
       expect(cn("px-2", "px-2")).toBe("px-2");
       expect(cn("px-2", "px-2", "px-2")).toBe("px-2");
       expect(cn("px-2", "px-2", "px-2", "px-2")).toBe("px-2");
-      // Last-wins dedup: the trailing "flex" claims the display group, dropping earlier ones.
       expect(cn("flex", "flex px-2", false, "flex")).toBe("px-2 flex");
     }
   });

@@ -2,17 +2,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Bench } from "tinybench";
 
-// Settle empirically: is the LRU data structure a bottleneck, and would a
-// different caching algorithm be faster? We compare per-op throughput of the
-// current two-bucket plain-object cache against alternatives, in two regimes:
-//   - HIT-heavy (working set fits): the re-render case.
-//   - THRASH (working set = 2x capacity): the miss/insert case.
-
 type Cache = { get(k: string): string | undefined; set(k: string, v: string): void };
 
 const MAX = 500;
 
-// Current implementation: two generations of null-proto objects.
 const twoBucketObject = (max: number): Cache => {
   let size = 0;
   let cache: Record<string, string> = Object.create(null);
@@ -41,7 +34,6 @@ const twoBucketObject = (max: number): Cache => {
   };
 };
 
-// Same algorithm but backed by Map instead of plain objects.
 const twoBucketMap = (max: number): Cache => {
   let cache = new Map<string, string>();
   let prev = new Map<string, string>();
@@ -68,7 +60,6 @@ const twoBucketMap = (max: number): Cache => {
   };
 };
 
-// True LRU via Map insertion-order: on hit, move-to-end; on overflow, evict oldest.
 const trueLruMap = (max: number): Cache => {
   const m = new Map<string, string>();
   return {
@@ -88,10 +79,6 @@ const trueLruMap = (max: number): Cache => {
   };
 };
 
-// SIEVE (Zhang et al., NSDI 2024): a single FIFO queue plus a per-entry "visited" bit and a
-// moving "hand". A hit only flips a bit (no list reordering, unlike true LRU); eviction sweeps the
-// hand from old to new, clearing visited bits and dropping the first unvisited entry. Higher hit
-// ratio than LRU at O(1), but the index is still a Map, so lookups pay Map.get, not object reads.
 interface SieveNode {
   key: string;
   value: string;
@@ -152,9 +139,6 @@ const sieve = (max: number): Cache => {
   };
 };
 
-// S3-FIFO (Yang et al., SOSP 2023): a small FIFO (~10% capacity) filters one-hit-wonders before
-// they reach the main FIFO, with a ghost queue tracking recently evicted keys for re-admission.
-// Scan-resistant with a strong hit ratio, but again Map-backed for the index.
 const s3Fifo = (max: number): Cache => {
   const smallMax = Math.max(1, Math.floor(max / 10));
   const mainMax = max - smallMax;
@@ -261,9 +245,6 @@ const run = async (label: string, keys: string[]) => {
   );
 };
 
-// Hit ratio under a skewed (Zipf-like) access pattern at half-capacity working pressure. This is
-// where SIEVE/S3-FIFO are supposed to win over a simple two-bucket cache. We compare hit ratios so
-// the speed numbers above can be weighed against any hit-ratio gain.
 const measureHitRatio = (make: (max: number) => Cache, keys: string[]): number => {
   const cache = make(MAX);
   const keyspace = Math.min(keys.length, MAX * 4);
@@ -277,7 +258,6 @@ const measureHitRatio = (make: (max: number) => Cache, keys: string[]): number =
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   })();
-  // Zipf-like skew: square the uniform sample so low indices (hot keys) dominate.
   const pick = () => keys[Math.floor(random() * random() * keyspace)]!;
 
   let hits = 0;

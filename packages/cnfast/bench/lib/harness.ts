@@ -25,11 +25,7 @@ export const gitSha = (() => {
 
 const resultsPath = fileURLToPath(new URL("../results.jsonl", import.meta.url));
 
-// DCE guard. `cn` is side-effect-free on inputs that bypass its cache (single bare tokens,
-// no-op merges), so a benchmark that discards results lets V8/JSC dead-code-eliminate those
-// calls and report wildly inflated throughput. Every workload MUST return a numeric sink (the
-// summed length of its results); we accumulate it into this module global and read it at the end
-// via `keepAlive`, which makes the whole call chain observable and defeats DCE.
+// Consuming result lengths prevents engines from eliminating cache-bypassing calls.
 let sink = 0;
 export const keepAlive = (): void => {
   if (sink === -1) throw new Error(`unreachable ${sink}`);
@@ -43,16 +39,10 @@ const meanOps = (task: { result?: unknown }): number => {
 };
 
 export interface Workload {
-  /** Coarse bucket for grouped reporting, e.g. "micro", "corpus", "page", "grid". */
   group: string;
-  /** Row label within the group. */
   name: string;
-  /** Optional extra detail (call count, unique keys, ...). */
   meta?: string;
-  /**
-   * Runs one iteration and returns a numeric sink (typically the summed `.length` of every result).
-   * MUST consume every `impl(...)` result so the harness can defeat dead-code elimination.
-   */
+  // Every workload must consume output so dead-code elimination cannot invalidate its timing.
   run: (impl: Impl) => number;
 }
 
@@ -65,8 +55,6 @@ export interface WorkloadResult {
   speedup: number;
 }
 
-// Best-of-N ops/s for cnfast vs the reference over one `run`. The `sink +=` accumulation is what
-// makes the comparison DCE-safe, so every benchmark in the repo should go through here.
 export const benchRun = async (
   run: (impl: Impl) => number,
 ): Promise<{ cnfast: number; reference: number }> => {

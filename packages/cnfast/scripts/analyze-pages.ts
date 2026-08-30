@@ -32,8 +32,7 @@ for (const file of readdirSync(pagesDir)
     for (const token of node.classes) tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
   });
 
-  // Cache-hit rate for a one-pass render with a 500-entry whole-string LRU:
-  // the first time each unique string appears it misses, every repeat hits.
+  // The first occurrence misses the 500-entry cache, while later occurrences hit.
   const misses = Math.min(uniqueStrings.size, withClasses);
   const hitRate = withClasses > 0 ? 1 - misses / withClasses : 0;
 

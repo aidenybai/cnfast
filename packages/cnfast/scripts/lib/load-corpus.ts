@@ -17,7 +17,6 @@ export const corpusPath = (name: string): string =>
 export const loadRegistry = (): RepoTarget[] =>
   JSON.parse(readFileSync(registryPath, "utf8")) as RepoTarget[];
 
-// Loads named corpora, or every *.json under bench/corpora when none requested.
 export const loadCorpora = (names?: string[]): Corpus[] => {
   const dir = fileURLToPath(corporaDir);
   const wanted =

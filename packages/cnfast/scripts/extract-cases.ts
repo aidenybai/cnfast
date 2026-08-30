@@ -8,8 +8,6 @@ import { corpusPath, loadRegistry } from "./lib/load-corpus";
 const DEFAULT_SOURCE_GLOBS = ["**/*.{ts,tsx,js,jsx}"];
 const IGNORE_GLOBS = ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/*.d.ts"];
 
-// Parses `extract-cases.ts [name ...]` and `--url <url> --name <name>`. With no
-// args it extracts every repo in bench/repos.json.
 const resolveTargets = (registry: RepoTarget[]): RepoTarget[] => {
   const argv = process.argv.slice(2);
   const urlIndex = argv.indexOf("--url");

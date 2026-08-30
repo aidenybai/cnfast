@@ -23,13 +23,9 @@ const VOID_TAGS = new Set([
   "track",
   "wbr",
 ]);
-// React rejects some captured tags as DOM elements; normalize the structural ones.
 const remapTag = (tag: string): string =>
   tag === "html" || tag === "body" || tag === "head" ? "div" : tag;
 
-// Real SSR: build the React element tree (calling cn for every node's className, exactly as
-// components do on each request) then renderToString. cn is on the critical path because there is
-// no paint/layout on the server to hide behind.
 const toReact = (node: FrozenNode, impl: Impl, key: number): ReactNode => {
   const tag = remapTag(node.tag);
   const className = impl(...node.classes);
@@ -45,8 +41,6 @@ const toReact = (node: FrozenNode, impl: Impl, key: number): ReactNode => {
 const renderReact = (tree: FrozenNode, impl: Impl): number =>
   renderToString(toReact(tree, impl, 0)).length;
 
-// Pure-string SSR: same per-node cn work, trivial serialization -> upper bound on how much cn alone
-// can move SSR throughput.
 const renderHtml = (tree: FrozenNode, impl: Impl): number => {
   let html = "";
   const walk = (node: FrozenNode): void => {

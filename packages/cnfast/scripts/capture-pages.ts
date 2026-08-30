@@ -8,8 +8,6 @@ export interface PageTarget {
   url: string;
 }
 
-// A frozen snapshot of a real rendered page: the element tree with its class
-// lists and leaf text, stripped of scripts/styles/network so it replays offline.
 export interface FrozenNode {
   tag: string;
   classes: string[];
@@ -39,8 +37,7 @@ const countNodes = (node: FrozenNode): number => {
   return total;
 };
 
-// Passed to page.evaluate as a string so tsx/esbuild never transforms it (a
-// compiled closure references the missing `__name` helper in the page context).
+// Passing source text prevents esbuild from adding a helper unavailable in the page context.
 const SERIALIZE_SCRIPT = `(() => {
   const MAX_TEXT = 140;
   const SKIP = new Set(["SCRIPT","STYLE","LINK","META","NOSCRIPT","TEMPLATE","SVG","PATH","IFRAME"]);

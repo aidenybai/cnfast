@@ -19,8 +19,6 @@ const uniqueStringCount = (groups: ClassListArgs[]): number => {
   return unique.size;
 };
 
-// Sums `.length` of every result so the harness can defeat DCE. Splitting per arity keeps the
-// `impl(...group)` spread call monomorphic-ish and mirrors how `cn` is invoked in real code.
 const replayGroups =
   (groups: ClassListArgs[]) =>
   (impl: Impl): number => {
@@ -29,7 +27,6 @@ const replayGroups =
     return sink;
   };
 
-// micro: the two canonical extremes — cache-hit re-renders and all-miss merge engine.
 export const microWorkloads = (): Workload[] => {
   const dataset = readJson<ClassListArgs[]>(
     "../../tests/tailwind-merge/tw-merge-benchmark-data.json",
@@ -60,8 +57,6 @@ export const microWorkloads = (): Workload[] => {
   ];
 };
 
-// corpus: every cn() call harvested from a real app's source, one full pass == one cold render of
-// the whole app's class plumbing (mostly unique -> exercises the merge engine).
 export const corpusWorkloads = (requested?: string[]): Workload[] =>
   loadCorpora(requested).map((corpus) => ({
     group: "corpus",
@@ -82,8 +77,6 @@ const callSequence = (tree: FrozenNode): ClassListArgs[] => {
   return calls;
 };
 
-// page: replay each captured page's real per-render call sequence (document order, real
-// duplicates) -> the authentic cache hit/miss mix a single render produces.
 export const pageWorkloads = (): Workload[] => {
   const dir = fileURLToPath(pagesDir);
   let files: string[];
@@ -106,9 +99,6 @@ export const pageWorkloads = (): Workload[] => {
   });
 };
 
-// grid: a virtualized data grid re-rendering every frame. Classes genuinely conflict (multiple
-// bg-*/text-*), so the merge engine has real work. The dynamic variant injects a live arbitrary
-// value per cell -> continuous cache misses (the genuinely hard, descriptor-cache-thrashing case).
 export const gridWorkloads = (): Workload[] => {
   const ROWS = Number(process.env.GRID_ROWS ?? 200);
   const COLS = Number(process.env.GRID_COLS ?? 60);
