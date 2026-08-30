@@ -15,17 +15,17 @@ export const twJoin = (...classLists: ClassNameValue[]): string => {
   let index = 0;
   let argument: ClassNameValue;
   let resolvedValue: string;
-  let string = "";
+  let result = "";
 
   while (index < classLists.length) {
     if ((argument = classLists[index++])) {
       if ((resolvedValue = toValue(argument))) {
-        if (string) string += " ";
-        string += resolvedValue;
+        if (result) result += " ";
+        result += resolvedValue;
       }
     }
   }
-  return string;
+  return result;
 };
 
 const toValue = (value: ClassNameArray | string): string => {
@@ -34,16 +34,16 @@ const toValue = (value: ClassNameArray | string): string => {
   }
 
   let resolvedValue: string;
-  let string = "";
+  let result = "";
 
   for (let index = 0; index < value.length; index++) {
     if (value[index]) {
       if ((resolvedValue = toValue(value[index] as ClassNameArray | string))) {
-        if (string) string += " ";
-        string += resolvedValue;
+        if (result) result += " ";
+        result += resolvedValue;
       }
     }
   }
 
-  return string;
+  return result;
 };

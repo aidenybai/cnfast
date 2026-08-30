@@ -121,7 +121,7 @@ const createClassPartObject = (
 const CLASS_PART_SEPARATOR = "-";
 
 const EMPTY_CONFLICTS: readonly AnyClassGroupIds[] = [];
-// I use two dots here because one dot is used as prefix for class groups in plugins
+// Two dots because a single dot is the class-group prefix used by plugins.
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 
 const EMPTY_CONFLICT_ROW: readonly number[] = [];
@@ -146,8 +146,7 @@ export const createClassGroupUtils = (config: AnyConfig) => {
     const classParts = className.split(CLASS_PART_SEPARATOR);
     // Classes like `-inset-1` produce an empty string as first classPart (equivalently: the class
     // starts with `-`). We assume that classes for negative values are used correctly and skip it.
-    const startIndex =
-      classParts.length > 1 && className.charCodeAt(0) === 45 /* "-" */ ? 1 : 0;
+    const startIndex = classParts.length > 1 && className.charCodeAt(0) === 45 /* "-" */ ? 1 : 0;
     return getGroupRecursive(classParts, startIndex, classMap);
   };
 
@@ -171,16 +170,14 @@ export const createClassGroupUtils = (config: AnyConfig) => {
     return conflictingClassGroups[classGroupId] || EMPTY_CONFLICTS;
   };
 
-  // Dense integer IDs for every class group named in the config. IC profiling showed
-  // `conflictingClassGroups[classGroupId]` / `conflictingClassGroupModifiers[classGroupId]` were
-  // 294 of 303 megamorphic sites in the library (string-keyed loads over hundreds of distinct
-  // keys, permanently N-state). Enumerating the groups once at config-build time turns every
-  // steady-state conflict lookup into a monomorphic array-index load and lets the descriptor layer
-  // memoize interned conflict-key IDs under packed numeric `(modifierIdx, groupIdx)` keys instead
-  // of concatenating + hashing a string per conflict. Group IDs produced dynamically at lookup time (arbitrary
-  // properties like `[color:red]` -> `arbitrary..color`) are deliberately NOT interned here: they
-  // never have conflict rows, so callers fall back to their string path for them and this map
-  // stays fixed-size for the life of the config.
+  // Dense integer IDs for every class group named in the config. IC profiling showed the
+  // string-keyed `conflictingClassGroups[classGroupId]` loads were 294 of 303 megamorphic sites
+  // in the library; enumerating the groups once at config-build time turns every steady-state
+  // conflict lookup into a monomorphic array-index load and lets the descriptor layer memoize
+  // interned conflict-key IDs under packed numeric `(modifierIndex, groupIndex)` keys instead of
+  // concatenating + hashing a string per conflict. Group IDs minted dynamically at lookup time
+  // (`[color:red]` -> `arbitrary..color`) are deliberately NOT interned: they never have conflict
+  // rows, so callers use their string path and this map stays fixed-size for the config's life.
   const groupIndexes = new Map<AnyClassGroupIds, number>();
   const internGroupIndex = (classGroupId: AnyClassGroupIds): number => {
     let index = groupIndexes.get(classGroupId);
@@ -244,8 +241,8 @@ const getGroupRecursive = (
   startIndex: number,
   classPartObject: ClassPartObject,
 ): AnyClassGroupIds | undefined => {
-  const classPathsLength = classParts.length - startIndex;
-  if (classPathsLength === 0) {
+  const remainingPartCount = classParts.length - startIndex;
+  if (remainingPartCount === 0) {
     return classPartObject.classGroupId;
   }
 
@@ -295,11 +292,7 @@ const getGroupRecursive = (
   return undefined;
 };
 
-/**
- * Get the class group ID for an arbitrary property.
- *
- * @param className - The class name to get the group ID for. Is expected to be string starting with `[` and ending with `]`.
- */
+// `className` is expected to start with `[` and end with `]` (the caller guarantees it).
 const getGroupIdForArbitraryProperty = (className: string): AnyClassGroupIds | undefined => {
   const content = className.slice(1, -1);
   const colonIndex = content.indexOf(":");

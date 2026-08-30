@@ -1,19 +1,16 @@
-/**
- * Concatenates two arrays faster than the array spread operator.
- */
+/** Concatenates two arrays into a presized array, faster than array spread. */
 export const concatArrays = <T, U>(
   array1: readonly T[],
   array2: readonly U[],
 ): readonly (T | U)[] => {
-  // Pre-allocate for better V8 optimization
   const length1 = array1.length;
   const length2 = array2.length;
   const combinedArray: (T | U)[] = new Array(length1 + length2);
-  for (let i = 0; i < length1; i++) {
-    combinedArray[i] = array1[i]!;
+  for (let index = 0; index < length1; index++) {
+    combinedArray[index] = array1[index]!;
   }
-  for (let i = 0; i < length2; i++) {
-    combinedArray[length1 + i] = array2[i]!;
+  for (let index = 0; index < length2; index++) {
+    combinedArray[length1 + index] = array2[index]!;
   }
   return combinedArray;
 };

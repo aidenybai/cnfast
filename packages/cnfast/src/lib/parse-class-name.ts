@@ -10,7 +10,7 @@ const CHAR_OPEN_PAREN = 40; // "("
 const CHAR_CLOSE_PAREN = 41; // ")"
 const CHAR_IMPORTANT = 33; // "!"
 
-// Pre-allocated result object shape for consistency
+// Single factory so every parse result shares one object shape (identical key order).
 const createResultObject = (
   modifiers: string[],
   hasImportantModifier: boolean,
@@ -24,17 +24,17 @@ const createResultObject = (
   isExternal: undefined,
 });
 
-/**
- * Parse class name into parts.
- *
- * Inspired by `splitAtTopLevelOnly` used in Tailwind CSS
- * @see https://github.com/tailwindlabs/tailwindcss/blob/v3.2.2/src/util/splitAtTopLevelOnly.js
- */
 // Shared result for the modifier-less case (most tokens reaching this parser carry an arbitrary
 // value or important marker but no variant). Frozen so an accidental consumer mutation throws
 // instead of corrupting every later parse; no caller mutates parse results.
 const EMPTY_MODIFIERS: string[] = Object.freeze([]) as unknown as string[];
 
+/**
+ * Parse a class name into modifiers, base name, important flag, and postfix-modifier position.
+ *
+ * Inspired by `splitAtTopLevelOnly` used in Tailwind CSS
+ * @see https://github.com/tailwindlabs/tailwindcss/blob/v3.2.2/src/util/splitAtTopLevelOnly.js
+ */
 export const parseClassName = (className: string): ParsedClassName => {
   // Materialized lazily: allocating `[]` up front costs an array on every parse even though most
   // tokens have no modifiers at all.
@@ -45,8 +45,8 @@ export const parseClassName = (className: string): ParsedClassName => {
   let modifierStart = 0;
   let postfixModifierPosition: number | undefined;
 
-  const len = className.length;
-  for (let index = 0; index < len; index++) {
+  const length = className.length;
+  for (let index = 0; index < length; index++) {
     const charCode = className.charCodeAt(index);
 
     if (bracketDepth === 0 && parenDepth === 0) {

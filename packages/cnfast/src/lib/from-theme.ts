@@ -1,6 +1,6 @@
 import { DefaultThemeGroupIds, NoInfer, ThemeGetter, ThemeObject } from "./types";
 
-const fallbackThemeArr: ThemeObject<DefaultThemeGroupIds>[DefaultThemeGroupIds] = [];
+const fallbackThemeArray: ThemeObject<DefaultThemeGroupIds>[DefaultThemeGroupIds] = [];
 
 export const fromTheme = <
   AdditionalThemeGroupIds extends string = never,
@@ -9,7 +9,7 @@ export const fromTheme = <
   key: NoInfer<DefaultThemeGroupIdsInner | AdditionalThemeGroupIds>,
 ): ThemeGetter => {
   const themeGetter = (theme: ThemeObject<DefaultThemeGroupIdsInner | AdditionalThemeGroupIds>) =>
-    theme[key] || fallbackThemeArr;
+    theme[key] || fallbackThemeArray;
 
   themeGetter.isThemeGetter = true as const;
 

@@ -29,10 +29,10 @@ const CHAR_DASH = 45; // "-"
 
 // `\w` of the replaced regexes: [A-Za-z0-9_] (the `i` flag adds nothing to `\w`).
 const isWordCharCode = (charCode: number): boolean =>
-  (charCode >= 97 && charCode <= 122) ||
-  (charCode >= 65 && charCode <= 90) ||
-  (charCode >= 48 && charCode <= 57) ||
-  charCode === 95;
+  (charCode >= 97 && charCode <= 122) /* a-z */ ||
+  (charCode >= 65 && charCode <= 90) /* A-Z */ ||
+  (charCode >= 48 && charCode <= 57) /* 0-9 */ ||
+  charCode === 95; /* "_" */
 
 /**
  * Matches `value` against `^<open>(?:(\w[\w-]*):)?(.+)<close>$` without a regex.
@@ -71,7 +71,12 @@ const scanArbitrary = (value: string, openCharCode: number, closeCharCode: numbe
 
   for (let index = 1; index < length - 1; index++) {
     const charCode = value.charCodeAt(index);
-    if (charCode === 10 || charCode === 13 || charCode === 8232 || charCode === 8233) {
+    if (
+      charCode === 10 /* LF */ ||
+      charCode === 13 /* CR */ ||
+      charCode === 8232 /* LS */ ||
+      charCode === 8233 /* PS */
+    ) {
       return -1;
     }
   }
@@ -130,9 +135,8 @@ export const isTshirtSize = (value: string) => tshirtUnitRegex.test(value);
 export const isAny = () => true;
 
 const isLengthOnly = (value: string) =>
-  // `colorFunctionRegex` check is necessary because color functions can have percentages in them which which would be incorrectly classified as lengths.
-  // For example, `hsl(0 0% 0%)` would be classified as a length without this check.
-  // I could also use lookbehind assertion in `lengthUnitRegex` but that isn't supported widely enough.
+  // Color functions contain percentages (`hsl(0 0% 0%)`) that `lengthUnitRegex` would otherwise
+  // classify as lengths; a lookbehind in the regex isn't supported widely enough.
   lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
 
 const isNever = () => false;
