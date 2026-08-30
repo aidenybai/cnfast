@@ -2,7 +2,7 @@ import latestBenchmarkReport from "../../../cnfast/bench/latest.json";
 import { Suspense } from "react";
 
 import { BenchmarkSectionTable } from "@/components/benchmark-section-table";
-import { PerformanceChart } from "@/components/performance-chart";
+import { BenchmarkSectionTableSkeleton } from "@/components/benchmark-section-table-skeleton";
 import { SiteHeader } from "@/components/site-header";
 import { BENCHMARK_COMMIT_BASE_URL } from "@/constants";
 import generatedBenchmarkData from "@/generated/benchmark-data.json";
@@ -86,28 +86,22 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
               </div>
 
               <div className="space-y-10">
-                <section className="space-y-6">
-                  <PerformanceChart report={benchmarkReport} />
+                <section>
                   <Suspense
                     fallback={
-                      <div
-                        aria-label="Loading performance benchmarks"
-                        className="h-96 animate-pulse rounded-lg border bg-muted/40"
-                        role="status"
-                      />
+                      <BenchmarkSectionTableSkeleton hideHeading section={performanceSection} />
                     }
                   >
                     <PerformanceBenchmarkTable searchParams={searchParams} />
                   </Suspense>
                 </section>
                 <Suspense
-                  fallback={
-                    <div
-                      aria-label="Loading bundle benchmarks"
-                      className="h-40 animate-pulse rounded-lg border bg-muted/40"
-                      role="status"
+                  fallback={performanceSection.relatedSections?.map((relatedSection) => (
+                    <BenchmarkSectionTableSkeleton
+                      key={relatedSection.id}
+                      section={relatedSection}
                     />
-                  }
+                  ))}
                 >
                   <RelatedBenchmarkTables searchParams={searchParams} />
                 </Suspense>

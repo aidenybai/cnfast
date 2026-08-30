@@ -94,8 +94,9 @@ interface BenchmarkSectionTableProps {
   sortState: BenchmarkSortState;
 }
 
-interface PerformanceChartProps {
-  report: BenchmarkReport;
+interface BenchmarkSectionTableSkeletonProps {
+  hideHeading?: boolean;
+  section: BenchmarkSection;
 }
 
 interface SortableBenchmarkHeaderProps {
