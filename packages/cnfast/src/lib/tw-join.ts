@@ -1,10 +1,5 @@
 import { SPACE_CHARACTER } from "./constants";
 
-/**
- * Adapted from clsx v1.2.1 runtime and TypeScript definitions.
- * MIT License. Copyright Luke Edwards <luke.edwards05@gmail.com>.
- */
-
 export type ClassNameValue = ClassNameArray | string | null | undefined | 0 | 0n | false;
 type ClassNameArray = readonly ClassNameValue[];
 
