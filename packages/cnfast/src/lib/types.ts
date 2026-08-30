@@ -1,7 +1,11 @@
-export type Config<ClassGroupIds extends string, ThemeGroupIds extends string> = ConfigGroupsPart<
-  ClassGroupIds,
-  ThemeGroupIds
->;
+export interface Config<ClassGroupIds extends string, ThemeGroupIds extends string> {
+  theme: NoInfer<ThemeObject<ThemeGroupIds>>;
+  classGroups: NoInfer<Record<ClassGroupIds, ClassGroup<ThemeGroupIds>>>;
+  conflictingClassGroups: NoInfer<Partial<Record<ClassGroupIds, readonly ClassGroupIds[]>>>;
+  conflictingClassGroupModifiers: NoInfer<Partial<Record<ClassGroupIds, readonly ClassGroupIds[]>>>;
+  postfixLookupClassGroups?: readonly NoInferString<ClassGroupIds>[];
+  orderSensitiveModifiers: string[];
+}
 
 export interface ParsedClassName {
   isExternal?: boolean;
@@ -9,15 +13,6 @@ export interface ParsedClassName {
   hasImportantModifier: boolean;
   baseClassName: string;
   maybePostfixModifierPosition: number | undefined;
-}
-
-interface ConfigGroupsPart<ClassGroupIds extends string, ThemeGroupIds extends string> {
-  theme: NoInfer<ThemeObject<ThemeGroupIds>>;
-  classGroups: NoInfer<Record<ClassGroupIds, ClassGroup<ThemeGroupIds>>>;
-  conflictingClassGroups: NoInfer<Partial<Record<ClassGroupIds, readonly ClassGroupIds[]>>>;
-  conflictingClassGroupModifiers: NoInfer<Partial<Record<ClassGroupIds, readonly ClassGroupIds[]>>>;
-  postfixLookupClassGroups?: readonly NoInferString<ClassGroupIds>[];
-  orderSensitiveModifiers: string[];
 }
 
 export type ThemeObject<ThemeGroupIds extends string> = Record<
@@ -30,7 +25,9 @@ type ClassDefinition<ThemeGroupIds extends string> =
   | ClassValidator
   | ThemeReference
   | ClassObject<ThemeGroupIds>;
-export type ClassValidator = (classPart: string) => boolean;
+export interface ClassValidator {
+  (classPart: string): boolean;
+}
 export interface ThemeReference {
   themeGroupId: string;
 }

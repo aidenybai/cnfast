@@ -1,25 +1,27 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const testsDir = fileURLToPath(new URL("../tests/tailwind-merge", import.meta.url));
+const testsDirectoryPath = fileURLToPath(new URL("../tests/tailwind-merge", import.meta.url));
 const outputUrl = new URL("../bench/cases.json", import.meta.url);
 
 const STRING_LITERAL_REGEX = /(['"])((?:\\.|(?!\1).)*)\1/g;
 const LOOKS_LIKE_CLASS_LIST = /^[\w[\](){}!:/.,#%&+*~<>=@-][\w\s[\](){}!:/.,#%&+*~<>=@-]*$/;
 
-const cases = new Set<string>();
+const benchmarkCases = new Set<string>();
 
-for (const file of readdirSync(testsDir)) {
-  if (!file.endsWith(".test.ts")) continue;
-  const contents = readFileSync(`${testsDir}/${file}`, "utf8");
-  for (const match of contents.matchAll(STRING_LITERAL_REGEX)) {
-    const value = match[2]!;
-    if (value && LOOKS_LIKE_CLASS_LIST.test(value)) {
-      cases.add(value);
+for (const testFileName of readdirSync(testsDirectoryPath)) {
+  if (!testFileName.endsWith(".test.ts")) continue;
+  const testSource = readFileSync(`${testsDirectoryPath}/${testFileName}`, "utf8");
+  for (const stringLiteralMatch of testSource.matchAll(STRING_LITERAL_REGEX)) {
+    const stringValue = stringLiteralMatch[2]!;
+    if (stringValue && LOOKS_LIKE_CLASS_LIST.test(stringValue)) {
+      benchmarkCases.add(stringValue);
     }
   }
 }
 
-const sorted = [...cases].sort();
-writeFileSync(fileURLToPath(outputUrl), `${JSON.stringify(sorted, null, 2)}\n`);
-console.log(`Extracted ${sorted.length} benchmark cases from the test set -> bench/cases.json`);
+const sortedBenchmarkCases = [...benchmarkCases].sort();
+writeFileSync(fileURLToPath(outputUrl), `${JSON.stringify(sortedBenchmarkCases, null, 2)}\n`);
+console.log(
+  `Extracted ${sortedBenchmarkCases.length} benchmark cases from the test set -> bench/cases.json`,
+);

@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Bench } from "tinybench";
+import {
+  LRU_BENCHMARK_TIME_MS,
+  LRU_BENCHMARK_WARMUP_TIME_MS,
+  LRU_CACHE_ENTRY_COUNT,
+  LRU_HIT_RATIO_ITERATION_COUNT,
+} from "./constants";
 
 interface Cache {
   get(key: string): string | undefined;
@@ -12,7 +18,33 @@ interface FifoEntry {
   frequency: number;
 }
 
-const MAX = 500;
+interface CacheImplementation {
+  name: string;
+  createCache: (maxEntries: number) => Cache;
+}
+
+interface ThroughputResult {
+  throughput: {
+    mean: number;
+  };
+}
+
+interface RandomNumberGenerator {
+  getNext(): number;
+}
+
+const createHitRatioRandomNumberGenerator = (): RandomNumberGenerator => {
+  let state = 0x9e3779b9 >>> 0;
+  return {
+    getNext: () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let randomValue = state;
+      randomValue = Math.imul(randomValue ^ (randomValue >>> 15), randomValue | 1);
+      randomValue ^= randomValue + Math.imul(randomValue ^ (randomValue >>> 7), randomValue | 61);
+      return ((randomValue ^ (randomValue >>> 14)) >>> 0) / 4_294_967_296;
+    },
+  };
+};
 
 const createTwoBucketObjectCache = (maxEntries: number): Cache => {
   let size = 0;
@@ -219,74 +251,73 @@ const corpus = JSON.parse(
   readFileSync(fileURLToPath(new URL("./cases.json", import.meta.url)), "utf8"),
 ) as string[];
 
-const hitKeys = corpus.slice(0, MAX);
-const thrashKeys = corpus.slice(0, MAX * 2);
+const hitKeys = corpus.slice(0, LRU_CACHE_ENTRY_COUNT);
+const thrashKeys = corpus.slice(0, LRU_CACHE_ENTRY_COUNT * 2);
 
-const implementations: [string, (maxEntries: number) => Cache][] = [
-  ["two-bucket object (current)", createTwoBucketObjectCache],
-  ["two-bucket Map", createTwoBucketMapCache],
-  ["true-LRU Map", createLruMapCache],
-  ["SIEVE (NSDI'24)", createSieveCache],
-  ["S3-FIFO (SOSP'23)", createS3FifoCache],
+const cacheImplementations: CacheImplementation[] = [
+  { name: "two-bucket object (current)", createCache: createTwoBucketObjectCache },
+  { name: "two-bucket Map", createCache: createTwoBucketMapCache },
+  { name: "true-LRU Map", createCache: createLruMapCache },
+  { name: "SIEVE (NSDI'24)", createCache: createSieveCache },
+  { name: "S3-FIFO (SOSP'23)", createCache: createS3FifoCache },
 ];
 
-const runBenchmark = async (label: string, keys: string[]) => {
-  const bench = new Bench({ time: 600, warmupTime: 150 });
-  for (const [name, createCache] of implementations) {
-    const cache = createCache(MAX);
+const runBenchmark = async (label: string, keys: string[]): Promise<void> => {
+  const benchmark = new Bench({
+    time: LRU_BENCHMARK_TIME_MS,
+    warmupTime: LRU_BENCHMARK_WARMUP_TIME_MS,
+  });
+  for (const implementation of cacheImplementations) {
+    const cache = implementation.createCache(LRU_CACHE_ENTRY_COUNT);
     for (const key of keys) cache.set(key, key);
-    bench.add(name, () => {
+    benchmark.add(implementation.name, () => {
       for (let index = 0; index < keys.length; index++) {
         if (cache.get(keys[index]!) === undefined) cache.set(keys[index]!, keys[index]!);
       }
     });
   }
-  await bench.run();
-  console.log(`\n${label} (${keys.length} keys, cap ${MAX})`);
+  await benchmark.run();
+  console.log(`\n${label} (${keys.length} keys, cap ${LRU_CACHE_ENTRY_COUNT})`);
   console.table(
-    bench.tasks.map((task) => ({
+    benchmark.tasks.map((task) => ({
       impl: task.name,
-      "ops/s": Math.round(
-        (task.result as { throughput: { mean: number } }).throughput.mean,
-      ).toLocaleString("en-US"),
+      "ops/s": Math.round((task.result as ThroughputResult).throughput.mean).toLocaleString(
+        "en-US",
+      ),
     })),
   );
 };
 
 const measureHitRatio = (createCache: (maxEntries: number) => Cache, keys: string[]): number => {
-  const cache = createCache(MAX);
-  const keyspace = Math.min(keys.length, MAX * 4);
-  const random = (() => {
-    let state = 0x9e3779b9 >>> 0;
-    return () => {
-      state = (state + 0x6d2b79f5) >>> 0;
-      let randomValue = state;
-      randomValue = Math.imul(randomValue ^ (randomValue >>> 15), randomValue | 1);
-      randomValue ^= randomValue + Math.imul(randomValue ^ (randomValue >>> 7), randomValue | 61);
-      return ((randomValue ^ (randomValue >>> 14)) >>> 0) / 4294967296;
-    };
-  })();
-  const pick = () => keys[Math.floor(random() * random() * keyspace)]!;
+  const cache = createCache(LRU_CACHE_ENTRY_COUNT);
+  const keyspaceSize = Math.min(keys.length, LRU_CACHE_ENTRY_COUNT * 4);
+  const randomNumberGenerator = createHitRatioRandomNumberGenerator();
+  const getRandomKey = () =>
+    keys[
+      Math.floor(randomNumberGenerator.getNext() * randomNumberGenerator.getNext() * keyspaceSize)
+    ]!;
 
-  let hits = 0;
-  const iterations = 100_000;
-  for (let index = 0; index < iterations; index++) {
-    const key = pick();
-    if (cache.get(key) !== undefined) hits++;
+  let hitCount = 0;
+  for (let index = 0; index < LRU_HIT_RATIO_ITERATION_COUNT; index++) {
+    const key = getRandomKey();
+    if (cache.get(key) !== undefined) hitCount++;
     else cache.set(key, key);
   }
-  return hits / iterations;
+  return hitCount / LRU_HIT_RATIO_ITERATION_COUNT;
 };
 
 await runBenchmark("HIT-heavy", hitKeys);
 await runBenchmark("THRASH", thrashKeys);
 
 console.log(
-  `\nHIT-RATIO (Zipf-like skew, keyspace ${Math.min(corpus.length, MAX * 4)}, cap ${MAX})`,
+  `\nHIT-RATIO (Zipf-like skew, keyspace ${Math.min(
+    corpus.length,
+    LRU_CACHE_ENTRY_COUNT * 4,
+  )}, cap ${LRU_CACHE_ENTRY_COUNT})`,
 );
 console.table(
-  implementations.map(([name, createCache]) => ({
-    impl: name,
-    "hit %": (measureHitRatio(createCache, corpus) * 100).toFixed(1),
+  cacheImplementations.map((implementation) => ({
+    impl: implementation.name,
+    "hit %": (measureHitRatio(implementation.createCache, corpus) * 100).toFixed(1),
   })),
 );

@@ -149,12 +149,7 @@ const addClassDefinition = (
     return;
   }
 
-  addObjectDefinition(
-    classDefinition as Record<string, ClassGroup<AnyThemeGroupIds>>,
-    classPartObject,
-    classGroupId,
-    theme,
-  );
+  addObjectDefinition(classDefinition, classPartObject, classGroupId, theme);
 };
 
 const addStringDefinition = (

@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Runs parity tests, a best-of-N benchmark, and a bundle-size comparison.
-# Usage: scripts/optimize-iter.sh <label>
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

@@ -3,8 +3,19 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { twMerge as twMergeReference } from "tailwind-merge";
 import { twMerge } from "./src/index.js";
+import { createSeededRandom } from "./utils/create-seeded-random";
 
 type ClassListArgs = (string | false | null)[];
+
+interface ParityMismatch {
+  input: ClassListArgs | string;
+  actualOutput: string;
+  referenceOutput: string;
+}
+
+const FUZZ_ITERATION_COUNT = 20_000;
+const MAX_FUZZ_CLASS_COUNT = 12;
+const MAX_RECORDED_MISMATCH_COUNT = 10;
 
 const datasetUrl = new URL("./tailwind-merge/tw-merge-benchmark-data.json", import.meta.url);
 const dataset: ClassListArgs[] = JSON.parse(readFileSync(fileURLToPath(datasetUrl), "utf8"));
@@ -19,46 +30,35 @@ const tokenPool = Array.from(
   ),
 );
 
-const createRandom = (seed: number) => {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-};
-
 describe("parity with tailwind-merge", () => {
   it("matches twMerge across the real-world dataset", () => {
-    const mismatches: { input: ClassListArgs; ours: string; reference: string }[] = [];
-    for (const args of dataset) {
-      const ours = twMerge(...args);
-      const reference = twMergeReference(...args);
-      if (ours !== reference) {
-        mismatches.push({ input: args, ours, reference });
+    const mismatches: ParityMismatch[] = [];
+    for (const classListArguments of dataset) {
+      const actualOutput = twMerge(...classListArguments);
+      const referenceOutput = twMergeReference(...classListArguments);
+      if (actualOutput !== referenceOutput) {
+        mismatches.push({ input: classListArguments, actualOutput, referenceOutput });
       }
     }
     expect(mismatches).toEqual([]);
   });
 
   it("matches twMerge across randomly fuzzed class lists", () => {
-    const random = createRandom(0x1234abcd);
-    const pick = () => tokenPool[Math.floor(random() * tokenPool.length)]!;
+    const random = createSeededRandom(0x1234abcd);
+    const getRandomClassName = () => tokenPool[Math.floor(random.getNext() * tokenPool.length)]!;
 
-    const mismatches: { input: string; ours: string; reference: string }[] = [];
-    for (let iteration = 0; iteration < 20000; iteration++) {
-      const count = 1 + Math.floor(random() * 12);
+    const mismatches: ParityMismatch[] = [];
+    for (let iteration = 0; iteration < FUZZ_ITERATION_COUNT; iteration++) {
+      const classCount = 1 + Math.floor(random.getNext() * MAX_FUZZ_CLASS_COUNT);
       let input = "";
-      for (let index = 0; index < count; index++) {
-        input += (index ? " " : "") + pick();
+      for (let index = 0; index < classCount; index++) {
+        input += (index ? " " : "") + getRandomClassName();
       }
-      const ours = twMerge(input);
-      const reference = twMergeReference(input);
-      if (ours !== reference) {
-        mismatches.push({ input, ours, reference });
-        if (mismatches.length >= 10) break;
+      const actualOutput = twMerge(input);
+      const referenceOutput = twMergeReference(input);
+      if (actualOutput !== referenceOutput) {
+        mismatches.push({ input, actualOutput, referenceOutput });
+        if (mismatches.length >= MAX_RECORDED_MISMATCH_COUNT) break;
       }
     }
     expect(mismatches).toEqual([]);

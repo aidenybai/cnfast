@@ -301,17 +301,17 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
   let nextConflictKeyId = 0;
 
   const getConflictKeyId = (conflictKey: string): number => {
-    let id = conflictKeyIds.get(conflictKey);
-    if (id === undefined) {
-      id = nextConflictKeyId++;
-      conflictKeyIds.set(conflictKey, id);
-      if (id >= claimedGeneration.length) {
+    let conflictKeyId = conflictKeyIds.get(conflictKey);
+    if (conflictKeyId === undefined) {
+      conflictKeyId = nextConflictKeyId++;
+      conflictKeyIds.set(conflictKey, conflictKeyId);
+      if (conflictKeyId >= claimedGeneration.length) {
         const grown = new Int32Array(claimedGeneration.length * 2);
         grown.set(claimedGeneration);
         claimedGeneration = grown;
       }
     }
-    return id;
+    return conflictKeyId;
   };
 
   const getModifierIndex = (modifier: string): number => {

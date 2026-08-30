@@ -1,8 +1,3 @@
-/**
- * Adapted from clsx v1.2.1 tests.
- * MIT License. Copyright Luke Edwards <luke.edwards05@gmail.com>.
- */
-
 import { expect, test } from "vitest";
 
 import { twJoin } from "../src";

@@ -1,11 +1,11 @@
 import { runSuite } from "./lib/harness";
 import { corpusWorkloads } from "./lib/workloads";
 
-const requested = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
+const requestedCorpusNames = process.argv.slice(2).filter((argument) => !argument.startsWith("--"));
 
 let workloads;
 try {
-  workloads = corpusWorkloads(requested);
+  workloads = corpusWorkloads(requestedCorpusNames);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

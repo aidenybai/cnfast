@@ -2,41 +2,56 @@ import { describe, expect, it } from "vitest";
 import { createCn } from "./src/index.js";
 
 const SEQUENCE_LENGTH = 10;
+const CACHE_TRIM_INPUT_COUNT = 120;
+const CACHE_ROTATION_INPUT_COUNT = 2_500;
+const CHURN_INPUT_COUNT = 60;
 
 describe("cn: successor prediction staleness", () => {
   it("stays correct across learned chains, bucket trims, and cache rotation", () => {
     const cn = createCn((config) => config);
 
-    const restArgs: string[] = [];
-    for (let i = 0; i < SEQUENCE_LENGTH; i++) restArgs.push(`seq-${i}`);
+    const sequenceArguments: string[] = [];
+    for (let sequenceIndex = 0; sequenceIndex < SEQUENCE_LENGTH; sequenceIndex++) {
+      sequenceArguments.push(`seq-${sequenceIndex}`);
+    }
 
     const replaySequence = (): void => {
-      for (let i = 0; i < SEQUENCE_LENGTH; i++) {
-        expect(cn(restArgs[i]!, "seq-anchor")).toBe(`seq-${i} seq-anchor`);
-        expect(cn(restArgs[i]!, `tri-${i}`, "tri-anchor")).toBe(`seq-${i} tri-${i} tri-anchor`);
-        expect(cn(restArgs[i]!, false, `var-${i}`, "var-anchor", null)).toBe(
-          `seq-${i} var-${i} var-anchor`,
+      for (let sequenceIndex = 0; sequenceIndex < SEQUENCE_LENGTH; sequenceIndex++) {
+        expect(cn(sequenceArguments[sequenceIndex]!, "seq-anchor")).toBe(
+          `seq-${sequenceIndex} seq-anchor`,
         );
+        expect(cn(sequenceArguments[sequenceIndex]!, `tri-${sequenceIndex}`, "tri-anchor")).toBe(
+          `seq-${sequenceIndex} tri-${sequenceIndex} tri-anchor`,
+        );
+        expect(
+          cn(sequenceArguments[sequenceIndex]!, false, `var-${sequenceIndex}`, "var-anchor", null),
+        ).toBe(`seq-${sequenceIndex} var-${sequenceIndex} var-anchor`);
       }
     };
 
     for (let round = 0; round < 4; round++) replaySequence();
 
-    for (let i = 0; i < 120; i++) {
-      expect(cn(`trim-${i}`, "seq-anchor")).toBe(`trim-${i} seq-anchor`);
-      expect(cn(`trim-${i}`, `tri-${i}`, "tri-anchor")).toBe(`trim-${i} tri-${i} tri-anchor`);
+    for (let inputIndex = 0; inputIndex < CACHE_TRIM_INPUT_COUNT; inputIndex++) {
+      expect(cn(`trim-${inputIndex}`, "seq-anchor")).toBe(`trim-${inputIndex} seq-anchor`);
+      expect(cn(`trim-${inputIndex}`, `tri-${inputIndex}`, "tri-anchor")).toBe(
+        `trim-${inputIndex} tri-${inputIndex} tri-anchor`,
+      );
     }
     for (let round = 0; round < 3; round++) replaySequence();
 
-    for (let i = 0; i < 2500; i++) {
-      expect(cn(`rot-${i}`, `rot-anchor-${i}`)).toBe(`rot-${i} rot-anchor-${i}`);
+    for (let inputIndex = 0; inputIndex < CACHE_ROTATION_INPUT_COUNT; inputIndex++) {
+      expect(cn(`rot-${inputIndex}`, `rot-anchor-${inputIndex}`)).toBe(
+        `rot-${inputIndex} rot-anchor-${inputIndex}`,
+      );
     }
     for (let round = 0; round < 3; round++) replaySequence();
 
     for (let pass = 0; pass < 6; pass++) {
       replaySequence();
-      for (let i = 0; i < 60; i++) {
-        expect(cn(`churn-${pass}-${i}`, "seq-anchor")).toBe(`churn-${pass}-${i} seq-anchor`);
+      for (let inputIndex = 0; inputIndex < CHURN_INPUT_COUNT; inputIndex++) {
+        expect(cn(`churn-${pass}-${inputIndex}`, "seq-anchor")).toBe(
+          `churn-${pass}-${inputIndex} seq-anchor`,
+        );
       }
     }
     replaySequence();

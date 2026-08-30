@@ -50,6 +50,15 @@ export default defineConfig({
           "@typescript-eslint/no-explicit-any": "off",
         },
       },
+      {
+        files: [
+          "packages/cnfast/tests/clsx/clsx.test.ts",
+          "packages/cnfast/tests/tailwind-merge/tw-join.test.ts",
+        ],
+        rules: {
+          "no-constant-binary-expression": "off",
+        },
+      },
     ],
   },
   fmt: {

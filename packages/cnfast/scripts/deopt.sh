@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Reports V8 deoptimizations in merge hot paths with `node --trace-deopt`.
-# For a GUI, open a dexnode isolate log in the deopt-explorer extension.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

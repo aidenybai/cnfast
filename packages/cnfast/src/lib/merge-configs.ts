@@ -1,6 +1,8 @@
 import { AnyConfig, ConfigExtension } from "./types";
 
-type PropertyObject = Partial<Record<string, readonly unknown[]>>;
+interface PropertyObject {
+  [property: string]: readonly unknown[] | undefined;
+}
 
 export const mergeConfigs = (
   baseConfig: AnyConfig,

@@ -17,40 +17,40 @@ const workloads: Workload[] = [
     group: "result-intern",
     name: "few-outputs / map-keyed consumer",
     meta: `(${INPUT_COUNT} inputs -> 16 outputs)`,
-    run: (impl) => {
-      let sink = 0;
-      const seen = new Map<string, number>();
+    run: (implementation) => {
+      let resultLengthSum = 0;
+      const outputCounts = new Map<string, number>();
       for (let index = 0; index < INPUT_COUNT; index++) {
-        const result = impl(fewOutputInputs[index]!);
-        seen.set(result, (seen.get(result) ?? 0) + 1);
-        sink += result.length;
+        const className = implementation(fewOutputInputs[index]!);
+        outputCounts.set(className, (outputCounts.get(className) ?? 0) + 1);
+        resultLengthSum += className.length;
       }
-      return sink + seen.size;
+      return resultLengthSum + outputCounts.size;
     },
   },
   {
     group: "result-intern",
     name: "few-outputs / nested cn",
     meta: `(${INPUT_COUNT} inputs -> 16 outputs, result fed back in)`,
-    run: (impl) => {
-      let sink = 0;
+    run: (implementation) => {
+      let resultLengthSum = 0;
       for (let index = 0; index < INPUT_COUNT; index++) {
-        const inner = impl(fewOutputInputs[index]!);
-        sink += impl(inner, "shrink-0").length;
+        const innerClassName = implementation(fewOutputInputs[index]!);
+        resultLengthSum += implementation(innerClassName, "shrink-0").length;
       }
-      return sink;
+      return resultLengthSum;
     },
   },
   {
     group: "result-intern",
     name: "unique-outputs / overhead",
     meta: `(${INPUT_COUNT} inputs, no repeats)`,
-    run: (impl) => {
-      let sink = 0;
+    run: (implementation) => {
+      let resultLengthSum = 0;
       for (let index = 0; index < INPUT_COUNT; index++) {
-        sink += impl(uniqueOutputInputs[index]!).length;
+        resultLengthSum += implementation(uniqueOutputInputs[index]!).length;
       }
-      return sink;
+      return resultLengthSum;
     },
   },
 ];

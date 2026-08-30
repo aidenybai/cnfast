@@ -4,15 +4,15 @@ import { AnyConfig } from "./types";
 export const createSortModifiers = (config: AnyConfig) => {
   const orderSensitiveModifiers = new Set(config.orderSensitiveModifiers);
 
-  const sortAndFlushSegment = (segment: string[], result: string[]): void => {
+  const appendSortedSegment = (segment: string[], sortedModifiers: string[]): void => {
     segment.sort();
     for (let index = 0; index < segment.length; index++) {
-      result.push(segment[index]!);
+      sortedModifiers.push(segment[index]!);
     }
   };
 
   return (modifiers: readonly string[]): string[] => {
-    const result: string[] = [];
+    const sortedModifiers: string[] = [];
     let currentSegment: string[] = [];
 
     for (let index = 0; index < modifiers.length; index++) {
@@ -23,19 +23,19 @@ export const createSortModifiers = (config: AnyConfig) => {
 
       if (isArbitrary || isOrderSensitive) {
         if (currentSegment.length > 0) {
-          sortAndFlushSegment(currentSegment, result);
+          appendSortedSegment(currentSegment, sortedModifiers);
           currentSegment = [];
         }
-        result.push(modifier);
+        sortedModifiers.push(modifier);
       } else {
         currentSegment.push(modifier);
       }
     }
 
     if (currentSegment.length > 0) {
-      sortAndFlushSegment(currentSegment, result);
+      appendSortedSegment(currentSegment, sortedModifiers);
     }
 
-    return result;
+    return sortedModifiers;
   };
 };

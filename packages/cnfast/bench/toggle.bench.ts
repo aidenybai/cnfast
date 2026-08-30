@@ -1,106 +1,104 @@
-import { runSuite, type ClassListArgs, type Workload } from "./lib/harness";
+import { TOGGLE_FRAME_COUNT, TOGGLE_SITE_COUNT } from "./constants";
+import { runSuite, type Workload } from "./lib/harness";
+import { createSeededRandom } from "./utils/create-seeded-random";
 
-const SITES = 200;
-const FRAMES = 32;
-
-const makeRandom = (seed: number): (() => number) => {
-  let state = seed >>> 0;
-  return () => {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
-};
-
-const bases: string[] = [];
-const variantA: string[] = [];
-const variantB: string[] = [];
-const variantC: string[] = [];
-for (let site = 0; site < SITES; site++) {
-  bases.push(`flex items-center gap-${(site % 4) + 1} px-${(site % 6) + 1} text-sm`);
-  variantA.push(`bg-blue-${((site % 5) + 1) * 100} text-white`);
-  variantB.push(`opacity-50 pointer-events-none px-${(site % 8) + 1}`);
-  variantC.push(`ring-2 ring-offset-${site % 4}`);
+const baseClassNames: string[] = [];
+const primaryVariantClassNames: string[] = [];
+const disabledVariantClassNames: string[] = [];
+const focusVariantClassNames: string[] = [];
+for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+  baseClassNames.push(
+    `flex items-center gap-${(siteIndex % 4) + 1} px-${(siteIndex % 6) + 1} text-sm`,
+  );
+  primaryVariantClassNames.push(`bg-blue-${((siteIndex % 5) + 1) * 100} text-white`);
+  disabledVariantClassNames.push(`opacity-50 pointer-events-none px-${(siteIndex % 8) + 1}`);
+  focusVariantClassNames.push(`ring-2 ring-offset-${siteIndex % 4}`);
 }
 
-const makeFlagSchedule = (toggleRate: number, seed: number): boolean[][] => {
-  const random = makeRandom(seed);
-  const frames: boolean[][] = [];
-  const current: boolean[] = [];
-  for (let index = 0; index < SITES * 3; index++) current.push(random() < 0.5);
-  frames.push([...current]);
-  for (let frame = 1; frame < FRAMES; frame++) {
-    for (let index = 0; index < SITES * 3; index++) {
-      if (random() < toggleRate) current[index] = !current[index];
-    }
-    frames.push([...current]);
+const createFlagSchedule = (toggleRate: number, seed: number): boolean[][] => {
+  const random = createSeededRandom(seed);
+  const flagFrames: boolean[][] = [];
+  const currentFlags: boolean[] = [];
+  for (let index = 0; index < TOGGLE_SITE_COUNT * 3; index++) {
+    currentFlags.push(random.getNext() < 0.5);
   }
-  return frames;
+  flagFrames.push([...currentFlags]);
+  for (let frameIndex = 1; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+    for (let index = 0; index < TOGGLE_SITE_COUNT * 3; index++) {
+      if (random.getNext() < toggleRate) currentFlags[index] = !currentFlags[index];
+    }
+    flagFrames.push([...currentFlags]);
+  }
+  return flagFrames;
 };
 
 const toggleWorkloads = (): Workload[] => {
   const workloads: Workload[] = [];
 
-  for (const rate of [0.1, 0.3, 0.5]) {
-    const label = `${Math.round(rate * 100)}%`;
+  for (const toggleRate of [0.1, 0.3, 0.5]) {
+    const toggleRateLabel = `${Math.round(toggleRate * 100)}%`;
 
-    const flags2 = makeFlagSchedule(rate, 0xc0ffee);
+    const twoArgumentFlagFrames = createFlagSchedule(toggleRate, 0xc0ffee);
     workloads.push({
       group: "toggle",
-      name: `arity-2 toggle ${label}`,
-      meta: `(${SITES} sites x ${FRAMES} frames)`,
-      run: (impl) => {
-        let sink = 0;
-        for (let frame = 0; frame < FRAMES; frame++) {
-          const flags = flags2[frame]!;
-          for (let site = 0; site < SITES; site++) {
-            sink += impl(bases[site]!, flags[site * 3]! && variantA[site]!).length;
-          }
-        }
-        return sink;
-      },
-    });
-
-    const flags3 = makeFlagSchedule(rate, 0xbadf00d);
-    workloads.push({
-      group: "toggle",
-      name: `arity-3 toggle ${label}`,
-      meta: `(${SITES} sites x ${FRAMES} frames)`,
-      run: (impl) => {
-        let sink = 0;
-        for (let frame = 0; frame < FRAMES; frame++) {
-          const flags = flags3[frame]!;
-          for (let site = 0; site < SITES; site++) {
-            sink += impl(
-              bases[site]!,
-              flags[site * 3]! && variantA[site]!,
-              flags[site * 3 + 1]! && variantB[site]!,
+      name: `arity-2 toggle ${toggleRateLabel}`,
+      meta: `(${TOGGLE_SITE_COUNT} sites x ${TOGGLE_FRAME_COUNT} frames)`,
+      run: (implementation) => {
+        let resultLengthSum = 0;
+        for (let frameIndex = 0; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+          const frameFlags = twoArgumentFlagFrames[frameIndex]!;
+          for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+            resultLengthSum += implementation(
+              baseClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3]! && primaryVariantClassNames[siteIndex]!,
             ).length;
           }
         }
-        return sink;
+        return resultLengthSum;
       },
     });
 
-    const flags5 = makeFlagSchedule(rate, 0x5eed);
+    const threeArgumentFlagFrames = createFlagSchedule(toggleRate, 0xbadf00d);
     workloads.push({
       group: "toggle",
-      name: `arity-5 toggle ${label}`,
-      meta: `(${SITES} sites x ${FRAMES} frames)`,
-      run: (impl) => {
-        let sink = 0;
-        for (let frame = 0; frame < FRAMES; frame++) {
-          const flags = flags5[frame]!;
-          for (let site = 0; site < SITES; site++) {
-            sink += impl(
-              bases[site]!,
-              flags[site * 3]! && variantA[site]!,
-              flags[site * 3 + 1]! && variantB[site]!,
-              flags[site * 3 + 2]! && variantC[site]!,
+      name: `arity-3 toggle ${toggleRateLabel}`,
+      meta: `(${TOGGLE_SITE_COUNT} sites x ${TOGGLE_FRAME_COUNT} frames)`,
+      run: (implementation) => {
+        let resultLengthSum = 0;
+        for (let frameIndex = 0; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+          const frameFlags = threeArgumentFlagFrames[frameIndex]!;
+          for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+            resultLengthSum += implementation(
+              baseClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3]! && primaryVariantClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3 + 1]! && disabledVariantClassNames[siteIndex]!,
+            ).length;
+          }
+        }
+        return resultLengthSum;
+      },
+    });
+
+    const fiveArgumentFlagFrames = createFlagSchedule(toggleRate, 0x5eed);
+    workloads.push({
+      group: "toggle",
+      name: `arity-5 toggle ${toggleRateLabel}`,
+      meta: `(${TOGGLE_SITE_COUNT} sites x ${TOGGLE_FRAME_COUNT} frames)`,
+      run: (implementation) => {
+        let resultLengthSum = 0;
+        for (let frameIndex = 0; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+          const frameFlags = fiveArgumentFlagFrames[frameIndex]!;
+          for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+            resultLengthSum += implementation(
+              baseClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3]! && primaryVariantClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3 + 1]! && disabledVariantClassNames[siteIndex]!,
+              frameFlags[siteIndex * 3 + 2]! && focusVariantClassNames[siteIndex]!,
               "rounded-md",
             ).length;
           }
         }
-        return sink;
+        return resultLengthSum;
       },
     });
   }
@@ -108,30 +106,34 @@ const toggleWorkloads = (): Workload[] => {
   workloads.push({
     group: "toggle",
     name: "all-truthy control",
-    meta: `(${SITES} sites x ${FRAMES} frames, arity 3)`,
-    run: (impl) => {
-      let sink = 0;
-      for (let frame = 0; frame < FRAMES; frame++) {
-        for (let site = 0; site < SITES; site++) {
-          sink += impl(bases[site]!, variantA[site]!, variantB[site]!).length;
+    meta: `(${TOGGLE_SITE_COUNT} sites x ${TOGGLE_FRAME_COUNT} frames, arity 3)`,
+    run: (implementation) => {
+      let resultLengthSum = 0;
+      for (let frameIndex = 0; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+        for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+          resultLengthSum += implementation(
+            baseClassNames[siteIndex]!,
+            primaryVariantClassNames[siteIndex]!,
+            disabledVariantClassNames[siteIndex]!,
+          ).length;
         }
       }
-      return sink;
+      return resultLengthSum;
     },
   });
 
   workloads.push({
     group: "toggle",
     name: "all-falsy tail",
-    meta: `(${SITES} sites x ${FRAMES} frames, arity 3)`,
-    run: (impl) => {
-      let sink = 0;
-      for (let frame = 0; frame < FRAMES; frame++) {
-        for (let site = 0; site < SITES; site++) {
-          sink += impl(bases[site]!, false as ClassListArgs[number], null).length;
+    meta: `(${TOGGLE_SITE_COUNT} sites x ${TOGGLE_FRAME_COUNT} frames, arity 3)`,
+    run: (implementation) => {
+      let resultLengthSum = 0;
+      for (let frameIndex = 0; frameIndex < TOGGLE_FRAME_COUNT; frameIndex++) {
+        for (let siteIndex = 0; siteIndex < TOGGLE_SITE_COUNT; siteIndex++) {
+          resultLengthSum += implementation(baseClassNames[siteIndex]!, false, null).length;
         }
       }
-      return sink;
+      return resultLengthSum;
     },
   });
 

@@ -29,8 +29,9 @@ const resolveClassNameValue = (value: ClassNameArray | string): string => {
   let classList = "";
 
   for (let index = 0; index < value.length; index++) {
-    if (value[index]) {
-      if ((resolvedClassName = resolveClassNameValue(value[index] as ClassNameArray | string))) {
+    const nestedValue = value[index];
+    if (nestedValue) {
+      if ((resolvedClassName = resolveClassNameValue(nestedValue))) {
         if (classList) classList += SPACE_CHARACTER;
         classList += resolvedClassName;
       }

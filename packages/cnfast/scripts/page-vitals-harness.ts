@@ -1,116 +1,127 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type FrozenNode } from "./capture-pages";
-import { type VitalsSample, bundleImplementations, bestOfVitals } from "./lib/measure-vitals";
+import { type VitalsSample, bundleImplementations, getBestVitals } from "./lib/measure-vitals";
 
-const pagesDir = new URL("../bench/pages/", import.meta.url);
+const pagesDirectoryUrl = new URL("../bench/pages/", import.meta.url);
 
-const fixturePath = (name: string): string => fileURLToPath(new URL(`${name}.json`, pagesDir));
+const getFixturePath = (pageName: string): string =>
+  fileURLToPath(new URL(`${pageName}.json`, pagesDirectoryUrl));
 
-const listAllPages = (): string[] => {
-  const dir = fileURLToPath(pagesDir);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((file) => file.endsWith(".json"))
-    .map((file) => file.slice(0, -".json".length))
+const getAllPageNames = (): string[] => {
+  const pagesDirectoryPath = fileURLToPath(pagesDirectoryUrl);
+  if (!existsSync(pagesDirectoryPath)) return [];
+  return readdirSync(pagesDirectoryPath)
+    .filter((fileName) => fileName.endsWith(".json"))
+    .map((fileName) => fileName.slice(0, -".json".length))
     .sort();
 };
 
-const requested = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
-const pageNames = requested.length > 0 ? requested : listAllPages();
+const requestedPageNames = process.argv.slice(2).filter((argument) => !argument.startsWith("--"));
+const pageNames = requestedPageNames.length > 0 ? requestedPageNames : getAllPageNames();
 if (pageNames.length === 0) {
   console.error("No frozen pages found. Capture first: pnpm bench:capture");
   process.exit(1);
 }
 
 const INTERACTION_COUNT = Number(process.env.WV_INTERACTIONS ?? 8);
-const RUNS = Number(process.env.WV_RUNS ?? 2);
+const RUN_COUNT = Number(process.env.WV_RUNS ?? 2);
 const CPU_SLOWDOWNS = (process.env.WV_CPU_SLOWDOWN ?? "6,20")
   .split(",")
   .map((value) => Math.max(1, Number(value.trim())))
   .filter((value) => Number.isFinite(value));
 
 const countNodes = (node: FrozenNode): number => {
-  let total = 1;
-  for (const child of node.children) total += countNodes(child);
-  return total;
+  let nodeCount = 1;
+  for (const childNode of node.children) nodeCount += countNodes(childNode);
+  return nodeCount;
 };
 
-const pageHtml = (cnBundle: string, treeJson: string): string => `<!doctype html>
+const createPageHtml = (cnBundle: string, frozenTreeJson: string): string => `<!doctype html>
 <html><head><meta charset="utf-8"></head>
 <body>
   <button id="go" style="position:fixed;top:0;right:0;z-index:99999">re-render</button>
   <div id="root"></div>
   <script>${cnBundle}</script>
   <script>
-    const cn = window.__cnModule.cn;
-    const tree = ${treeJson};
-    const root = document.getElementById('root');
-    let epoch = 0;
+    const mergeClassNames = window.__cnModule.cn;
+    const frozenTree = ${frozenTreeJson};
+    const rootElement = document.getElementById('root');
+    let renderEpoch = 0;
 
-    const build = (node, cold) => {
-      const el = document.createElement(node.tag === 'html' || node.tag === 'body' ? 'div' : node.tag);
-      const classes = cold ? node.classes.concat('e' + epoch) : node.classes;
-      el.className = cn.apply(null, classes);
-      if (node.text) el.appendChild(document.createTextNode(node.text));
-      for (let i = 0; i < node.children.length; i++) el.appendChild(build(node.children[i], cold));
-      return el;
+    const createNodeElement = (node, isColdRender) => {
+      const element = document.createElement(
+        node.tag === 'html' || node.tag === 'body' ? 'div' : node.tag,
+      );
+      const classNames = isColdRender ? node.classes.concat('e' + renderEpoch) : node.classes;
+      element.className = mergeClassNames.apply(null, classNames);
+      if (node.text) element.appendChild(document.createTextNode(node.text));
+      for (let childIndex = 0; childIndex < node.children.length; childIndex++) {
+        element.appendChild(createNodeElement(node.children[childIndex], isColdRender));
+      }
+      return element;
     };
 
-    const render = (cold) => root.replaceChildren(build(tree, cold));
+    const renderTree = (isColdRender) =>
+      rootElement.replaceChildren(createNodeElement(frozenTree, isColdRender));
 
     performance.mark('render-start');
-    render(false);
+    renderTree(false);
     performance.mark('render-end');
     performance.measure('initial-render', 'render-start', 'render-end');
 
     document.getElementById('go').addEventListener('click', () => {
-      epoch++;
-      render(true);
+      renderEpoch++;
+      renderTree(true);
     });
   </script>
 </body></html>`;
 
 const round = (value: number): string => value.toFixed(1);
-const ratio = (slow: number, fast: number): string => `${(slow / fast).toFixed(2)}x`;
+const getSpeedup = (referenceMilliseconds: number, cnfastMilliseconds: number): string =>
+  `${(referenceMilliseconds / cnfastMilliseconds).toFixed(2)}x`;
 
 const { cnfast: cnfastBundle, reference: referenceBundle } = await bundleImplementations();
 
 console.log(
   `Frozen-page web vitals: ${pageNames.length} real pages x slowdowns [${CPU_SLOWDOWNS.join(", ")}], ` +
-    `best-of-${RUNS}, ${INTERACTION_COUNT} interactions, cnfast vs clsx+tailwind-merge ...\n`,
+    `best-of-${RUN_COUNT}, ${INTERACTION_COUNT} interactions, cnfast vs clsx+tailwind-merge ...\n`,
 );
 
-const rows: Record<string, unknown>[] = [];
+const resultRows: Record<string, unknown>[] = [];
 
-for (const name of pageNames) {
-  const path = fixturePath(name);
-  if (!existsSync(path)) {
-    console.error(`Skipping "${name}": missing fixture (${path})`);
+for (const pageName of pageNames) {
+  const fixturePath = getFixturePath(pageName);
+  if (!existsSync(fixturePath)) {
+    console.error(`Skipping "${pageName}": missing fixture (${fixturePath})`);
     continue;
   }
-  const tree = JSON.parse(readFileSync(path, "utf8")) as FrozenNode;
-  const nodes = countNodes(tree);
-  const treeJson = JSON.stringify(tree).replace(/</g, "\\u003c");
-  const cnfastHtml = pageHtml(cnfastBundle, treeJson);
-  const referenceHtml = pageHtml(referenceBundle, treeJson);
+  const frozenTree = JSON.parse(readFileSync(fixturePath, "utf8")) as FrozenNode;
+  const nodeCount = countNodes(frozenTree);
+  const frozenTreeJson = JSON.stringify(frozenTree).replace(/</g, "\\u003c");
+  const cnfastHtml = createPageHtml(cnfastBundle, frozenTreeJson);
+  const referenceHtml = createPageHtml(referenceBundle, frozenTreeJson);
 
   for (const cpuSlowdown of CPU_SLOWDOWNS) {
-    const options = { interactions: INTERACTION_COUNT, runs: RUNS, cpuSlowdown };
-    const cnfast: VitalsSample = await bestOfVitals(cnfastHtml, options);
-    const reference: VitalsSample = await bestOfVitals(referenceHtml, options);
-    rows.push({
-      page: name,
-      nodes,
+    const options = {
+      interactionCount: INTERACTION_COUNT,
+      runCount: RUN_COUNT,
+      cpuSlowdown,
+    };
+    const cnfast: VitalsSample = await getBestVitals(cnfastHtml, options);
+    const reference: VitalsSample = await getBestVitals(referenceHtml, options);
+    resultRows.push({
+      page: pageName,
+      nodes: nodeCount,
       CPU: `${cpuSlowdown}x`,
       "render f/r": `${round(cnfast.initialRenderMs)}/${round(reference.initialRenderMs)}`,
-      "render x": ratio(reference.initialRenderMs, cnfast.initialRenderMs),
+      "render x": getSpeedup(reference.initialRenderMs, cnfast.initialRenderMs),
       "LCP f/r": `${round(cnfast.lcpMs)}/${round(reference.lcpMs)}`,
       "INP f/r": `${round(cnfast.inpMs)}/${round(reference.inpMs)}`,
     });
-    console.log(`  done: ${name} @ ${cpuSlowdown}x`);
+    console.log(`  done: ${pageName} @ ${cpuSlowdown}x`);
   }
 }
 
 console.log("\n(f/r = cnfast / clsx+tailwind-merge, milliseconds; lower is better)");
-console.table(rows);
+console.table(resultRows);

@@ -114,8 +114,8 @@ const getGroupIdRecursive = (
 
   const nextClassPartObject = classPartObject.nextPart.get(classParts[startIndex]!);
   if (nextClassPartObject) {
-    const result = getGroupIdRecursive(classParts, startIndex + 1, nextClassPartObject);
-    if (result) return result;
+    const classGroupId = getGroupIdRecursive(classParts, startIndex + 1, nextClassPartObject);
+    if (classGroupId) return classGroupId;
   }
 
   const validators = classPartObject.validators;

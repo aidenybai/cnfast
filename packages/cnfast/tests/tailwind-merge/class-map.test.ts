@@ -361,7 +361,7 @@ test("class map has correct class groups at first part", () => {
   });
 });
 
-function getClassGroupsInClassPart(classPart: ClassPartObject): Set<string> {
+const getClassGroupsInClassPart = (classPart: ClassPartObject): Set<string> => {
   const { classGroupId, validators, nextPart } = classPart;
 
   const classGroups = new Set<string>();
@@ -381,4 +381,4 @@ function getClassGroupsInClassPart(classPart: ClassPartObject): Set<string> {
   });
 
   return classGroups;
-}
+};

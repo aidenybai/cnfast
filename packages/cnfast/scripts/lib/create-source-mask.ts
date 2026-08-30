@@ -4,18 +4,18 @@ const canStartRegularExpression = (source: string, index: number): boolean => {
   if (previousIndex < 0) return true;
   if ("=(:,[!&|?{};".includes(source[previousIndex]!)) return true;
 
-  const before = source.slice(0, previousIndex + 1);
-  return /\b(?:case|delete|return|throw|typeof|void|yield)$/.test(before);
+  const precedingSource = source.slice(0, previousIndex + 1);
+  return /\b(?:case|delete|return|throw|typeof|void|yield)$/.test(precedingSource);
 };
 
-const markCode = (
+const markExecutableCode = (
   source: string,
-  mask: Uint8Array,
-  start: number,
+  sourceMask: Uint8Array,
+  startIndex: number,
   stopsAtBrace: boolean,
 ): number => {
   let braceDepth = 0;
-  let index = start;
+  let index = startIndex;
 
   while (index < source.length) {
     const character = source[index]!;
@@ -28,7 +28,7 @@ const markCode = (
     }
 
     if (stopsAtBrace && character === "}" && braceDepth === 0) {
-      mask[index] = 1;
+      sourceMask[index] = 1;
       return index + 1;
     }
 
@@ -73,7 +73,7 @@ const markCode = (
     }
 
     if (character === '"' || character === "'") {
-      mask[index] = 1;
+      sourceMask[index] = 1;
       const quote = character;
       index++;
       while (index < source.length) {
@@ -90,7 +90,7 @@ const markCode = (
     }
 
     if (character === "`") {
-      mask[index] = 1;
+      sourceMask[index] = 1;
       index++;
       while (index < source.length) {
         if (source[index] === "\\") {
@@ -99,7 +99,7 @@ const markCode = (
           index++;
           break;
         } else if (source[index] === "$" && source[index + 1] === "{") {
-          index = markCode(source, mask, index + 2, true);
+          index = markExecutableCode(source, sourceMask, index + 2, true);
         } else {
           index++;
         }
@@ -107,7 +107,7 @@ const markCode = (
       continue;
     }
 
-    mask[index] = 1;
+    sourceMask[index] = 1;
     if (character === "{") braceDepth++;
     else if (character === "}") braceDepth--;
     index++;
@@ -117,7 +117,7 @@ const markCode = (
 };
 
 export const createSourceMask = (source: string): Uint8Array => {
-  const mask = new Uint8Array(source.length);
-  markCode(source, mask, 0, false);
-  return mask;
+  const sourceMask = new Uint8Array(source.length);
+  markExecutableCode(source, sourceMask, 0, false);
+  return sourceMask;
 };

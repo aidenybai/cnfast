@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
+import { CAPTURE_VIEWPORT, NAVIGATION_TIMEOUT_MS, PAGE_SETTLE_TIME_MS } from "./constants";
 
 export interface PageTarget {
   name: string;
@@ -16,86 +17,89 @@ export interface FrozenNode {
 }
 
 const registryPath = fileURLToPath(new URL("../bench/pages.json", import.meta.url));
-const VIEWPORT = { width: 1280, height: 900 };
 
-const fixturePath = (name: string): string =>
-  fileURLToPath(new URL(`../bench/pages/${name}.json`, import.meta.url));
+const getFixturePath = (pageName: string): string =>
+  fileURLToPath(new URL(`../bench/pages/${pageName}.json`, import.meta.url));
 
-const resolveTargets = (registry: PageTarget[]): PageTarget[] => {
-  const names = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
-  if (names.length === 0) return registry;
-  return names.map((name) => {
-    const match = registry.find((page) => page.name === name);
-    if (!match) throw new Error(`Unknown page "${name}".`);
-    return match;
+const getRequestedTargets = (pageRegistry: PageTarget[]): PageTarget[] => {
+  const requestedPageNames = process.argv.slice(2).filter((argument) => !argument.startsWith("--"));
+  if (requestedPageNames.length === 0) return pageRegistry;
+  return requestedPageNames.map((pageName) => {
+    const matchingTarget = pageRegistry.find((page) => page.name === pageName);
+    if (!matchingTarget) throw new Error(`Unknown page "${pageName}".`);
+    return matchingTarget;
   });
 };
 
 const countNodes = (node: FrozenNode): number => {
-  let total = 1;
-  for (const child of node.children) total += countNodes(child);
-  return total;
+  let nodeCount = 1;
+  for (const childNode of node.children) nodeCount += countNodes(childNode);
+  return nodeCount;
 };
 
 const SERIALIZE_SCRIPT = `(() => {
-  const MAX_TEXT = 140;
-  const SKIP = new Set(["SCRIPT","STYLE","LINK","META","NOSCRIPT","TEMPLATE","SVG","PATH","IFRAME"]);
-  const serialize = (element) => {
-    const classAttr = element.getAttribute("class") || "";
-    const node = {
+  const MAX_TEXT_LENGTH = 140;
+  const SKIPPED_TAG_NAMES = new Set(["SCRIPT","STYLE","LINK","META","NOSCRIPT","TEMPLATE","SVG","PATH","IFRAME"]);
+  const serializeElement = (element) => {
+    const classAttribute = element.getAttribute("class") || "";
+    const serializedNode = {
       tag: element.tagName.toLowerCase(),
-      classes: classAttr.trim() ? classAttr.trim().split(/\\s+/) : [],
+      classes: classAttribute.trim() ? classAttribute.trim().split(/\\s+/) : [],
       children: [],
     };
     const childNodes = element.childNodes;
-    for (let i = 0; i < childNodes.length; i++) {
-      const child = childNodes[i];
-      if (child.nodeType === 3) {
-        const text = (child.textContent || "").trim();
-        if (text) node.text = (node.text ? node.text + " " : "") + text;
-      } else if (child.nodeType === 1 && !SKIP.has(child.tagName)) {
-        node.children.push(serialize(child));
+    for (let childIndex = 0; childIndex < childNodes.length; childIndex++) {
+      const childNode = childNodes[childIndex];
+      if (childNode.nodeType === 3) {
+        const text = (childNode.textContent || "").trim();
+        if (text) {
+          serializedNode.text = (serializedNode.text ? serializedNode.text + " " : "") + text;
+        }
+      } else if (childNode.nodeType === 1 && !SKIPPED_TAG_NAMES.has(childNode.tagName)) {
+        serializedNode.children.push(serializeElement(childNode));
       }
     }
-    if (node.text) node.text = node.text.slice(0, MAX_TEXT);
-    return node;
+    if (serializedNode.text) {
+      serializedNode.text = serializedNode.text.slice(0, MAX_TEXT_LENGTH);
+    }
+    return serializedNode;
   };
-  return serialize(document.body);
+  return serializeElement(document.body);
 })()`;
 
-const captureTarget = async (
+const capturePageTarget = async (
   browser: Awaited<ReturnType<typeof chromium.launch>>,
   target: PageTarget,
 ): Promise<void> => {
-  const page = await browser.newPage({ viewport: VIEWPORT });
+  const page = await browser.newPage({ viewport: CAPTURE_VIEWPORT });
   try {
-    await page.goto(target.url, { waitUntil: "load", timeout: 45000 });
-    await page.waitForTimeout(2500);
+    await page.goto(target.url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
+    await page.waitForTimeout(PAGE_SETTLE_TIME_MS);
 
-    const tree = (await page.evaluate(SERIALIZE_SCRIPT)) as FrozenNode;
+    const frozenTree = (await page.evaluate(SERIALIZE_SCRIPT)) as FrozenNode;
 
-    const outputPath = fixturePath(target.name);
+    const outputPath = getFixturePath(target.name);
     mkdirSync(dirname(outputPath), { recursive: true });
-    writeFileSync(outputPath, `${JSON.stringify(tree)}\n`);
+    writeFileSync(outputPath, `${JSON.stringify(frozenTree)}\n`);
     console.log(
-      `[${target.name}] froze ${countNodes(tree)} nodes -> bench/pages/${target.name}.json`,
+      `[${target.name}] froze ${countNodes(frozenTree)} nodes -> bench/pages/${target.name}.json`,
     );
   } finally {
     await page.close();
   }
 };
 
-const main = async (): Promise<void> => {
-  const registry = JSON.parse(readFileSync(registryPath, "utf8")) as PageTarget[];
-  const targets = resolveTargets(registry);
+const captureRequestedPages = async (): Promise<void> => {
+  const pageRegistry = JSON.parse(readFileSync(registryPath, "utf8")) as PageTarget[];
+  const pageTargets = getRequestedTargets(pageRegistry);
   const browser = await chromium.launch({ channel: "chrome", headless: true });
-  const failed: string[] = [];
+  const failedPageNames: string[] = [];
   try {
-    for (const target of targets) {
+    for (const target of pageTargets) {
       try {
-        await captureTarget(browser, target);
+        await capturePageTarget(browser, target);
       } catch (error) {
-        failed.push(target.name);
+        failedPageNames.push(target.name);
         console.error(
           `[${target.name}] capture failed: ${error instanceof Error ? error.message : error}`,
         );
@@ -104,7 +108,9 @@ const main = async (): Promise<void> => {
   } finally {
     await browser.close();
   }
-  if (failed.length > 0) console.error(`\nSkipped ${failed.length} page(s): ${failed.join(", ")}`);
+  if (failedPageNames.length > 0) {
+    console.error(`\nSkipped ${failedPageNames.length} page(s): ${failedPageNames.join(", ")}`);
+  }
 };
 
-await main();
+await captureRequestedPages();
