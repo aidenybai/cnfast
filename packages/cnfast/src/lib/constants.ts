@@ -9,17 +9,22 @@
  * Whole-string result cache (`create-tailwind-merge.ts`). tailwind-merge defaults to 500, but
  * real pages measure 633 to 1134 unique class strings per render (calcom/documenso/dub captures),
  * so 500 thrashed exactly where the cache matters most. 2048 moves those pages from miss-regime
- * to hit-regime for a few hundred KB of retained strings.
+ * to hit-regime for a few hundred KB of retained strings. Per-generation capacity doubles up to
+ * the max when doorkeeper-passed admissions overflow a generation — direct evidence the
+ * repeating working set exceeds it (real apps measured up to ~12k unique joined strings); apps
+ * that fit the initial capacity never grow.
  */
 export const MERGE_CACHE_CAPACITY = 2048;
+export const MERGE_CACHE_CAPACITY_MAX = 8192;
 
 /**
  * Whole-string doorkeeper table (`create-tailwind-merge.ts`): byte-per-slot fingerprint set that
- * admits a computed miss into the cache only on its second sighting. 8 KB, wiped at half
- * occupancy so the false-positive rate stays bounded.
+ * admits a computed miss into the cache only on its second sighting. Two generations aged at
+ * half occupancy of the current one (a wholesale wipe destroyed second-sighting evidence faster
+ * than large apps could repeat a string, silently blocking all admission). Slot count doubles
+ * with the cache capacity so the evidence window keeps covering the working set it gates.
  */
 export const DOORKEEPER_SLOTS = 8192;
-export const DOORKEEPER_RESET_COUNT = DOORKEEPER_SLOTS / 2;
 
 /**
  * Per-token descriptor cache (`config-utils.ts`). Larger than the whole-string cache because
@@ -69,9 +74,14 @@ export const INTERN_TABLE_MAX_SLOTS = 16384;
 export const RESULT_INTERN_SLOTS = 1024;
 
 /**
- * Variadic arg cache (`index.ts`). Bucket slots hold flat interleaved entries
- * (`[restLen, ...rest, result]`), sized for a real component's full variant set under one shared
- * leading class (~64 two-arg entries). Rotation counts entry inserts, matching the other caches.
+ * Variadic arg cache (`core.ts`). Buckets hold flat interleaved entries
+ * (`[restLen, ...rest, result]`) behind an entry-count header slot; the budget counts ENTRIES
+ * (not slots) so high-arity entries do not shrink a bucket's effective capacity, sized for a real
+ * component's full variant set under one shared anchor class. Rotation is slot-weighted (an
+ * arity-N insert charges N+1 slots) so cadence tracks retained memory, not call count;
+ * 2048 slots ≈ the old 500-entry budget at the measured page arity mix. The once-seen set for
+ * '['-containing joins keeps its own entry-counted bound.
  */
-export const ARG_CACHE_BUCKET_SLOTS = 256;
-export const ARG_CACHE_ROTATION_INSERTS = 500;
+export const ARG_CACHE_BUCKET_ENTRIES = 96;
+export const ARG_CACHE_ROTATION_SLOTS = 2048;
+export const ARG_CACHE_SEEN_ONCE_CAPACITY = 500;

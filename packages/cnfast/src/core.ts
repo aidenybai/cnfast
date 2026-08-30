@@ -1,5 +1,9 @@
 import { type ClassValue, resolveClassValue } from "./clsx.js";
-import { ARG_CACHE_BUCKET_SLOTS, ARG_CACHE_ROTATION_INSERTS } from "./lib/constants.js";
+import {
+  ARG_CACHE_BUCKET_ENTRIES,
+  ARG_CACHE_ROTATION_SLOTS,
+  ARG_CACHE_SEEN_ONCE_CAPACITY,
+} from "./lib/constants.js";
 import { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
 import { getDefaultConfig } from "./lib/default-config.js";
 import { mergeConfigs } from "./lib/merge-configs.js";
@@ -12,12 +16,20 @@ export interface ClassNameFunction {
 }
 
 /**
- * Variadic-call result cache bucket: every entry sharing one first arg, laid out flat as
+ * Variadic-call result cache bucket: every entry sharing one anchor arg — the LAST truthy string
+ * arg of the call — laid out flat as
  *
  *     [restLen, rest0..restN-1, result, restLen, ...]
  *
- * where `restLen` counts the truthy string args after the first and `result` is the merged output
- * for that exact truthy-arg sequence.
+ * where `restLen` counts the truthy string args before the anchor and `result` is the merged
+ * output for that exact truthy-arg sequence. The anchor is the last arg (not the first) because
+ * call sites overwhelmingly share leading utility classes and differ in their trailing
+ * variant/override arg: first-arg keying measured single buckets needing 542-1195 slots on real
+ * pages (permanent trim thrash on 17-52% of their calls), while last-arg keying fits every
+ * measured bucket. Rest args are verified back-to-front for the same reason — shared prefixes
+ * mismatch on the first compare. `bucket[0]` is a header holding the bucket's entry count, so the
+ * overflow budget counts entries rather than slots and a high-arity call site keeps the same
+ * effective capacity as a low-arity one.
  *
  * The cache exists because probing a plain `cache[joinedClassList]` re-hashes the fresh join on
  * every call — engines cache a string's hash only on the object that first computed it, and the
@@ -33,13 +45,15 @@ export interface ClassNameFunction {
  */
 type ArgCacheBucket = (string | number)[];
 
-/** Drops the oldest entries up to (at least) the halfway slot, preserving entry boundaries. */
+/** Drops the oldest half of the bucket's entries, preserving entry boundaries and the header. */
 const trimBucket = (bucket: ArgCacheBucket): void => {
-  const half = bucket.length >> 1;
-  let position = 0;
-  while (position < half) position += (bucket[position] as number) + 2;
-  bucket.copyWithin(0, position);
-  bucket.length -= position;
+  const entryCount = bucket[0] as number;
+  const dropCount = entryCount >> 1;
+  let position = 1;
+  for (let i = 0; i < dropCount; i++) position += (bucket[position] as number) + 2;
+  bucket.copyWithin(1, position);
+  bucket.length -= position - 1;
+  bucket[0] = entryCount - dropCount;
 };
 
 // Factory (not inlined) so a configured `cn` from `createCn` keeps the default's fast paths: each
@@ -71,7 +85,7 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
     if (joined.indexOf("[") === -1) return true;
     if (seenOnce.has(joined) || previousSeenOnce.has(joined)) return true;
     seenOnce.add(joined);
-    if (seenOnce.size > ARG_CACHE_ROTATION_INSERTS) {
+    if (seenOnce.size > ARG_CACHE_SEEN_ONCE_CAPACITY) {
       previousSeenOnce = seenOnce;
       seenOnce = new Set();
     }
@@ -81,16 +95,17 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   // A bucket found only in the previous generation is promoted by reference into the current Map:
   // without this a hot call site fell off a cliff on every rotation, and a later miss-insert would
   // shadow the surviving bucket with a fresh empty one.
-  const findBucket = (firstKey: string): ArgCacheBucket | undefined => {
-    const bucket = argCache.get(firstKey);
+  const findBucket = (anchorKey: string): ArgCacheBucket | undefined => {
+    const bucket = argCache.get(anchorKey);
     if (bucket !== undefined) return bucket;
-    const previous = previousArgCache.get(firstKey);
-    if (previous !== undefined) argCache.set(firstKey, previous);
+    const previous = previousArgCache.get(anchorKey);
+    if (previous !== undefined) argCache.set(anchorKey, previous);
     return previous;
   };
 
-  const noteInsert = (): void => {
-    if (++argCacheCount > ARG_CACHE_ROTATION_INSERTS) {
+  const noteInsert = (slotCount: number): void => {
+    argCacheCount += slotCount;
+    if (argCacheCount > ARG_CACHE_ROTATION_SLOTS) {
       argCacheCount = 0;
       previousArgCache = argCache;
       argCache = new Map();
@@ -98,13 +113,13 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   };
 
   const bucketForInsert = (
-    firstKey: string,
+    anchorKey: string,
     bucket: ArgCacheBucket | undefined,
   ): ArgCacheBucket => {
     if (bucket === undefined) {
-      bucket = [];
-      argCache.set(firstKey, bucket);
-    } else if (bucket.length >= ARG_CACHE_BUCKET_SLOTS) {
+      bucket = [0];
+      argCache.set(anchorKey, bucket);
+    } else if ((bucket[0] as number) >= ARG_CACHE_BUCKET_ENTRIES) {
       trimBucket(bucket);
     }
     return bucket;
@@ -148,11 +163,11 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   const cnTwoArgs = (a: ClassValue, b: ClassValue): string => {
     if (typeof a === "string" && a !== "") {
       if (typeof b === "string" && b !== "") {
-        const bucket = findBucket(a);
+        const bucket = findBucket(b);
         if (bucket !== undefined) {
-          for (let position = 0, slots = bucket.length; position < slots; ) {
+          for (let position = 1, slots = bucket.length; position < slots; ) {
             const restLength = bucket[position] as number;
-            if (restLength === 1 && bucket[position + 1] === b)
+            if (restLength === 1 && bucket[position + 1] === a)
               return bucket[position + 2] as string;
             position += restLength + 2;
           }
@@ -160,8 +175,10 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
         const joined = a + " " + b;
         const result = twMerge.mergeParts2(joined, a, b);
         if (admitToArgCache(joined)) {
-          bucketForInsert(a, bucket).push(1, b, result);
-          noteInsert();
+          const target = bucketForInsert(b, bucket);
+          target.push(1, a, result);
+          target[0] = (target[0] as number) + 1;
+          noteInsert(3);
         }
         return result;
       }
@@ -182,11 +199,11 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
     if (typeof a === "string" && a !== "") {
       if (typeof b === "string" && b !== "") {
         if (typeof c === "string" && c !== "") {
-          const bucket = findBucket(a);
+          const bucket = findBucket(c);
           if (bucket !== undefined) {
-            for (let position = 0, slots = bucket.length; position < slots; ) {
+            for (let position = 1, slots = bucket.length; position < slots; ) {
               const restLength = bucket[position] as number;
-              if (restLength === 2 && bucket[position + 1] === b && bucket[position + 2] === c)
+              if (restLength === 2 && bucket[position + 2] === b && bucket[position + 1] === a)
                 return bucket[position + 3] as string;
               position += restLength + 2;
             }
@@ -194,8 +211,10 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
           const joined = a + " " + b + " " + c;
           const result = twMerge.mergeParts3(joined, a, b, c);
           if (admitToArgCache(joined)) {
-            bucketForInsert(a, bucket).push(2, b, c, result);
-            noteInsert();
+            const target = bucketForInsert(c, bucket);
+            target.push(2, a, b, result);
+            target[0] = (target[0] as number) + 1;
+            noteInsert(4);
           }
           return result;
         }
@@ -222,7 +241,9 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
     // The result is fully determined by the truthy-string sequence (and cacheable) only when every
     // truthy arg is a string; any other shape falls through to resolve+join+merge.
     let firstKey = "";
+    let anchorKey = "";
     let firstKeyIndex = -1;
+    let anchorKeyIndex = -1;
     let truthyStringCount = 0;
     let everyTruthyIsString = true;
     for (let index = 0; index < length; index++) {
@@ -236,6 +257,8 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
         firstKey = item;
         firstKeyIndex = index;
       }
+      anchorKey = item;
+      anchorKeyIndex = index;
       truthyStringCount++;
     }
 
@@ -246,17 +269,17 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
       if (truthyStringCount === 1) return twMerge.mergeString(firstKey);
 
       const restLengthWanted = truthyStringCount - 1;
-      const bucket = findBucket(firstKey);
+      const bucket = findBucket(anchorKey);
       if (bucket !== undefined) {
-        for (let position = 0, slots = bucket.length; position < slots; ) {
+        for (let position = 1, slots = bucket.length; position < slots; ) {
           const restLength = bucket[position] as number;
           if (restLength === restLengthWanted) {
-            let restIndex = position + 1;
+            let restIndex = position + restLength;
             let isMatch = true;
-            for (let index = firstKeyIndex + 1; index < length; index++) {
+            for (let index = anchorKeyIndex - 1; index >= firstKeyIndex; index--) {
               const item = inputs[index];
               if (!item) continue;
-              if (item !== bucket[restIndex++]) {
+              if (item !== bucket[restIndex--]) {
                 isMatch = false;
                 break;
               }
@@ -283,14 +306,15 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
       if (result === undefined) result = mergePartsOnMiss(joined, inputs, firstKeyIndex);
 
       if (admitToArgCache(joined)) {
-        const target = bucketForInsert(firstKey, bucket);
+        const target = bucketForInsert(anchorKey, bucket);
         target.push(restLengthWanted);
-        for (let index = firstKeyIndex + 1; index < length; index++) {
+        for (let index = firstKeyIndex; index < anchorKeyIndex; index++) {
           const item = inputs[index];
           if (item) target.push(item as string);
         }
         target.push(result);
-        noteInsert();
+        target[0] = (target[0] as number) + 1;
+        noteInsert(restLengthWanted + 2);
       }
 
       return result;
