@@ -126,7 +126,6 @@ const buildSpec = (report: BenchReport): TopLevelSpec => {
   };
 };
 
-// Vega uses no clock or randomness, so identical reports produce byte-identical SVGs.
 export const renderBenchChart = async (report: BenchReport): Promise<string> => {
   const compiled = compile(buildSpec(report)).spec;
   const view = new vega.View(vega.parse(compiled), { renderer: "none" });

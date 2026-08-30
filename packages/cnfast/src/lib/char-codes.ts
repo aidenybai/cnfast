@@ -1,4 +1,3 @@
-// Numeric comparisons avoid allocating one-character strings in hot scanners.
 export const CHAR_TAB = 9; // \t
 export const CHAR_LINE_FEED = 10; // \n
 export const CHAR_CARRIAGE_RETURN = 13; // \r

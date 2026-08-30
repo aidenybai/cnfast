@@ -24,8 +24,8 @@ const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 const EMPTY_CONFLICT_ROW: readonly number[] = [];
 
 /**
- * Dense group IDs replaced 294 of 303 measured megamorphic property loads with indexed array
- * reads. Dynamic arbitrary-property groups stay outside this fixed-size index.
+ * Dense group IDs made 294 of 303 measured lookups array reads instead of dynamic object property
+ * reads. Arbitrary-property groups stay outside this fixed-size index because they are unbounded.
  */
 export const createClassGroupLookup = (config: AnyConfig) => {
   const classMap = createClassMap(config);

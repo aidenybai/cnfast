@@ -25,8 +25,7 @@ if (pageNames.length === 0) {
 
 const INTERACTION_COUNT = Number(process.env.WV_INTERACTIONS ?? 8);
 const RUNS = Number(process.env.WV_RUNS ?? 2);
-// Comma-separated multipliers model different CPU speeds. A value of 1 disables throttling.
-const SLOWDOWNS = (process.env.WV_CPU_SLOWDOWN ?? "6,20")
+const CPU_SLOWDOWNS = (process.env.WV_CPU_SLOWDOWN ?? "6,20")
   .split(",")
   .map((value) => Math.max(1, Number(value.trim())))
   .filter((value) => Number.isFinite(value));
@@ -78,7 +77,7 @@ const ratio = (slow: number, fast: number): string => `${(slow / fast).toFixed(2
 const { cnfast: cnfastBundle, reference: referenceBundle } = await bundleImplementations();
 
 console.log(
-  `Frozen-page web vitals: ${pageNames.length} real pages x slowdowns [${SLOWDOWNS.join(", ")}], ` +
+  `Frozen-page web vitals: ${pageNames.length} real pages x slowdowns [${CPU_SLOWDOWNS.join(", ")}], ` +
     `best-of-${RUNS}, ${INTERACTION_COUNT} interactions, cnfast vs clsx+tailwind-merge ...\n`,
 );
 
@@ -96,7 +95,7 @@ for (const name of pageNames) {
   const cnfastHtml = pageHtml(cnfastBundle, treeJson);
   const referenceHtml = pageHtml(referenceBundle, treeJson);
 
-  for (const cpuSlowdown of SLOWDOWNS) {
+  for (const cpuSlowdown of CPU_SLOWDOWNS) {
     const options = { interactions: INTERACTION_COUNT, runs: RUNS, cpuSlowdown };
     const cnfast: VitalsSample = await bestOfVitals(cnfastHtml, options);
     const reference: VitalsSample = await bestOfVitals(referenceHtml, options);

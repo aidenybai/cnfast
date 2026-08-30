@@ -25,10 +25,9 @@ export const gitSha = (() => {
 
 const resultsPath = fileURLToPath(new URL("../results.jsonl", import.meta.url));
 
-// Consuming result lengths prevents engines from eliminating cache-bypassing calls.
-let sink = 0;
+let resultLengthSink = 0;
 export const keepAlive = (): void => {
-  if (sink === -1) throw new Error(`unreachable ${sink}`);
+  if (resultLengthSink === -1) throw new Error(`unreachable ${resultLengthSink}`);
 };
 
 const meanOps = (task: { result?: unknown }): number => {
@@ -42,7 +41,6 @@ export interface Workload {
   group: string;
   name: string;
   meta?: string;
-  // Every workload must consume output so dead-code elimination cannot invalidate its timing.
   run: (impl: Impl) => number;
 }
 
@@ -64,10 +62,10 @@ export const benchRun = async (
     const bench = new Bench({ time: TIME_MS, warmupTime: 150 });
     bench
       .add("cnfast", () => {
-        sink += run(cn);
+        resultLengthSink += run(cn);
       })
       .add("reference", () => {
-        sink += run(referenceCn);
+        resultLengthSink += run(referenceCn);
       });
     await bench.run();
     cnfast = Math.max(cnfast, meanOps(bench.tasks[0]!));

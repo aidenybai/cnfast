@@ -43,7 +43,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   let previousArgumentCache = new Map<string, ArgumentCacheBucket>();
   let argumentCacheSlotCount = 0;
 
-  // Component renders repeat calls in order. Predictions skip the map lookup but still verify each class.
+  // Render order predicts the next entry. Every argument is still verified before a hit.
   const successorIds = new Int32Array(ARGUMENT_CACHE_PREDICTION_SLOTS).fill(-1);
   const predictedAnchors: string[] = createFilledArray(ARGUMENT_CACHE_PREDICTION_SLOTS, "");
   const predictedBuckets: ArgumentCacheBucket[] = createFilledArray(
@@ -83,7 +83,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   let seenClassListsOnce = new Set<string>();
   let previousSeenClassListsOnce = new Set<string>();
 
-  // Synchronous merges can safely reuse one array.
   const classListPartsScratch: string[] = [];
 
   const shouldCacheArguments = (classList: string): boolean => {
@@ -97,8 +96,9 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return false;
   };
 
-  // Promote the existing bucket so its entries survive the next rotation.
-  const getArgumentCacheBucket = (anchorClassName: string): ArgumentCacheBucket | undefined => {
+  const getAndPromoteArgumentCacheBucket = (
+    anchorClassName: string,
+  ): ArgumentCacheBucket | undefined => {
     const bucket = argumentCache.get(anchorClassName);
     if (bucket !== undefined) return bucket;
     const previous = previousArgumentCache.get(anchorClassName);
@@ -128,8 +128,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return bucket;
   };
 
-  // Mutable values can resolve differently without changing identity, so they bypass this cache.
-  const mergeResolvedList = (classValues: ClassValue[]): string => {
+  const mergeUncachedClassValues = (classValues: ClassValue[]): string => {
     const classValueCount = classValues.length;
     let classList = "";
     for (let index = 0; index < classValueCount; index++) {
@@ -179,7 +178,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
             return predictedBucket[predictedPosition + 2] as string;
           }
         }
-        const bucket = getArgumentCacheBucket(secondClassValue);
+        const bucket = getAndPromoteArgumentCacheBucket(secondClassValue);
         if (bucket !== undefined) {
           for (let position = 1, slots = bucket.length; position < slots; ) {
             const restLength = bucket[position] as number;
@@ -211,14 +210,14 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         return mergedClassName;
       }
       if (!secondClassValue) return twMerge.mergeString(firstClassValue);
-      return mergeResolvedList([firstClassValue, secondClassValue]);
+      return mergeUncachedClassValues([firstClassValue, secondClassValue]);
     }
     if (!firstClassValue) {
       if (!secondClassValue) return "";
       if (typeof secondClassValue === "string") return twMerge.mergeString(secondClassValue);
-      return mergeResolvedList([firstClassValue, secondClassValue]);
+      return mergeUncachedClassValues([firstClassValue, secondClassValue]);
     }
-    return mergeResolvedList([firstClassValue, secondClassValue]);
+    return mergeUncachedClassValues([firstClassValue, secondClassValue]);
   };
 
   const getMergedClassNameForThreeValues = (
@@ -242,7 +241,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
               return predictedBucket[predictedPosition + 3] as string;
             }
           }
-          const bucket = getArgumentCacheBucket(thirdClassValue);
+          const bucket = getAndPromoteArgumentCacheBucket(thirdClassValue);
           if (bucket !== undefined) {
             for (let position = 1, slots = bucket.length; position < slots; ) {
               const restLength = bucket[position] as number;
@@ -290,18 +289,18 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         }
         if (!thirdClassValue)
           return getMergedClassNameForTwoValues(firstClassValue, secondClassValue);
-        return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
+        return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
       }
       if (!secondClassValue) {
         if (!thirdClassValue) return twMerge.mergeString(firstClassValue);
         if (typeof thirdClassValue === "string")
           return getMergedClassNameForTwoValues(firstClassValue, thirdClassValue);
-        return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
+        return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
       }
-      return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
+      return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
     }
     if (!firstClassValue) return getMergedClassNameForTwoValues(secondClassValue, thirdClassValue);
-    return mergeResolvedList([firstClassValue, secondClassValue, thirdClassValue]);
+    return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
   };
 
   // Keeping this path separate prevents V8 from deoptimizing the single-value path.
@@ -358,7 +357,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         }
       }
 
-      const bucket = getArgumentCacheBucket(anchorClassName);
+      const bucket = getAndPromoteArgumentCacheBucket(anchorClassName);
       if (bucket !== undefined) {
         for (let position = 1, slots = bucket.length; position < slots; ) {
           const restLength = bucket[position] as number;
@@ -418,7 +417,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       return mergedClassName;
     }
 
-    return mergeResolvedList(classValues);
+    return mergeUncachedClassValues(classValues);
   };
 
   // V8 can omit the `arguments` allocation on the common paths. A rest parameter always creates

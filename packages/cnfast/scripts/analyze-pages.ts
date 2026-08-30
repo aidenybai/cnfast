@@ -32,9 +32,8 @@ for (const file of readdirSync(pagesDir)
     for (const token of node.classes) tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
   });
 
-  // The first occurrence misses the 500-entry cache, while later occurrences hit.
-  const misses = Math.min(uniqueStrings.size, withClasses);
-  const hitRate = withClasses > 0 ? 1 - misses / withClasses : 0;
+  const compulsoryMisses = Math.min(uniqueStrings.size, withClasses);
+  const estimatedHitRate = withClasses > 0 ? 1 - compulsoryMisses / withClasses : 0;
 
   rows.push({
     page: file.replace(".json", ""),
@@ -42,7 +41,7 @@ for (const file of readdirSync(pagesDir)
     "nodes w/ class": withClasses,
     "unique strings": uniqueStrings.size,
     "uniq <= cache?": uniqueStrings.size <= CACHE_SIZE ? "yes" : "no",
-    "string hit-rate": `${(hitRate * 100).toFixed(1)}%`,
+    "string hit-rate": `${(estimatedHitRate * 100).toFixed(1)}%`,
     "unique tokens": tokenCounts.size,
     "avg tokens/node": (totalTokens / Math.max(1, withClasses)).toFixed(1),
   });

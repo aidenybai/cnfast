@@ -31,7 +31,6 @@ const bundle = async (contents: string): Promise<string> => {
   return result.outputFiles[0]!.text;
 };
 
-// Browser globals let the same harness invoke either implementation.
 export const bundleImplementations = async (): Promise<{ cnfast: string; reference: string }> => ({
   cnfast: await bundle(`export { cn } from ${JSON.stringify(sourceEntry)};`),
   reference: await bundle(
@@ -57,7 +56,6 @@ const serve = (html: string): Promise<{ url: string; close: () => Promise<void> 
     });
   });
 
-// Each fixture records its initial render and exposes `#go` for a cold rerender.
 const measureOnce = async (html: string, options: MeasureOptions): Promise<VitalsSample> => {
   const browser = await chromium.launch({ channel: "chrome", headless: true });
   const server = await serve(html);

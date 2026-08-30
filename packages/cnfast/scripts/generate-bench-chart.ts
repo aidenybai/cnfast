@@ -79,7 +79,6 @@ const workloads = [
 const results = await runSuite(workloads, "chart");
 const bundle = await measureBundles();
 
-// Running both implementations in one benchmark gives them the same warmup and timing conditions.
 const RENDER_VARIANTS: (string | false)[] = ["bg-blue-500", false, "bg-red-500", false];
 const RENDER_BASE = "rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm";
 let formSink = 0;

@@ -371,7 +371,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       return { classId, conflictStart: 0, conflictEnd: 0 };
     }
 
-    // Postfix modifiers can change the overridden groups, as in `text-lg` and `text-lg/7`.
     const rowKey = (packedModifierBase + groupIndex) * 2 + (hasPostfixModifier ? 1 : 0);
     let conflictStart = conflictRowStarts.get(rowKey);
     if (conflictStart === undefined) {
@@ -679,7 +678,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     return preparedPartMetadata;
   };
 
-  // Synchronous merges can reuse these arrays between calls.
   let preparedPartHandles: Int32Array[] = createFilledArray(
     INITIAL_PREPARED_PART_SLOTS,
     UNPREPARABLE_PART,
@@ -729,7 +727,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
       const tokenLength = end - start;
       const tokenHash = tokenHashes[index]!;
 
-      // JavaScriptCore verifies longer candidates faster with its `startsWith` builtin.
       const useBuiltinVerify = IS_JSC && tokenLength >= JSC_STARTSWITH_VERIFY_MIN_LENGTH;
 
       let slot = tokenHash & internSlotMask;
@@ -895,8 +892,6 @@ export const createMergeClassList = (config: AnyConfig): MergeClassListEngine =>
     return mergedClassName;
   };
 
-  // Prepared parts change only where parsing data comes from. The merge remains byte-identical to
-  // `mergeClassList` and falls back when a part contains unsupported whitespace.
   const mergePreparedParts = (
     classListParts: readonly string[],
     partCount: number,

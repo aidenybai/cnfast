@@ -63,7 +63,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     doorkeeperCount = 0;
   };
 
-  // Merges are synchronous, so the miss path can reuse one array without allocating.
   const classListPartsScratch: string[] = [];
 
   // Self-patching keeps initialization lazy without charging later calls for an extra branch.

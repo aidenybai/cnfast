@@ -30,7 +30,6 @@ const EMPTY_MODIFIERS: string[] = [];
 Object.freeze(EMPTY_MODIFIERS);
 
 export const parseClassName = (className: string): ParsedClassName => {
-  // Allocate a modifier array only when the parser finds one.
   let modifiers: string[] | null = null;
 
   let bracketDepth = 0;
