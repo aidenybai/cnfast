@@ -1,6 +1,7 @@
 import { type ClassValue, resolveClassValue } from "./clsx.js";
 import {
   ARG_CACHE_BUCKET_ENTRIES,
+  ARG_CACHE_PREDICTION_SLOTS,
   ARG_CACHE_ROTATION_SLOTS,
   ARG_CACHE_SEEN_ONCE_CAPACITY,
 } from "./lib/constants.js";
@@ -19,10 +20,11 @@ export interface ClassNameFunction {
  * Variadic-call result cache bucket: every entry sharing one anchor arg — the LAST truthy string
  * arg of the call — laid out flat as
  *
- *     [restLen, rest0..restN-1, result, restLen, ...]
+ *     [restLen, rest0..restN-1, result, entryId, restLen, ...]
  *
- * where `restLen` counts the truthy string args before the anchor and `result` is the merged
- * output for that exact truthy-arg sequence. The anchor is the last arg (not the first) because
+ * where `restLen` counts the truthy string args before the anchor, `result` is the merged output
+ * for that exact truthy-arg sequence, and `entryId` is the entry's successor-prediction id (see
+ * the side arrays in `buildCn`). The anchor is the last arg (not the first) because
  * call sites overwhelmingly share leading utility classes and differ in their trailing
  * variant/override arg: first-arg keying measured single buckets needing 542-1195 slots on real
  * pages (permanent trim thrash on 17-52% of their calls), while last-arg keying fits every
@@ -35,8 +37,8 @@ export interface ClassNameFunction {
  * every call — engines cache a string's hash only on the object that first computed it, and the
  * join is a new string each render (~112 ns of a 180 ns warm call on Bun, which also re-flattens
  * the rope). The individual arg strings are stable across renders (JSX literals) with cached
- * hashes, so keying on them makes a hit pure pointer compares: `Map.get(firstArg)`, then an
- * entry-to-entry walk with stride `restLen + 2`.
+ * hashes, so keying on them makes a hit pure pointer compares: `Map.get(anchorArg)`, then an
+ * entry-to-entry walk with stride `restLen + 3`.
  *
  * The flat layout replaced a `{rest, result}[]` shape: sequential element loads instead of a
  * dependent object load per entry, and an insert pushes slots instead of allocating an entry
@@ -50,11 +52,14 @@ const trimBucket = (bucket: ArgCacheBucket): void => {
   const entryCount = bucket[0] as number;
   const dropCount = entryCount >> 1;
   let position = 1;
-  for (let i = 0; i < dropCount; i++) position += (bucket[position] as number) + 2;
+  for (let i = 0; i < dropCount; i++) position += (bucket[position] as number) + 3;
   bucket.copyWithin(1, position);
   bucket.length -= position - 1;
   bucket[0] = entryCount - dropCount;
 };
+
+const PREDICTION_ID_MASK = ARG_CACHE_PREDICTION_SLOTS - 1;
+const EMPTY_BUCKET: ArgCacheBucket = [0];
 
 // Factory (not inlined) so a configured `cn` from `createCn` keeps the default's fast paths: each
 // instance owns its arg cache; only the bound `twMerge` differs.
@@ -65,6 +70,47 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   let argCache = new Map<string, ArgCacheBucket>();
   let previousArgCache = new Map<string, ArgCacheBucket>();
   let argCacheCount = 0;
+
+  // Successor prediction: renders replay call sites in a stable document order, so the entry hit
+  // by the NEXT call is highly predictable from the entry hit by THIS one. Each entry carries a
+  // wrapping id (last slot of its bucket entry); the side arrays record where that id's entry
+  // lives, and `successorIds[lastHitId]` is probed before the normal Map probe + bucket scan. A
+  // prediction is trusted only after full verification against the call's truthy-arg sequence:
+  // the recorded anchor must === the last truthy arg, the recorded position must hold the wanted
+  // restLen (numbers appear only at entry boundaries and the header — rest/result slots are
+  // strings — so a trim-staled position cannot fake a boundary while `restLen >= 1` forces at
+  // least one string compare), and every rest arg must === its stored slot. Any mismatch (trim
+  // shift, rotation, wrapped id stolen by a newer entry) falls through to the normal paths, which
+  // re-record the entry and heal the chain.
+  const successorIds = new Int32Array(ARG_CACHE_PREDICTION_SLOTS).fill(-1);
+  const predictedAnchors: string[] = new Array(ARG_CACHE_PREDICTION_SLOTS).fill("");
+  const predictedBuckets: ArgCacheBucket[] = new Array(ARG_CACHE_PREDICTION_SLOTS).fill(
+    EMPTY_BUCKET,
+  );
+  const predictedPositions = new Int32Array(ARG_CACHE_PREDICTION_SLOTS);
+  let lastHitId = 0;
+  let nextEntryId = 0;
+
+  const recordEntryHit = (
+    anchorKey: string,
+    bucket: ArgCacheBucket,
+    position: number,
+    entryId: number,
+  ): void => {
+    predictedAnchors[entryId] = anchorKey;
+    predictedBuckets[entryId] = bucket;
+    predictedPositions[entryId] = position;
+    successorIds[lastHitId] = entryId;
+    lastHitId = entryId;
+  };
+
+  const mintEntryId = (anchorKey: string, bucket: ArgCacheBucket, position: number): number => {
+    const entryId = nextEntryId;
+    nextEntryId = (entryId + 1) & PREDICTION_ID_MASK;
+    successorIds[entryId] = -1;
+    recordEntryHit(anchorKey, bucket, position, entryId);
+    return entryId;
+  };
 
   // Second-sighting doorkeeper for arbitrary-value sequences. A call like
   // `cn(base, `bg-[rgb(${r}_${g}_${b})]`)` never repeats, and caching such sequences filled hot
@@ -163,20 +209,34 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   const cnTwoArgs = (a: ClassValue, b: ClassValue): string => {
     if (typeof a === "string" && a !== "") {
       if (typeof b === "string" && b !== "") {
+        const predictedId = successorIds[lastHitId]!;
+        if (predictedId !== -1 && predictedAnchors[predictedId] === b) {
+          const predictedBucket = predictedBuckets[predictedId]!;
+          const predictedPosition = predictedPositions[predictedId]!;
+          if (
+            predictedBucket[predictedPosition] === 1 &&
+            predictedBucket[predictedPosition + 1] === a
+          ) {
+            lastHitId = predictedId;
+            return predictedBucket[predictedPosition + 2] as string;
+          }
+        }
         const bucket = findBucket(b);
         if (bucket !== undefined) {
           for (let position = 1, slots = bucket.length; position < slots; ) {
             const restLength = bucket[position] as number;
-            if (restLength === 1 && bucket[position + 1] === a)
+            if (restLength === 1 && bucket[position + 1] === a) {
+              recordEntryHit(b, bucket, position, bucket[position + 3] as number);
               return bucket[position + 2] as string;
-            position += restLength + 2;
+            }
+            position += restLength + 3;
           }
         }
         const joined = a + " " + b;
         const result = twMerge.mergeParts2(joined, a, b);
         if (admitToArgCache(joined)) {
           const target = bucketForInsert(b, bucket);
-          target.push(1, a, result);
+          target.push(1, a, result, mintEntryId(b, target, target.length));
           target[0] = (target[0] as number) + 1;
           noteInsert(3);
         }
@@ -199,20 +259,35 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
     if (typeof a === "string" && a !== "") {
       if (typeof b === "string" && b !== "") {
         if (typeof c === "string" && c !== "") {
+          const predictedId = successorIds[lastHitId]!;
+          if (predictedId !== -1 && predictedAnchors[predictedId] === c) {
+            const predictedBucket = predictedBuckets[predictedId]!;
+            const predictedPosition = predictedPositions[predictedId]!;
+            if (
+              predictedBucket[predictedPosition] === 2 &&
+              predictedBucket[predictedPosition + 2] === b &&
+              predictedBucket[predictedPosition + 1] === a
+            ) {
+              lastHitId = predictedId;
+              return predictedBucket[predictedPosition + 3] as string;
+            }
+          }
           const bucket = findBucket(c);
           if (bucket !== undefined) {
             for (let position = 1, slots = bucket.length; position < slots; ) {
               const restLength = bucket[position] as number;
-              if (restLength === 2 && bucket[position + 2] === b && bucket[position + 1] === a)
+              if (restLength === 2 && bucket[position + 2] === b && bucket[position + 1] === a) {
+                recordEntryHit(c, bucket, position, bucket[position + 4] as number);
                 return bucket[position + 3] as string;
-              position += restLength + 2;
+              }
+              position += restLength + 3;
             }
           }
           const joined = a + " " + b + " " + c;
           const result = twMerge.mergeParts3(joined, a, b, c);
           if (admitToArgCache(joined)) {
             const target = bucketForInsert(c, bucket);
-            target.push(2, a, b, result);
+            target.push(2, a, b, result, mintEntryId(c, target, target.length));
             target[0] = (target[0] as number) + 1;
             noteInsert(4);
           }
@@ -269,6 +344,29 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
       if (truthyStringCount === 1) return twMerge.mergeString(firstKey);
 
       const restLengthWanted = truthyStringCount - 1;
+
+      const predictedId = successorIds[lastHitId]!;
+      if (predictedId !== -1 && predictedAnchors[predictedId] === anchorKey) {
+        const predictedBucket = predictedBuckets[predictedId]!;
+        const predictedPosition = predictedPositions[predictedId]!;
+        if (predictedBucket[predictedPosition] === restLengthWanted) {
+          let restIndex = predictedPosition + restLengthWanted;
+          let isMatch = true;
+          for (let index = anchorKeyIndex - 1; index >= firstKeyIndex; index--) {
+            const item = inputs[index];
+            if (!item) continue;
+            if (item !== predictedBucket[restIndex--]) {
+              isMatch = false;
+              break;
+            }
+          }
+          if (isMatch) {
+            lastHitId = predictedId;
+            return predictedBucket[predictedPosition + restLengthWanted + 1] as string;
+          }
+        }
+      }
+
       const bucket = findBucket(anchorKey);
       if (bucket !== undefined) {
         for (let position = 1, slots = bucket.length; position < slots; ) {
@@ -284,9 +382,17 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
                 break;
               }
             }
-            if (isMatch) return bucket[position + restLength + 1] as string;
+            if (isMatch) {
+              recordEntryHit(
+                anchorKey,
+                bucket,
+                position,
+                bucket[position + restLength + 2] as number,
+              );
+              return bucket[position + restLength + 1] as string;
+            }
           }
-          position += restLength + 2;
+          position += restLength + 3;
         }
       }
 
@@ -307,12 +413,13 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
 
       if (admitToArgCache(joined)) {
         const target = bucketForInsert(anchorKey, bucket);
+        const entryPosition = target.length;
         target.push(restLengthWanted);
         for (let index = firstKeyIndex; index < anchorKeyIndex; index++) {
           const item = inputs[index];
           if (item) target.push(item as string);
         }
-        target.push(result);
+        target.push(result, mintEntryId(anchorKey, target, entryPosition));
         target[0] = (target[0] as number) + 1;
         noteInsert(restLengthWanted + 2);
       }

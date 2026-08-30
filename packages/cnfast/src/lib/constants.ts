@@ -85,3 +85,14 @@ export const RESULT_INTERN_SLOTS = 1024;
 export const ARG_CACHE_BUCKET_ENTRIES = 96;
 export const ARG_CACHE_ROTATION_SLOTS = 2048;
 export const ARG_CACHE_SEEN_ONCE_CAPACITY = 500;
+
+/**
+ * Successor-prediction side arrays (`core.ts`): every arg-cache entry gets a wrapping integer id,
+ * and `successorIds[lastHitId]` predicts the next call's entry straight from render order,
+ * skipping the Map probe and bucket scan when the prediction verifies. Sized to cover the live
+ * entry population of both arg-cache generations so ids rarely wrap while their entries are still
+ * hot; a wrapped (stolen) id just fails verification and falls back to the normal probe. The
+ * per-entry id slot is excluded from the rotation-slot charge so retention cadence tracks the
+ * cached payload, not prediction metadata.
+ */
+export const ARG_CACHE_PREDICTION_SLOTS = 2048;
