@@ -37,6 +37,15 @@ export const DESCRIPTOR_CACHE_CAPACITY = 4096;
 export const MAX_CONFLICT_KEYS = 16384;
 
 /**
+ * Per-argument prepared-handle memo (`merge-class-list.ts`): inserts per generation, two
+ * generations live. Real components repeat the same handful of arg strings across thousands of
+ * novel combinations, so the arg vocabulary is far smaller than the joined-string vocabulary —
+ * 2048 matches the whole-string cache's per-generation budget while covering the arg sets of the
+ * largest measured corpora.
+ */
+export const PREPARED_ARG_CACHE_SIZE = 2048;
+
+/**
  * Token intern table (`config-utils.ts`): starts small and doubles until the max, so apps with a
  * modest class vocabulary never pay for more, while the largest real app corpora measured
  * (~12k unique tokens) fit without eviction churn. These are slot counts; the table grows (or at
@@ -45,6 +54,19 @@ export const MAX_CONFLICT_KEYS = 16384;
  */
 export const INTERN_TABLE_INITIAL_SLOTS = 2048;
 export const INTERN_TABLE_MAX_SLOTS = 16384;
+
+/**
+ * Result-intern table (`merge-class-list.ts`): direct-mapped slots canonicalizing rebuild
+ * outputs. Repeated drop-merges re-produce byte-equal result strings as fresh slices/concats, and
+ * every downstream consumer that hashes the result (the whole-string cache when a result is fed
+ * back through a nested cn call, arg-cache Map probes, React-memo / dedup-by-className maps in
+ * user code) must then re-flatten and re-hash each fresh copy. Interning makes repeated merges
+ * return the SAME string object, so those probes become identity/cached-hash hits. Direct-mapped
+ * on purpose (one load + int compare on the common miss, overwrite on collision): the table is a
+ * best-effort canonicalizer, not a correctness cache — losing an entry merely reverts to the
+ * fresh-string behavior.
+ */
+export const RESULT_INTERN_SLOTS = 1024;
 
 /**
  * Variadic arg cache (`index.ts`). Bucket slots hold flat interleaved entries

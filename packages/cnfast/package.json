@@ -76,6 +76,7 @@
     "bench:corpus": "bun bench/corpus.bench.ts",
     "bench:replay": "bun bench/page-replay.bench.ts",
     "bench:hard": "bun bench/hard-task.bench.ts",
+    "bench:toggle": "bun bench/toggle.bench.ts",
     "bench:ssr": "bun bench/ssr.bench.ts",
     "bench:pages": "bun scripts/page-vitals-harness.ts",
     "bench:extract": "bun scripts/extract-cases.ts",

@@ -62,6 +62,11 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   let seenOnce = new Set<string>();
   let previousSeenOnce = new Set<string>();
 
+  // Reused carrier handing the truthy string args of an arity>=4 call to `twMerge.mergeParts`
+  // without allocating per call (`cn` is synchronous and non-reentrant; the merge only reads it
+  // before returning).
+  const partsScratch: string[] = [];
+
   const admitToArgCache = (joined: string): boolean => {
     if (joined.indexOf("[") === -1) return true;
     if (seenOnce.has(joined) || previousSeenOnce.has(joined)) return true;
@@ -124,6 +129,18 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
     return twMerge.mergeString(result);
   };
 
+  // Computed-miss tail of the variadic (arity >= 4) route: collect the truthy string args into
+  // the reused scratch and run the prepared-parts merge. Out-of-line so `mergeVariadicCached`'s
+  // hot cache-hit body stays small.
+  const mergePartsOnMiss = (joined: string, inputs: ClassValue[], firstIndex: number): string => {
+    let partCount = 0;
+    for (let index = firstIndex, length = inputs.length; index < length; index++) {
+      const item = inputs[index];
+      if (item) partsScratch[partCount++] = item as string;
+    }
+    return twMerge.mergeParts(joined, partsScratch, partCount);
+  };
+
   // Arity-2 fast path: probes the arg cache straight off the argument values, so a hit touches no
   // allocation at all (the old path materialized an args copy per call — 257 B and 25-36% of
   // hit-path self-time). Falsy shapes reduce to smaller call shapes exactly as the generic
@@ -141,7 +158,7 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
           }
         }
         const joined = a + " " + b;
-        const result = twMerge.mergeString(joined);
+        const result = twMerge.mergeParts2(joined, a, b);
         if (admitToArgCache(joined)) {
           bucketForInsert(a, bucket).push(1, b, result);
           noteInsert();
@@ -175,7 +192,7 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
             }
           }
           const joined = a + " " + b + " " + c;
-          const result = twMerge.mergeString(joined);
+          const result = twMerge.mergeParts3(joined, a, b, c);
           if (admitToArgCache(joined)) {
             bucketForInsert(a, bucket).push(2, b, c, result);
             noteInsert();
@@ -255,7 +272,15 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
         const item = inputs[index];
         if (item) joined += " " + (item as string);
       }
-      const result = twMerge.mergeString(joined);
+
+      // Probe the whole-string cache with a bare single-arg call first, and only on a computed
+      // miss collect the parts (in an out-of-line helper, keeping this hot body small) and take
+      // the prepared-parts route. Folding the two into one parts-carrying call measured ~6-8%
+      // slower on node's multi-arg page replays — both a store-as-you-join scratch fill and a
+      // pass-`inputs`-through variant — so the hit path is kept byte-identical in shape to the
+      // old `mergeString` probe.
+      let result = twMerge.peekString(joined);
+      if (result === undefined) result = mergePartsOnMiss(joined, inputs, firstKeyIndex);
 
       if (admitToArgCache(joined)) {
         const target = bucketForInsert(firstKey, bucket);

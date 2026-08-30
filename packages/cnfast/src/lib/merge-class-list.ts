@@ -14,6 +14,8 @@ import {
   INTERN_TABLE_INITIAL_SLOTS,
   INTERN_TABLE_MAX_SLOTS,
   MAX_CONFLICT_KEYS,
+  PREPARED_ARG_CACHE_SIZE,
+  RESULT_INTERN_SLOTS,
 } from "./constants";
 import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name";
 import { createSortModifiers } from "./sort-modifiers";
@@ -29,11 +31,22 @@ interface ClassDescriptor {
 
 const EXTERNAL_DESCRIPTOR: ClassDescriptor = { classId: -1, conflictStart: 0, conflictEnd: 0 };
 
+export interface MergeClassListEngine {
+  /** Merge an already-joined, space-separated class string. */
+  mergeClassList(classList: string): string;
+  /**
+   * Merge a variadic call whose args are individually available: `joined` MUST equal
+   * `parts.join(" ")` over the first `partCount` non-empty strings. Byte-identical to
+   * `mergeClassList(joined)`, but on prepared-handle memo hits pass 1 is pure int arithmetic.
+   */
+  mergePreparedParts(parts: readonly string[], partCount: number, joined: string): string;
+}
+
 const FNV_OFFSET_BASIS = -2128831035; // 0x811c9dc5 as signed int32
 const FNV_PRIME = 16777619;
 
 /**
- * Build the merge function for one config.
+ * Build the merge engine for one config.
  *
  * `mergeClassList` resolves conflicts in a space-separated class string, keeping the last
  * (rightmost) class per conflict group. Output is byte-identical to tailwind-merge for every
@@ -91,7 +104,7 @@ const FNV_PRIME = 16777619;
  * One flat slice per run, instead of a cons-string chain built token by token, is also cheaper
  * for the whole-string cache to hash downstream.
  */
-export const createMergeClassList = (config: AnyConfig) => {
+export const createMergeClassList = (config: AnyConfig): MergeClassListEngine => {
   const sortModifiers = createSortModifiers(config);
   const postfixLookupClassGroupIds = createPostfixLookupClassGroupIds(config);
   const {
@@ -457,6 +470,240 @@ export const createMergeClassList = (config: AnyConfig) => {
     return descriptor;
   };
 
+  // Result-intern table (rationale on RESULT_INTERN_SLOTS in constants.ts). The key folds the
+  // kept tokens' already-computed FNV-1a hashes (O(kept tokens), never O(chars)); equal result
+  // bytes imply an equal kept-token sequence (tokens contain no spaces), so byte-equal results
+  // always collide into the same slot, and a full byte verification against the source's token
+  // ranges guards the hit — the hash alone is never trusted. Entries never need invalidation:
+  // keys and values are pure content, independent of the conflict-key registry.
+  const resultInternMask = RESULT_INTERN_SLOTS - 1;
+  const internedResults: (string | null)[] = new Array(RESULT_INTERN_SLOTS).fill(null);
+  const internedResultKeys = new Int32Array(RESULT_INTERN_SLOTS);
+  let resultInternSlot = 0;
+  let resultInternKey = 0;
+  let keptTokenCount = 0;
+  let lastKeptTokenIndex = 0;
+
+  // Counts the kept tokens (into `keptTokenCount`/`lastKeptTokenIndex` for the callers' single-
+  // survivor shortcuts, skipping the probe in that case) and returns the canonical prior result
+  // when a byte-equal one is interned, else null with `resultInternSlot`/`resultInternKey` set
+  // for `storeInternedResult`.
+  const findInternedResult = (source: string, classCount: number): string | null => {
+    let keptCount = 0;
+    let keptCharCount = 0;
+    let lastKeptIndex = 0;
+    let key = FNV_OFFSET_BASIS;
+    for (let index = 0; index < classCount; index++) {
+      if (keepFlags[index] === 1) {
+        keptCount++;
+        keptCharCount += tokenEnds[index]! - tokenStarts[index]!;
+        lastKeptIndex = index;
+        key = Math.imul(key ^ tokenHashes[index]!, FNV_PRIME);
+      }
+    }
+    keptTokenCount = keptCount;
+    lastKeptTokenIndex = lastKeptIndex;
+    if (keptCount === 1) return null;
+
+    resultInternSlot = key & resultInternMask;
+    resultInternKey = key;
+    if (internedResultKeys[resultInternSlot] !== key) return null;
+    const candidate = internedResults[resultInternSlot];
+    // Length check first, then byte-verify the candidate against the kept tokens' ranges in the
+    // source. Separator positions are skipped, not compared: every stored entry came from our
+    // own rebuild, which always joins with single spaces, so with the length equal and every
+    // token byte equal the separators are spaces by construction.
+    if (candidate === null || candidate.length !== keptCharCount + keptCount - 1) return null;
+    let position = 0;
+    for (let index = 0; index < classCount; index++) {
+      if (keepFlags[index] !== 1) continue;
+      if (position !== 0) position++;
+      const start = tokenStarts[index]!;
+      const end = tokenEnds[index]!;
+      for (let cursor = start; cursor < end; cursor++) {
+        if (candidate.charCodeAt(position++) !== source.charCodeAt(cursor)) return null;
+      }
+    }
+    return candidate;
+  };
+
+  const storeInternedResult = (result: string): void => {
+    internedResults[resultInternSlot] = result;
+    internedResultKeys[resultInternSlot] = resultInternKey;
+  };
+
+  /**
+   * Per-argument prepared handles.
+   *
+   * A whole-string-cache miss whose ARGUMENTS are individually familiar (the compositional
+   * pattern: same fragments, novel combination — a grid cell mixing stable variant strings with
+   * one live arbitrary value) still pays the full split scan over the joined string plus a
+   * charCode-verified intern probe per token, even though every byte of every argument was seen
+   * before. A "prepared handle" memoizes one argument's parse as a single Int32Array:
+   *
+   *     [tokenCount, normalizedFlag,
+   *      (startInArg, endInArg, tokenHash, classId, conflictStart, conflictEnd)*]
+   *
+   * The hash lane exists for the result-intern table: its key folds per-token content hashes, and
+   * replaying them from the handle keeps the drop-path rebuild free of any O(chars) re-hash.
+   *
+   * `normalizedFlag` is 1 iff the arg is byte-identical to its tokens joined by single spaces —
+   * when every part of a call is normalized, the joined string is too, which is what the no-drop
+   * shortcut needs. Token offsets are relative to the ARG; the merge shifts them by the arg's base
+   * offset in the joined string (pure arithmetic — `joined` is always `parts.join(" ")`), so
+   * pass 2 can still slice contiguous kept runs out of the joined input. Handles hold interned
+   * conflict-key ids, so the memo is flushed by the same registry reset that flushes the
+   * descriptor caches.
+   */
+  const UNPREPARABLE = new Int32Array(0);
+
+  // Two-generation memo keyed by the arg string. Keys are the stable per-render arg strings (JSX
+  // literals), so the engine's cached string hashes make `Map.get` cheap — the same reason the
+  // entry-level arg cache uses a Map while the whole-string cache (probed with fresh rope joins)
+  // deliberately does not. Previous-generation hits are promoted by reference.
+  let preparedArgCache = new Map<string, Int32Array>();
+  let previousPreparedArgCache = new Map<string, Int32Array>();
+  let preparedArgCacheCount = 0;
+
+  // Second-sighting doorkeeper for '['-containing args, mirroring the entry cache's: a live
+  // interpolated arbitrary value (`bg-[rgb(${...})]`) produces a never-repeating arg per render,
+  // and memoizing it would pay a Map insert plus handle retention for an entry that is never
+  // read. Stable '[' literals (`w-[350px]`) are admitted on their second sighting.
+  let preparedSeenOnce = new Set<string>();
+  let previousPreparedSeenOnce = new Set<string>();
+
+  const admitPreparedArg = (arg: string): boolean => {
+    if (arg.indexOf("[") === -1) return true;
+    if (preparedSeenOnce.has(arg) || previousPreparedSeenOnce.has(arg)) return true;
+    preparedSeenOnce.add(arg);
+    if (preparedSeenOnce.size > PREPARED_ARG_CACHE_SIZE) {
+      previousPreparedSeenOnce = preparedSeenOnce;
+      preparedSeenOnce = new Set();
+    }
+    return false;
+  };
+
+  // Builds the handle for one argument string. Runs once per unique admitted arg per memo
+  // generation, so it favors simplicity over peak speed: the split reuses the fused scan, and
+  // descriptor resolution probes the intern table READ-ONLY (both generations, no insert/promote
+  // — inserting here would duplicate the grow/rotate machinery for a path that is memoized
+  // anyway) before falling back to slice + `getClassDescriptor`.
+  const prepareArg = (arg: string): Int32Array => {
+    const count = splitClassList(arg);
+    // Tabs/newlines make the offset arithmetic diverge from what a split of the joined string
+    // would produce for the no-op shortcut and run rebuild; such args are rare, so the whole
+    // call falls back to the ordinary joined-string merge.
+    if (splitSawNonSpaceWhitespace) return UNPREPARABLE;
+
+    const handle = new Int32Array(2 + count * 6);
+    handle[0] = count;
+    // Same identity as `mergeClassList`'s no-op shortcut: exactly `count - 1` single-space
+    // separators and nothing else.
+    handle[1] = splitTotalTokenLength + count - 1 === arg.length ? 1 : 0;
+
+    for (let index = 0; index < count; index++) {
+      const start = tokenStarts[index]!;
+      const end = tokenEnds[index]!;
+      const tokenLength = end - start;
+      const tokenHash = tokenHashes[index]!;
+
+      let classId = 0;
+      let conflictStart = 0;
+      let conflictEnd = 0;
+      let found = false;
+
+      let slot = tokenHash & internSlotMask;
+      let internedToken: string | null;
+      while ((internedToken = internedTokens[slot]!) !== null) {
+        if (internedToken.length === tokenLength) {
+          let offset = 0;
+          while (
+            offset < tokenLength &&
+            internedToken.charCodeAt(offset) === arg.charCodeAt(start + offset)
+          ) {
+            offset++;
+          }
+          if (offset === tokenLength) {
+            classId = internedClassIds[slot]!;
+            conflictStart = internedConflictStarts[slot]!;
+            conflictEnd = internedConflictEnds[slot]!;
+            found = true;
+            break;
+          }
+        }
+        slot = (slot + 1) & internSlotMask;
+      }
+
+      if (!found) {
+        let previousSlot = tokenHash & previousInternSlotMask;
+        let previousToken: string | null;
+        while ((previousToken = previousInternedTokens[previousSlot]!) !== null) {
+          if (previousToken.length === tokenLength) {
+            let offset = 0;
+            while (
+              offset < tokenLength &&
+              previousToken.charCodeAt(offset) === arg.charCodeAt(start + offset)
+            ) {
+              offset++;
+            }
+            if (offset === tokenLength) {
+              classId = previousInternedClassIds[previousSlot]!;
+              conflictStart = previousInternedConflictStarts[previousSlot]!;
+              conflictEnd = previousInternedConflictEnds[previousSlot]!;
+              found = true;
+              break;
+            }
+          }
+          previousSlot = (previousSlot + 1) & previousInternSlotMask;
+        }
+      }
+
+      if (!found) {
+        const descriptor = getClassDescriptor(arg.slice(start, end));
+        classId = descriptor.classId;
+        conflictStart = descriptor.conflictStart;
+        conflictEnd = descriptor.conflictEnd;
+      }
+
+      const handleOffset = 2 + index * 6;
+      handle[handleOffset] = start;
+      handle[handleOffset + 1] = end;
+      handle[handleOffset + 2] = tokenHash;
+      handle[handleOffset + 3] = classId;
+      handle[handleOffset + 4] = conflictStart;
+      handle[handleOffset + 5] = conflictEnd;
+    }
+
+    return handle;
+  };
+
+  // Reusable scratch for the per-call handle list and part base offsets (grown, never shrunk;
+  // `cn` calls are synchronous and non-reentrant so a closure-level scratch is safe).
+  let partHandles: Int32Array[] = new Array(16).fill(UNPREPARABLE);
+  let partBases = new Int32Array(16);
+
+  // Rare-path body of the `MAX_CONFLICT_KEYS` bound, shared by both merge entry points. The
+  // registry never evicts on its own, and arbitrary variants can mint unbounded keys, so once it
+  // passes the cap reset it and every structure holding its ids — between merges, never
+  // mid-pass, so ids stay consistent within a pass. The prepared-arg memo is flushed alongside
+  // because its handles embed interned conflict-key ids; the monotonic generation counter means
+  // reused ids never read a stale claim from a prior merge.
+  const resetConflictRegistry = (): void => {
+    conflictKeyIds.clear();
+    modifierIndexes.clear();
+    packedKeyIdMemo.clear();
+    conflictRowStarts.clear();
+    conflictPoolCount = 0;
+    nextConflictKeyId = 0;
+    descriptorCache = Object.create(null);
+    previousDescriptorCache = Object.create(null);
+    descriptorCacheSize = 0;
+    preparedArgCache = new Map();
+    previousPreparedArgCache = new Map();
+    preparedArgCacheCount = 0;
+    flushInternTable();
+  };
+
   const mergeClassList = (classList: string): string => {
     const classCount = splitClassList(classList);
 
@@ -472,21 +719,9 @@ export const createMergeClassList = (config: AnyConfig) => {
       return "";
     }
 
-    // The conflict-key registry never evicts on its own, and arbitrary variants can mint
-    // unbounded keys, so once it passes the cap reset it and every structure holding its ids —
-    // between merges, never mid-pass, so ids stay consistent within a pass.
-    if (nextConflictKeyId > MAX_CONFLICT_KEYS) {
-      conflictKeyIds.clear();
-      modifierIndexes.clear();
-      packedKeyIdMemo.clear();
-      conflictRowStarts.clear();
-      conflictPoolCount = 0;
-      nextConflictKeyId = 0;
-      descriptorCache = Object.create(null);
-      previousDescriptorCache = Object.create(null);
-      descriptorCacheSize = 0;
-      flushInternTable();
-    }
+    // The cheap threshold check stays inline (this is the hot path); only the rare reset body is
+    // shared with `mergePreparedParts`.
+    if (nextConflictKeyId > MAX_CONFLICT_KEYS) resetConflictRegistry();
 
     currentGeneration = (currentGeneration + 1) | 0;
     // Generation 0 is the array's initialized value; skip it so a fresh pass never reads stale
@@ -629,6 +864,12 @@ export const createMergeClassList = (config: AnyConfig) => {
       return classList;
     }
 
+    const internedResult = findInternedResult(classList, classCount);
+    if (internedResult !== null) return internedResult;
+    // A single surviving token needs no rebuild and no table: pass 1 already interned its
+    // canonical string (byte-verified against the input range), so return that object directly.
+    if (keptTokenCount === 1) return canonicalTokens[lastKeptTokenIndex]!;
+
     let result = "";
 
     if (!splitSawNonSpaceWhitespace) {
@@ -651,6 +892,7 @@ export const createMergeClassList = (config: AnyConfig) => {
         if (result) result += " ";
         result += classList.slice(runStart, runEnd);
       }
+      storeInternedResult(result);
       return result;
     }
 
@@ -663,10 +905,174 @@ export const createMergeClassList = (config: AnyConfig) => {
       }
     }
 
+    storeInternedResult(result);
     return result;
   };
 
-  return mergeClassList;
+  // Byte-identical to `mergeClassList(joined)` — a memoized per-arg parse only changes WHERE the
+  // token boundaries and descriptors come from, never what they are — but on memo hits it skips
+  // the whole-string split scan and every charCode-verified intern probe: pass 1 becomes
+  // arithmetic over cached int32 data. Any unpreparable part falls back to the ordinary path.
+  const mergePreparedParts = (
+    parts: readonly string[],
+    partCount: number,
+    joined: string,
+  ): string => {
+    if (nextConflictKeyId > MAX_CONFLICT_KEYS) resetConflictRegistry();
+
+    if (partCount > partBases.length) {
+      let capacity = partBases.length;
+      while (capacity < partCount) capacity *= 2;
+      partBases = new Int32Array(capacity);
+      const grownHandles: Int32Array[] = new Array(capacity).fill(UNPREPARABLE);
+      partHandles = grownHandles;
+    }
+
+    // Resolve every part to its handle (memo hit, or prepare on miss) before touching the shared
+    // token arrays — `prepareArg` uses them as split scratch.
+    let classCount = 0;
+    let allNormalized = true;
+    for (let part = 0; part < partCount; part++) {
+      const arg = parts[part]!;
+      let handle = preparedArgCache.get(arg);
+      if (handle === undefined) {
+        handle = previousPreparedArgCache.get(arg);
+        if (handle !== undefined) {
+          // Promote by reference (no insert accounting), like `findBucket` in the entry cache.
+          preparedArgCache.set(arg, handle);
+        } else {
+          handle = prepareArg(arg);
+          if (admitPreparedArg(arg)) {
+            preparedArgCache.set(arg, handle);
+            if (++preparedArgCacheCount > PREPARED_ARG_CACHE_SIZE) {
+              preparedArgCacheCount = 0;
+              previousPreparedArgCache = preparedArgCache;
+              preparedArgCache = new Map();
+            }
+          }
+        }
+      }
+      if (handle === UNPREPARABLE) return mergeClassList(joined);
+      partHandles[part] = handle;
+      classCount += handle[0]!;
+      if (handle[1] === 0) allNormalized = false;
+    }
+
+    // Part base offsets into `joined`: parts are joined with exactly one space.
+    let partBase = 0;
+    for (let part = 0; part < partCount; part++) {
+      partBases[part] = partBase;
+      partBase += parts[part]!.length + 1;
+    }
+
+    // Degenerate token counts mirror `mergeClassList`'s early returns byte for byte.
+    if (classCount === 0) return "";
+    if (classCount === 1) {
+      for (let part = 0; part < partCount; part++) {
+        const handle = partHandles[part]!;
+        if (handle[0] === 1) {
+          const start = partBases[part]! + handle[2]!;
+          const end = partBases[part]! + handle[3]!;
+          return start === 0 && end === joined.length ? joined : joined.slice(start, end);
+        }
+      }
+    }
+
+    if (classCount > keepFlags.length) {
+      let capacity = keepFlags.length;
+      while (capacity < classCount) capacity *= 2;
+      keepFlags = new Uint8Array(capacity);
+    }
+    if (classCount > tokenStarts.length) {
+      // Grown as a trio so `splitClassList`'s single capacity check stays valid.
+      let capacity = tokenStarts.length;
+      while (capacity < classCount) capacity *= 2;
+      const grownStarts = new Int32Array(capacity);
+      grownStarts.set(tokenStarts);
+      tokenStarts = grownStarts;
+      const grownEnds = new Int32Array(capacity);
+      grownEnds.set(tokenEnds);
+      tokenEnds = grownEnds;
+      const grownHashes = new Int32Array(capacity);
+      grownHashes.set(tokenHashes);
+      tokenHashes = grownHashes;
+    }
+
+    currentGeneration = (currentGeneration + 1) | 0;
+    if (currentGeneration === 0) currentGeneration = 1;
+    const generation = currentGeneration;
+
+    // Pass 1, right-to-left over parts and their tokens — identical claim semantics to
+    // `mergeClassList`, but descriptors are int loads from the handles: no split, no probe, no
+    // slice, no string hash. Absolute token offsets land in `tokenStarts`/`tokenEnds` for pass 2.
+    let didDrop = false;
+    let index = classCount - 1;
+    for (let part = partCount - 1; part >= 0; part--) {
+      const handle = partHandles[part]!;
+      const base = partBases[part]!;
+      for (let token = handle[0]! - 1; token >= 0; token--) {
+        const handleOffset = 2 + token * 6;
+        tokenStarts[index] = base + handle[handleOffset]!;
+        tokenEnds[index] = base + handle[handleOffset + 1]!;
+        tokenHashes[index] = handle[handleOffset + 2]!;
+
+        const classId = handle[handleOffset + 3]!;
+        if (classId === -1) {
+          keepFlags[index] = 1;
+        } else if (claimedGeneration[classId] === generation) {
+          keepFlags[index] = 0;
+          didDrop = true;
+        } else {
+          claimedGeneration[classId] = generation;
+          const conflictEnd = handle[handleOffset + 5]!;
+          for (let poolIndex = handle[handleOffset + 4]!; poolIndex < conflictEnd; poolIndex++) {
+            claimedGeneration[conflictPool[poolIndex]!] = generation;
+          }
+          keepFlags[index] = 1;
+        }
+        index--;
+      }
+    }
+
+    // No-op shortcut: every part normalized means `joined` is already `tokens.join(" ")`.
+    if (!didDrop && allNormalized) return joined;
+
+    // No canonical token string is at hand here (handles carry offsets, not strings), so the
+    // single-survivor shortcut slices instead; the intern table is shared with `mergeClassList`,
+    // unifying byte-equal results across both entry points.
+    const internedResult = findInternedResult(joined, classCount);
+    if (internedResult !== null) return internedResult;
+    if (keptTokenCount === 1) {
+      return joined.slice(tokenStarts[lastKeptTokenIndex]!, tokenEnds[lastKeptTokenIndex]!);
+    }
+
+    // Pass 2: same contiguous kept-run rebuild as `mergeClassList` (prepared parts never contain
+    // non-space whitespace, so the interned-name fallback is unreachable here).
+    let result = "";
+    let runStart = -1;
+    let runEnd = 0;
+    for (let tokenIndex = 0; tokenIndex < classCount; tokenIndex++) {
+      if (keepFlags[tokenIndex] === 1) {
+        const start = tokenStarts[tokenIndex]!;
+        if (runStart === -1) {
+          runStart = start;
+        } else if (start !== runEnd + 1) {
+          if (result) result += " ";
+          result += joined.slice(runStart, runEnd);
+          runStart = start;
+        }
+        runEnd = tokenEnds[tokenIndex]!;
+      }
+    }
+    if (runStart !== -1) {
+      if (result) result += " ";
+      result += joined.slice(runStart, runEnd);
+    }
+    storeInternedResult(result);
+    return result;
+  };
+
+  return { mergeClassList, mergePreparedParts };
 };
 
 const createPostfixLookupClassGroupIds = (config: AnyConfig) => {
