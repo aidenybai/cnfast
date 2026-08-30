@@ -1,4 +1,5 @@
 import { createClassGroupUtils } from "./class-group-utils";
+import { REUSABLE_TOKEN_BUFFER_MIN_CHARS } from "./constants";
 import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name";
 import { createSortModifiers } from "./sort-modifiers";
 import { AnyClassGroupIds, AnyConfig } from "./types";
@@ -73,6 +74,7 @@ export const createConfigUtils = (config: AnyConfig) => {
   // The no-op shortcut in `mergeClassList` can only return the raw input when every separator is a
   // plain space, since the rebuild always joins with `" "`.
   let splitSawNonSpaceWhitespace = false;
+  const reusableClassNames: string[] = [];
 
   // Splits on runs of ASCII whitespace (space, tab, LF, VT, FF, CR) the same way `/\s+/` does for
   // any realistic class string, while skipping leading/trailing runs so no separate `trim()` pass
@@ -108,6 +110,41 @@ export const createConfigUtils = (config: AnyConfig) => {
     }
 
     return tokens;
+  };
+
+  // Fresh short arrays stay allocation-elided on JSC; reuse only wins once longer token lists
+  // create enough garbage to outweigh the indexed writes into an escaping buffer.
+  const splitClassListReusable = (classList: string): string[] => {
+    const length = classList.length;
+    let tokenStart = -1;
+    let tokenCount = 0;
+    splitSawNonSpaceWhitespace = false;
+
+    for (let index = 0; index < length; index++) {
+      const charCode = classList.charCodeAt(index);
+
+      if (charCode === 32) {
+        if (tokenStart !== -1) {
+          reusableClassNames[tokenCount++] = classList.slice(tokenStart, index);
+          tokenStart = -1;
+        }
+      } else if (charCode >= 9 && charCode <= 13) {
+        splitSawNonSpaceWhitespace = true;
+        if (tokenStart !== -1) {
+          reusableClassNames[tokenCount++] = classList.slice(tokenStart, index);
+          tokenStart = -1;
+        }
+      } else if (tokenStart === -1) {
+        tokenStart = index;
+      }
+    }
+
+    if (tokenStart !== -1) {
+      reusableClassNames[tokenCount++] = classList.slice(tokenStart);
+    }
+
+    reusableClassNames.length = tokenCount;
+    return reusableClassNames;
   };
 
   const conflictKeyIds = new Map<string, number>();
@@ -221,7 +258,10 @@ export const createConfigUtils = (config: AnyConfig) => {
   // (no `claim`/`check`/`begin` closure calls per token). `claimedGeneration` is read fresh on
   // every access, so a mid-loop `getClassDescriptor` miss that grows the array stays correct.
   const mergeClassList = (classList: string): string => {
-    const classNames = splitClassList(classList);
+    const classNames =
+      classList.length < REUSABLE_TOKEN_BUFFER_MIN_CHARS
+        ? splitClassList(classList)
+        : splitClassListReusable(classList);
     const classCount = classNames.length;
 
     // A single token cannot conflict with itself, so it is always kept verbatim. ~60% of real class
