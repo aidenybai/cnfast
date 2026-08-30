@@ -38,6 +38,18 @@ export default defineConfig({
           "prefer-spread": "error",
         },
       },
+      {
+        files: ["packages/cnfast/src/core.ts"],
+        rules: {
+          "prefer-rest-params": "off",
+        },
+      },
+      {
+        files: ["packages/cnfast/src/clsx.ts"],
+        rules: {
+          "@typescript-eslint/no-explicit-any": "off",
+        },
+      },
     ],
   },
   fmt: {

@@ -408,7 +408,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeUncachedClassValues(classValues);
   };
 
-  /* eslint-disable prefer-rest-params -- a rest param would defeat the allocation-elision this relies on */
   const cn: ClassNameFunction = function (): string {
     const firstClassValue = arguments[0];
     const classValueCount = arguments.length;
@@ -427,8 +426,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     for (let index = 0; index < classValueCount; index++) classValues[index] = arguments[index];
     return getMergedClassNameForManyValues(classValues);
   };
-  /* eslint-enable prefer-rest-params */
-
   return cn;
 };
 

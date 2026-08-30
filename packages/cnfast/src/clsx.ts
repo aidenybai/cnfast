@@ -1,7 +1,6 @@
 import { SPACE_CHARACTER } from "./lib/constants.js";
 
 export interface ClassDictionary {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional clsx type parity
   [className: string]: any;
 }
 

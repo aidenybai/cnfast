@@ -6,13 +6,13 @@ test("has correct export types", () => {
   expect(twMerge).toStrictEqual(expect.any(Function));
   expect(twJoin).toStrictEqual(expect.any(Function));
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const noRun = () => {
     const classNameValue: ClassNameValue = "some-class";
 
     twMerge(classNameValue, classNameValue, classNameValue);
     twJoin(classNameValue, classNameValue, classNameValue);
   };
+  expect(noRun).toStrictEqual(expect.any(Function));
 });
 
 test("twMerge() has correct inputs and outputs", () => {
@@ -31,7 +31,6 @@ test("twMerge() has correct inputs and outputs", () => {
     expect.any(String),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const noRun = () => {
     // @ts-expect-error number is not a valid class value
     twMerge(123);
@@ -44,6 +43,7 @@ test("twMerge() has correct inputs and outputs", () => {
     // @ts-expect-error function is not a valid class value
     twMerge(() => {});
   };
+  expect(noRun).toStrictEqual(expect.any(Function));
 });
 
 test("twJoin has correct inputs and outputs", () => {
