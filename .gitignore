@@ -9,3 +9,6 @@ test-results
 .cache
 .cursor
 .claude
+
+packages/cnfast/README.md
+packages/cnfast/LICENSE

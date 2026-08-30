@@ -88,22 +88,6 @@ export const benchRun = async (
   return { cnfast, reference };
 };
 
-// Best-of-N ops/s for a single sink-returning function, DCE-safe via the shared sink. Used by
-// benchmarks (e.g. tagged templates) where the two sides have different call shapes and so cannot
-// share one `run(impl)`.
-export const benchOne = async (run: () => number): Promise<number> => {
-  let best = 0;
-  for (let attempt = 0; attempt < BEST_OF; attempt++) {
-    const bench = new Bench({ time: TIME_MS, warmupTime: 150 });
-    bench.add("fn", () => {
-      sink += run();
-    });
-    await bench.run();
-    best = Math.max(best, meanOps(bench.tasks[0]!));
-  }
-  return best;
-};
-
 const benchWorkload = async (workload: Workload): Promise<WorkloadResult> => {
   const { cnfast, reference } = await benchRun(workload.run);
   return {

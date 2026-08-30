@@ -82,19 +82,19 @@ const bundle = await measureBundles();
 // Same stable call site rendered two ways, so the ops/s are directly comparable: the baseline
 // (clsx + tailwind-merge) and cnfast's variadic call. Both run inside ONE Bench so they share
 // warmup/timing and the ratio is stable across runs.
-const TEMPLATE_VARIANTS: (string | false)[] = ["bg-blue-500", false, "bg-red-500", false];
-const TEMPLATE_BASE = "rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm";
+const RENDER_VARIANTS: (string | false)[] = ["bg-blue-500", false, "bg-red-500", false];
+const RENDER_BASE = "rounded-lg border bg-card px-4 py-2 text-sm font-medium shadow-sm";
 let formSink = 0;
 
 const formBench = new Bench({ time: Math.max(TIME_MS, 1000), warmupTime: 300 });
 formBench
   .add("variadic", () => {
-    for (let index = 0; index < TEMPLATE_VARIANTS.length; index++)
-      formSink += cn(TEMPLATE_BASE, TEMPLATE_VARIANTS[index]!).length;
+    for (let index = 0; index < RENDER_VARIANTS.length; index++)
+      formSink += cn(RENDER_BASE, RENDER_VARIANTS[index]!).length;
   })
   .add("reference", () => {
-    for (let index = 0; index < TEMPLATE_VARIANTS.length; index++)
-      formSink += referenceCn(TEMPLATE_BASE, TEMPLATE_VARIANTS[index]!).length;
+    for (let index = 0; index < RENDER_VARIANTS.length; index++)
+      formSink += referenceCn(RENDER_BASE, RENDER_VARIANTS[index]!).length;
   });
 await formBench.run();
 if (formSink < 0) throw new Error("unreachable");

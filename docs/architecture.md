@@ -117,14 +117,6 @@ The codebase restricts `Object.entries`, `Object.keys`, and spread to startup-ti
 
 The first `cn` call builds the config utilities, then rewrites the function pointer it calls so later calls skip the initialization check. `src/lib/create-tailwind-merge.ts` holds this `initTailwindMerge` pattern. Building the trie and caches costs nothing until you actually call `cn`, and costs nothing per call afterward.
 
-### Skipping the hash with tagged templates
-
-Profiling the cache-hit path shows roughly half its time is V8 hashing the joined class string for the whole-string cache lookup. That hash is irreducible for a `cn(...strings)` call: you must build a key and hash it to find a global cache entry, and `tailwind-merge` pays the same cost. The one way past it is to avoid hashing a string at all, which needs a stable, non-string handle for the class list.
-
-A tagged template provides exactly that. ``cn`px-2 ${active && "bg-blue-500"}` `` calls `cn` with a `TemplateStringsArray` whose identity is reused on every evaluation of that call site, as the language guarantees. That array is a valid `WeakMap` key, unlike a plain string. `src/lib/merge-template.ts` keys a `WeakMap` on the strings array, then keeps a short per-site list of `{ interpolated values, result }` entries. A repeat call at the same site with the same string interpolations returns the cached result after an identity lookup and a few reference compares, skipping the join and the hash entirely.
-
-Only string and falsy interpolations are cached, because they are immutable: an identity match cannot return a stale result. An object or array interpolation could be mutated while keeping its reference, so those calls always recompute. Detection costs nothing on the standard path: `cn` checks for the strings array only when its first argument is an object, which `cn("...")` and `cn(a, b)` skip after the `typeof` test. On a stable call site with an alternating variant, the tagged form runs about 3x faster than the equivalent `cn(...)` call and about 9x faster than `clsx` plus `tailwind-merge`.
-
 ## Bundle size
 
 The `cn` bundle is about 9.0 KB minified and gzipped, against 8.4 KB for `clsx` plus `tailwind-merge`. The two are close because the Tailwind class-group data dominates the bundle, and that data is the same in both.

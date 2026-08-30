@@ -9,16 +9,6 @@ export default defineConfig({
   pack: [
     {
       entry: ["./src/index.ts"],
-      format: ["iife"],
-      globalName: "cnfast",
-      dts: false,
-      clean: false,
-      platform: "browser",
-      sourcemap: false,
-      minify: process.env.NODE_ENV === "production",
-    },
-    {
-      entry: ["./src/index.ts"],
       format: ["cjs", "esm"],
       dts: true,
       clean: false,

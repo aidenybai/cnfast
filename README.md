@@ -48,14 +48,6 @@ export { cn } from "cnfast";
 
 cnfast also exports `clsx`, `twMerge`, and `twJoin`.
 
-## Tagged templates
-
-As a tagged template, `cn` caches by call-site identity, skipping the join and hash on every repeat. A stable call site runs 4.3x faster than `tailwind-merge`. The `cn(...)` call form already caches its arguments on V8, so on that engine the template form is only 1.2x ahead; the gap is wider on engines without that cache.
-
-```ts
-cn`px-2 px-4 ${isActive && "bg-blue-500"}`; // "px-4 bg-blue-500"
-```
-
 ## Comparing against cn
 
 cnfast produces byte-identical output to `tailwind-merge` and computes it faster, with the largest gains on re-rendering call sites where the same class arguments recur:
@@ -64,13 +56,13 @@ cnfast produces byte-identical output to `tailwind-merge` and computes it faster
 
 Across the wider suite, operations per second on V8 (Node and Chrome), best-of-3:
 
-| Workload           | tailwind-merge        | cnfast       | Speedup  |
-| ------------------ | --------------------- | ------------ | -------- |
-| Cached re-render   | 2,025 ops/s           | 8,709 ops/s  | **4.3x** |
-| Merge engine, cold | 1,440 ops/s           | 5,411 ops/s  | **3.8x** |
-| Component corpus   | 1,585 ops/s           | 6,506 ops/s  | **4.1x** |
-| Page render        | 4,249 ops/s           | 11,908 ops/s | **2.8x** |
-| Live data grid     | 500 ops/s             | 2,185 ops/s  | **4.4x** |
+| Workload           | tailwind-merge | cnfast       | Speedup  |
+| ------------------ | -------------- | ------------ | -------- |
+| Cached re-render   | 2,025 ops/s    | 8,709 ops/s  | **4.3x** |
+| Merge engine, cold | 1,440 ops/s    | 5,411 ops/s  | **3.8x** |
+| Component corpus   | 1,585 ops/s    | 6,506 ops/s  | **4.1x** |
+| Page render        | 4,249 ops/s    | 11,908 ops/s | **2.8x** |
+| Live data grid     | 500 ops/s      | 2,185 ops/s  | **4.4x** |
 
 Across 65 workloads the geometric mean is **3.8x**, with 0 mismatches over 113,291 real-world call groups. The bundle is 9.43 KB gzipped against 8.45 KB for the baseline. Figures come from V8; see the [benchmark suite](./packages/cnfast/bench/README.md) for the Bun breakdown and the per-engine caveats.
 
@@ -81,9 +73,9 @@ Regenerate the chart with `pnpm --filter cnfast bench:chart`. See the [architect
 ## Development
 
 ```bash
-pnpm install
-pnpm build
-pnpm test
+ni
+nr build
+nr test
 ```
 
 ## Credits

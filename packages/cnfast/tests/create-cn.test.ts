@@ -52,12 +52,6 @@ describe("createCn: every call shape keeps the config", () => {
     expect(themed("text-red-500", "text-title")).toBe("text-red-500 text-title");
   });
 
-  it("honors the config through the tagged-template form", () => {
-    const size = "text-title";
-    expect(themed`text-red-500 ${size}`).toBe("text-red-500 text-title");
-    expect(themed`underline ${"line-through"}`).toBe("underline line-through");
-  });
-
   it("resolves array and object inputs like clsx, then merges", () => {
     expect(themed(["text-title", { "text-body": true }])).toBe("text-body");
   });

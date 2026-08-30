@@ -1,5 +1,4 @@
 import { type ClassValue, resolveClassValue } from "./clsx.js";
-import { createMergeTemplate } from "./lib/merge-template.js";
 import { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
 import { getDefaultConfig } from "./lib/default-config.js";
 import { mergeConfigs } from "./lib/merge-configs.js";
@@ -7,8 +6,6 @@ import { twMerge } from "./lib/tw-merge.js";
 import type { AnyConfig, ConfigExtension } from "./lib/types.js";
 
 export interface ClassNameFunction {
-  /** Tagged-template form: ``cn`px-2 ${active && "bg-blue-500"}` `` — identity-cached per call site. */
-  (strings: TemplateStringsArray, ...values: ClassValue[]): string;
   /** Standard variadic form: `cn("px-2", active && "bg-blue-500")`. */
   (...inputs: ClassValue[]): string;
 }
@@ -47,10 +44,8 @@ const ARG_CACHE_BUCKET_SIZE = 64;
 const ARG_CACHE_SIZE = 500;
 
 // Factory (not inlined) so a configured `cn` from `createCn` keeps the default's fast paths: each
-// instance owns its arg/template caches; only the bound `twMerge` differs.
+// instance owns its arg cache; only the bound `twMerge` differs.
 const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
-  const mergeTemplate = createMergeTemplate(twMerge);
-
   // Variadic-call result cache (V8 only — see `IS_V8`), keyed on the ordered sequence of truthy
   // string args. The merged output of `cn("a", cond && "b", ...)` depends ONLY on which string args
   // are truthy and their order (the join drops falsy values and separates the rest with single
@@ -62,10 +57,10 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   let previousArgCache = new Map<string, ArgCacheEntry[]>();
   let argCacheCount = 0;
 
-  // Variadic merge for V8, split out of `cn` so the hot single-arg and template dispatch in `cn`
-  // stays small enough to stay fully optimized — folding this body inline measurably deopts the
-  // single-arg path. `inputs` is the already-materialized arg list (copied by index in `cn`, never
-  // the live `arguments` object, preserving its allocation-elision there).
+  // Variadic merge for V8, split out of `cn` so the hot single-arg dispatch stays small enough to
+  // stay fully optimized — folding this body inline measurably deopts the single-arg path. `inputs`
+  // is the already-materialized arg list (copied by index in `cn`, never the live `arguments`
+  // object, preserving its allocation-elision there).
   const mergeVariadicCached = (inputs: ClassValue[]): string => {
     const length = inputs.length;
 
@@ -167,21 +162,6 @@ const buildCn = (twMerge: TailwindMerge): ClassNameFunction => {
   /* eslint-disable prefer-rest-params -- a rest param would defeat the allocation-elision this relies on */
   const cn: ClassNameFunction = function (): string {
     const first = arguments[0];
-
-    // Tagged-template call (``cn`...` ``): the first arg is a frozen `TemplateStringsArray`, which is
-    // a real array carrying a `.raw` array. The array check is what makes this safe: a plain class
-    // dictionary such as `cn({ raw: true })` is an object with a `raw` key but is NOT an array, and a
-    // class-value array (`cn(["px-2"])`) is an array but never carries `.raw`, so only a genuine
-    // tagged template satisfies both. Reading `arguments` only by index here keeps V8's
-    // arguments-elision intact; the interpolations are copied into a fresh array so the `arguments`
-    // object itself never escapes into `mergeTemplate`.
-    if (Array.isArray(first) && "raw" in first) {
-      const strings = first as unknown as TemplateStringsArray;
-      const length = arguments.length;
-      const values: ClassValue[] = [];
-      for (let index = 1; index < length; index++) values.push(arguments[index]);
-      return mergeTemplate(strings, values);
-    }
 
     const length = arguments.length;
 

@@ -6,14 +6,14 @@ This suite measures `cn` throughput against `tailwind-merge` on real class strin
 
 cnfast produces byte-identical output and runs the `cn` operation faster. The end-to-end payoff depends on whether `cn` sits on your critical path. The numbers below come from `pnpm bench:report` on Bun, best-of-3.
 
-| Scenario                                    | cnfast          | tailwind-merge        | Outcome                                           |
-| ------------------------------------------- | --------------- | --------------------- | ------------------------------------------------- |
-| Output correctness                          | identical       | baseline              | 0 mismatches across 113,291 real call groups      |
-| Live 12,000-cell data grid, per frame       | 15.4 ms         | 32.5 ms               | 2.11x: cnfast holds 60 fps, baseline drops frames |
-| One typical page render (`cn` cost only)    | 0.06 to 0.50 ms | 0.10 to 1.00 ms       | 1.5x to 3.1x, saves at most 0.50 ms               |
-| React server-side rendering throughput      | up to 1.26x     | baseline              | marginal                                          |
-| `cn` throughput on harvested component code | per-repo        | baseline              | 3.53x geomean across 53 repos (2.07x to 6.70x)    |
-| Bundle size, minified and gzipped           | 9.43 KB         | 8.45 KB               | cnfast is 0.98 KB larger                          |
+| Scenario                                    | cnfast          | tailwind-merge  | Outcome                                           |
+| ------------------------------------------- | --------------- | --------------- | ------------------------------------------------- |
+| Output correctness                          | identical       | baseline        | 0 mismatches across 113,291 real call groups      |
+| Live 12,000-cell data grid, per frame       | 15.4 ms         | 32.5 ms         | 2.11x: cnfast holds 60 fps, baseline drops frames |
+| One typical page render (`cn` cost only)    | 0.06 to 0.50 ms | 0.10 to 1.00 ms | 1.5x to 3.1x, saves at most 0.50 ms               |
+| React server-side rendering throughput      | up to 1.26x     | baseline        | marginal                                          |
+| `cn` throughput on harvested component code | per-repo        | baseline        | 3.53x geomean across 53 repos (2.07x to 6.70x)    |
+| Bundle size, minified and gzipped           | 9.43 KB         | 8.45 KB         | cnfast is 0.98 KB larger                          |
 
 Only the data grid turns the speed into user-visible behavior. Ordinary page renders, Core Web Vitals, and React server-side rendering do not.
 
@@ -57,7 +57,6 @@ pnpm bench:all       # micro + corpus + page replay + data grid, unified geomean
 Run a single benchmark when you want one table:
 
 ```bash
-pnpm bench:tpl       # cn`...` tagged-template identity cache vs cn(...) vs reference
 pnpm bench:hard      # live data-grid stress (the headline win)
 pnpm bench:replay    # real per-render cn cost on captured pages
 pnpm bench:ssr       # server-side rendering throughput
@@ -81,7 +80,6 @@ Each benchmark targets one workload, with fixtures alongside this file. They sha
 - **`page-replay.bench.ts`**: replays each captured page's real call sequence from `pages/*.json`, with duplicates, so the cache hit rate matches production. This is the honest per-render cost.
 - **`hard-task.bench.ts`**: a synthetic 200 by 60 data grid with conflict-heavy, cache-busting classes. This is the workload where speed changes frame rate.
 - **`ssr.bench.ts`**: React `renderToString` over the captured trees, plus a string-only upper bound.
-- **`template.bench.ts`**: the ``cn`...` `` tagged-template form against the equivalent `cn(...)` call and the reference, on a stable call site with an alternating variant. Shows the identity cache skipping the join and hash, about 3x over `cn(...)`.
 - **`index.ts`**: runs every throughput workload above through the shared harness and prints one geomean (`pnpm bench:all`).
 - **`report.ts`**: runs the suite in order and prints every table.
 - **`scripts/verify-parity.ts`**: proves output parity.

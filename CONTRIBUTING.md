@@ -34,7 +34,7 @@ nr dev
 
 ```
 packages/
-└── example/             # Example package
+└── cnfast/              # Library, CLI, tests, and benchmarks
 ```
 
 ## Development Workflow

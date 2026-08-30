@@ -1,54 +1,41 @@
 {
-  "name": "",
-  "version": "",
+  "name": "@cnfast/monorepo",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "test": "turbo run test",
-    "typecheck": "turbo run typecheck",
+    "build": "vp run cnfast#build",
+    "dev": "vp run cnfast#dev",
+    "test": "vp run cnfast#test",
+    "typecheck": "vp run cnfast#typecheck",
     "bench": "pnpm --filter cnfast bench",
     "bench:report": "pnpm --filter cnfast bench:report",
     "bench:setup": "pnpm --filter cnfast bench:setup",
     "size": "pnpm --filter cnfast size",
+    "iter": "pnpm --filter cnfast iter",
+    "deopt": "pnpm --filter cnfast deopt",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
     "check": "vp check",
-    "changeset": "changeset",
+    "publint": "vp run cnfast#publint",
+    "sherif": "sherif -p ./packages/benchmark",
+    "changeset": "nr build && changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@antfu/ni": "^30.5.0",
+    "@changesets/changelog-git": "^1.0.0",
     "@changesets/cli": "^2.31.0",
     "@types/node": "^25.6.0",
-    "@types/validate-npm-package-name": "^4.0.2",
-    "@types/whois-json": "^2.0.4",
-    "@voidzero-dev/vite-plus-core": "^0.1.20",
-    "tsx": "^4.21.0",
-    "turbo": "^2.9.7",
+    "sherif": "^1.13.0",
     "typescript": "^6.0.3",
-    "validate-npm-package-name": "^7.0.2",
-    "vite-plus": "^0.1.20",
-    "whois-json": "^2.0.4"
+    "vite-plus": "^0.1.20"
   },
   "engines": {
     "node": ">=22",
     "pnpm": ">=8"
   },
-  "packageManager": "pnpm@10.24.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "overrides": {
-      "vite": "npm:@voidzero-dev/vite-plus-core",
-      "vitest": "npm:@voidzero-dev/vite-plus-test"
-    }
-  }
+  "packageManager": "pnpm@10.24.0"
 }

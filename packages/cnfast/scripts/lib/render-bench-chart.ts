@@ -33,12 +33,10 @@ const COLOR_BACKGROUND = "#ffffff";
 const COLOR_TEXT = "#111827";
 const COLOR_MUTED = "#6b7280";
 const COLOR_GRID = "#e5e7eb";
-const COLOR_TEMPLATE = "#2563eb";
 const COLOR_FASTCN = "#60a5fa";
 const COLOR_BASELINE = "#d1d5db";
 
 const colorFor = (label: string): string => {
-  if (label.includes("template")) return COLOR_TEMPLATE;
   if (label.includes("cnfast")) return COLOR_FASTCN;
   return COLOR_BASELINE;
 };

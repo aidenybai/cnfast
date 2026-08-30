@@ -2,7 +2,7 @@
 
 This document evaluates each cnfast merge-engine optimization for whether it is **correct** and **safe**
 to contribute back to `tailwind-merge` (analysis against v3.6.0). "Safe" means: parity-preserving for
-*all* of tailwind-merge's supported inputs and configs, not just cnfast's narrower input domain.
+_all_ of tailwind-merge's supported inputs and configs, not just cnfast's narrower input domain.
 
 The key distinction throughout: cnfast targets **static, ASCII, single-config** class strings (JSX
 literals under the default config). `tailwind-merge` must stay correct for **arbitrary input, Unicode
@@ -12,15 +12,15 @@ wide one.
 
 ## TL;DR verdict table
 
-| # | Optimization | Verdict | Why |
-| - | ------------ | ------- | --- |
-| 1 | Single-token fast path | **Safe — land first** | A lone token is always returned verbatim by upstream; no config can change that. |
-| 2 | Normalized-input no-op shortcut | **Safe with work** | Correct, but depends on a custom splitter (see #4) to compute its inputs. |
-| 3 | `charCodeAt` parsing | **Safe — low value** | Byte-identical; pure micro-opt. Possible readability pushback. |
-| 4 | ASCII-only whitespace splitter | **Needs maintainer decision** | Drops Unicode-whitespace splitting that `/\s+/` does today — a behavior change. |
-| 5 | Per-token descriptor cache | **Safe with work** | Parity-safe and bounded; adds a second cache (memory + bundle). Needs a size/perf case. |
-| 6 | Interned keys + `Int32Array` claim tracker | **Not safe as-is** | Intern registry never evicts and grows unbounded on dynamic arbitrary-variant modifiers. |
-| — | clsx fusion / tagged template / arg cache + `IS_V8` | **Out of scope** | Not part of `twMerge`'s contract; keep in cnfast. |
+| #   | Optimization                               | Verdict                       | Why                                                                                      |
+| --- | ------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------- |
+| 1   | Single-token fast path                     | **Safe — land first**         | A lone token is always returned verbatim by upstream; no config can change that.         |
+| 2   | Normalized-input no-op shortcut            | **Safe with work**            | Correct, but depends on a custom splitter (see #4) to compute its inputs.                |
+| 3   | `charCodeAt` parsing                       | **Safe — low value**          | Byte-identical; pure micro-opt. Possible readability pushback.                           |
+| 4   | ASCII-only whitespace splitter             | **Needs maintainer decision** | Drops Unicode-whitespace splitting that `/\s+/` does today — a behavior change.          |
+| 5   | Per-token descriptor cache                 | **Safe with work**            | Parity-safe and bounded; adds a second cache (memory + bundle). Needs a size/perf case.  |
+| 6   | Interned keys + `Int32Array` claim tracker | **Not safe as-is**            | Intern registry never evicts and grows unbounded on dynamic arbitrary-variant modifiers. |
+| —   | clsx fusion / arg cache + `IS_V8`          | **Out of scope**              | Not part of `twMerge`'s contract; keep in cnfast.                                        |
 
 ---
 
@@ -30,7 +30,7 @@ A change is landable only if it is byte-identical to current `tailwind-merge` ou
 
 - the full ported `tailwind-merge` test suite,
 - the differential fuzz test (`cn` vs real `twMerge(clsx(...))`),
-- **and** the inputs cnfast does *not* exercise: Unicode whitespace, `createTailwindMerge`/
+- **and** the inputs cnfast does _not_ exercise: Unicode whitespace, `createTailwindMerge`/
   `extendTailwindMerge` custom configs, `prefix`, `experimentalParseClassName`, multiple concurrent
   instances, and dynamically generated arbitrary variants (`data-[id=123]:`).
 
@@ -55,7 +55,7 @@ there is nothing to conflict against, so the output is always that single (trimm
 This holds under **every** config: with a `prefix`, a single `tw:px-4` returns `tw:px-4`; an external
 class returns itself; `experimentalParseClassName` is irrelevant because the token is never parsed.
 
-**Edge cases checked.** Empty string and all-whitespace input do *not* hit this path under upstream's
+**Edge cases checked.** Empty string and all-whitespace input do _not_ hit this path under upstream's
 splitter the same way (upstream `"".split(/\s+/)` yields `[""]`, length 1, returning `""`; the fast
 path would also return `""`), so the result is identical either way.
 
@@ -170,14 +170,14 @@ cache (and the structures in #6) are naturally per-instance — no cross-instanc
 is **bounded** (`DESCRIPTOR_CACHE_SIZE = 4096`, two-generation), so dynamic arbitrary values
 (`w-[123px]`) cannot grow it without bound. This satisfies the "bound any per-input cache" rule.
 
-**Why it's the headline change.** Upstream caches *whole strings* only. The per-token cache is the
+**Why it's the headline change.** Upstream caches _whole strings_ only. The per-token cache is the
 real structural difference: `flex` shared across two different strings is analyzed once. This is the
 biggest engine win that is also genuinely upstreamable.
 
 **Cost to negotiate.** It adds a second cache (runtime memory) and bundle weight. dcastil is
 size-sensitive, so this needs an explicit perf-per-byte case, and possibly a config knob
 (`descriptorCacheSize`, defaulting to something conservative or `0` to disable). Land it **after** the
-cheap wins build trust. Note it can be landed *with string keys* (no interning) to decouple it from
+cheap wins build trust. Note it can be landed _with string keys_ (no interning) to decouple it from
 the unsafe part of #6 — slower than the integer tracker, but with none of #6's growth risk.
 
 ## 6. Interned conflict keys + `Int32Array` claim tracker — NOT SAFE AS-IS
@@ -218,6 +218,7 @@ which `tailwind-merge` must tolerate. This violates cnfast's own rule ("do not l
 unbounded on arbitrary class values") in the one domain where upstream can't ignore it.
 
 **To make it landable, one of:**
+
 - Bound the registry (e.g. cap distinct IDs; on overflow, fall back to the string-keyed path for new
   keys), or
 - Drop interning and keep the descriptor cache (#5) with string keys + the existing `string[]` /
@@ -232,8 +233,6 @@ Until one of those is in place, #6 should **not** be proposed upstream.
 
 - **clsx fusion** (object/array/dictionary resolution): `twMerge` deliberately takes only
   strings/`twJoin` values. Not its job.
-- **Tagged-template cache** (`src/lib/merge-template.ts`): a `cn` ergonomics feature, not a merge
-  concern.
 - **V8 arg-sequence cache + `IS_V8` engine sniffing** (`src/index.ts`): keys on stable arg-string
   identity and detects V8 via `Error` properties. Engine sniffing is routinely rejected upstream, and
   the `cn(...args)` semantics differ from `twMerge`. Keep it as cnfast's moat.
@@ -248,7 +247,7 @@ Until one of those is in place, #6 should **not** be proposed upstream.
    win on the answer.
 4. **#5 descriptor cache (string-keyed)** — the headline win, framed as a size/perf tradeoff with an
    optional config knob.
-5. **#6 only if bounded** — propose the integer tracker as a follow-up *after* solving the registry
+5. **#6 only if bounded** — propose the integer tracker as a follow-up _after_ solving the registry
    growth, or drop it.
 
 ## Validation checklist (per PR, against upstream's repo)
