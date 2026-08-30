@@ -10,6 +10,8 @@
     "bench": "pnpm --filter cnfast bench",
     "bench:report": "pnpm --filter cnfast bench:report",
     "bench:setup": "pnpm --filter cnfast bench:setup",
+    "benchmark:dev": "vp run @cnfast/benchmark#dev",
+    "benchmark:build": "vp run @cnfast/benchmark#build",
     "size": "pnpm --filter cnfast size",
     "iter": "pnpm --filter cnfast iter",
     "deopt": "pnpm --filter cnfast deopt",
