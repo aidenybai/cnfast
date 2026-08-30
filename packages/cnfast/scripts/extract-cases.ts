@@ -5,8 +5,17 @@ import { type ClassListArgs, harvestClassGroups } from "./lib/harvest-classes";
 import { type RepoTarget, ensureRepo } from "./lib/clone-repo";
 import { corpusPath, loadRegistry } from "./lib/load-corpus";
 
-const DEFAULT_SOURCE_GLOBS = ["**/*.{ts,tsx,js,jsx}"];
-const IGNORE_GLOBS = ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/*.d.ts"];
+const DEFAULT_SOURCE_GLOBS = ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,vue,svelte,astro,html,mdx}"];
+const IGNORE_GLOBS = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/out/**",
+  "**/.next/**",
+  "**/.turbo/**",
+  "**/coverage/**",
+  "**/*.d.ts",
+];
 
 const resolveTargets = (registry: RepoTarget[]): RepoTarget[] => {
   const argv = process.argv.slice(2);
@@ -44,6 +53,7 @@ const extractTarget = async (target: RepoTarget): Promise<void> => {
 
   const groups = new Map<string, ClassListArgs>();
   let scannedFiles = 0;
+  let matchedFiles = 0;
   for (const file of files) {
     let contents: string;
     try {
@@ -51,9 +61,8 @@ const extractTarget = async (target: RepoTarget): Promise<void> => {
     } catch {
       continue;
     }
-    if (!contents.includes("className") && !contents.includes("cn(")) continue;
-    harvestClassGroups(contents, groups);
     scannedFiles++;
+    if (harvestClassGroups(contents, groups)) matchedFiles++;
   }
 
   const cases = [...groups.values()].sort((left, right) =>
@@ -65,8 +74,8 @@ const extractTarget = async (target: RepoTarget): Promise<void> => {
 
   const totalStrings = cases.reduce((sum, group) => sum + group.length, 0);
   console.log(
-    `[${target.name}] ${cases.length} cn-call groups (${totalStrings} strings) ` +
-      `from ${scannedFiles}/${files.length} files -> bench/corpora/${target.name}.json\n`,
+    `[${target.name}] ${cases.length} class groups (${totalStrings} strings) ` +
+      `from ${matchedFiles}/${scannedFiles} files -> bench/corpora/${target.name}.json\n`,
   );
 };
 

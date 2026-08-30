@@ -1,9 +1,20 @@
 [
   ["  m-0 w-auto bg-transparent p-0"],
+  ["  ml-auto", "-mt-10"],
+  ["  my-2"],
+  ["  relative z-10 p-6"],
+  ["  text-black"],
+  ["  w-full pb-3 text-7xl font-bold"],
+  ["  whitespace-nowrap"],
+  [
+    " bg-cal-success! hover:bg-cal-success text-green-700!",
+    "bg-error hover:bg-error border-red-700! text-red-700!",
+    "secondary"
+  ],
   [" bg-subtle flex h-10 w-10 shrink-0 justify-center rounded-full"],
+  [" h-screen w-full items-center justify-center gap-y-3  font-mono lg:flex   gap-16 "],
   [
     " text-inverted m-auto flex h-full w-full items-center justify-center text-center",
-    "sm",
     "text-[12px]",
     "text-2xl"
   ],
@@ -24,6 +35,7 @@
   ],
   ["-m-4 sm:-mt-6 md:-mt-4"],
   ["-mb-4 ml-4 mt-2"],
+  ["-mb-8"],
   [
     "-mb-9 h-auto w-full object-contain object-top ltr:rounded-tl-md rtl:rounded-tr-md sm:h-16 sm:object-cover"
   ],
@@ -45,6 +57,7 @@
   ["-mt-1 mr-1 inline-block h-4 w-4"],
   ["-mt-1.5 inline-block h-4 w-4"],
   ["-mt-1.5 mr-1 inline-block h-4 w-4"],
+  ["-mt-14"],
   ["-mt-2 flex flex-wrap items-start gap-2"],
   ["-mt-2 mb-4 flex items-center gap-2"],
   ["-mt-2 mb-4 space-y-3"],
@@ -72,7 +85,6 @@
   ],
   [
     "-translate-y-(--active-tab-bottom) absolute bottom-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) transition-[width,translate] duration-200 ease-in-out",
-    "underline",
     "data-[orientation=vertical]:-translate-x-px z-10 bg-primary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5 data-[orientation=horizontal]:translate-y-px",
     "-z-1 rounded-md bg-background shadow-sm/5 dark:bg-input"
   ],
@@ -243,12 +255,63 @@
   ["aspect-square"],
   ["aspect-square p-1"],
   ["aspect-square rounded-full"],
+  [
+    "basic",
+    "image",
+    "w-10 h-auto",
+    "basic",
+    "card",
+    "p-5 bg-default",
+    "basic",
+    "title",
+    "text-base mt-4",
+    "basic",
+    "description",
+    "text-sm leading-[18px] text-subtle font-normal",
+    "ProfileCard",
+    "image",
+    "w-9 h-auto rounded-full mb-4s",
+    "ProfileCard",
+    "card",
+    "w-80 p-4 hover:bg-subtle bg-default",
+    "ProfileCard",
+    "title",
+    "text-base",
+    "ProfileCard",
+    "description",
+    "text-sm leading-[18px] text-subtle font-normal",
+    "SidebarCard",
+    "image",
+    "w-9 h-auto rounded-full mb-4s",
+    "SidebarCard",
+    "card",
+    "w-full p-3 border border-subtle bg-default",
+    "SidebarCard",
+    "title",
+    "text-sm font-cal",
+    "SidebarCard",
+    "description",
+    "text-xs text-default line-clamp-2",
+    "NewLaunchSidebarCard",
+    "image",
+    "w-9 h-auto rounded-full mb-4s",
+    "NewLaunchSidebarCard",
+    "card",
+    "w-full p-3 border border-subtle bg-launch-dark text-white",
+    "NewLaunchSidebarCard",
+    "title",
+    "text-sm font-cal text-white",
+    "NewLaunchSidebarCard",
+    "description",
+    "text-xs text-white"
+  ],
   ["basis-1/3"],
   ["before:absolute before:inset-0"],
   ["before:absolute before:inset-0 cursor-pointer"],
   [
     "before:bg-subtle relative before:pointer-events-none before:absolute before:inset-0 before:bottom-[-5px] before:left-[-30px] before:top-[-5px] before:w-[calc(100%+35px)] before:rounded-md before:py-3 before:opacity-0 before:transition-opacity hover:before:opacity-100"
   ],
+  ["bg-    rounded-full", "emphasis", "subtle", "h-1.5 w-1.5", "h-1 w-1"],
   ["bg-attention mb-5 rounded-md p-3"],
   ["bg-attention mx-auto rounded-full p-2 text-center"],
   [
@@ -265,6 +328,11 @@
     "bg-brand-default hover:bg-brand-default text-brand dark:border-emphasis absolute hidden rounded-[4px] p-[6px] text-xs font-semibold leading-5 group-hover:flex group-hover:cursor-pointer",
     "items-start pt-3",
     "items-center"
+  ],
+  [
+    "bg-brand-default text-brand ml-2",
+    "inline-flex items-center justify-center rounded-3xl px-1 pt-0.5 font-medium",
+    "text-default text-sm  "
   ],
   [
     "bg-brand-default text-brand ml-2",
@@ -324,14 +392,13 @@
     "bg-default border-default h-4 w-4 shrink-0 cursor-pointer rounded-cal checked:border-transparent checked:bg-gray-800 border ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
   ],
   ["bg-default border-default stack-y-2 rounded-sm border p-2"],
+  ["bg-default border-default w-full gap-3 rounded-2xl border p-3  "],
   ["bg-default border-muted flex h-full w-full flex-col overflow-hidden rounded-xl border"],
   ["bg-default border-muted shadow-default relative w-[360px] rounded-lg border p-4"],
   ["bg-default border-muted w-full grow gap-3 rounded-xl border"],
   [
     "bg-default border-subtle border-subtle flex items-center justify-center border",
-    "sm",
     "rounded-md p-1",
-    "md",
     "rounded-[10px] p-1.5"
   ],
   [
@@ -341,6 +408,15 @@
     "bg-default border-subtle divide-subtle -mx-4 animate-pulse divide-y rounded-md border sm:mx-0 sm:overflow-hidden"
   ],
   ["bg-default border-subtle divide-subtle flex flex-col divide-y rounded-md border"],
+  [
+    "bg-default border-subtle fixed left-1/2   z-50 -translate-x-1/2 transform cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm shadow-md",
+    "top-4",
+    "top-0"
+  ],
+  [
+    "bg-default border-subtle flex aspect-square w-full min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border p-4  ",
+    "opacity-60"
+  ],
   ["bg-default border-subtle flex flex-col gap-2 rounded-xl border p-2"],
   ["bg-default border-subtle flex flex-col rounded-2xl border"],
   [
@@ -362,7 +438,6 @@
   ["bg-default border-subtle rounded-xl border p-4"],
   [
     "bg-default border-subtle scroll-bar absolute z-50 mt-1 max-h-64 w-56 select-none overflow-y-auto rounded-md border py-[2px] shadow-md focus-within:outline-none",
-    "end",
     "-translate-x-[228px]"
   ],
   [
@@ -392,7 +467,6 @@
   ["bg-default dark:bg-cal-muted relative isolate flex h-full flex-auto flex-col"],
   [
     "bg-default dark:bg-cal-muted ring-muted sticky left-0 z-10 w-16 flex-none ring-1",
-    "subtle",
     "border-subtle border-l border-r",
     "border-default border-l border-r"
   ],
@@ -405,10 +479,8 @@
   ],
   [
     "bg-default dark:bg-cal-muted top-(--calendar-dates-sticky-offset,0px) z-80 sticky flex-none border-b",
-    "subtle",
     "border-b-subtle",
     "border-b-default",
-    "subtle",
     "border-r-subtle border-r",
     "border-r-default border-r"
   ],
@@ -416,7 +488,6 @@
   ["bg-default dark:text-inverted text-emphasis border-subtle w-full rounded-md border"],
   [
     "bg-default data-[state=checked]:bg-brand-accent shadow-switch-thumb pointer-events-none block rounded-full shadow-lg ring-0 transition-transform",
-    "sm",
     "h-3 w-3 data-[state=checked]:translate-x-3 data-[state=unchecked]:translate-x-0 rtl:data-[state=checked]:-translate-x-3",
     "h-5 w-5 data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0 rtl:data-[state=checked]:-translate-x-5"
   ],
@@ -442,12 +513,14 @@
   ["bg-default flex min-h-screen w-full flex-col items-start overflow-clip rounded-xl"],
   [
     "bg-default group-hover:!bg-cal-muted group-data-[state=selected]:bg-subtle flex shrink-0 items-center overflow-hidden",
-    "compact",
     "p-0",
     "bg-default group-hover:!bg-cal-muted group-data-[state=selected]:bg-subtle sm:sticky"
   ],
   [
     "bg-default inline-block transform overflow-hidden rounded-lg px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 sm:align-middle"
+  ],
+  [
+    "bg-default inline-block w-full transform text-left align-bottom transition-all sm:align-middle"
   ],
   [
     "bg-default inline-block w-full transform text-left align-bottom transition-all sm:align-middle",
@@ -462,6 +535,7 @@
   ["bg-default m-auto rounded p-5 md:w-[560px] md:p-10"],
   ["bg-default m-auto rounded-md p-10 text-center"],
   ["bg-default m-auto rounded-md p-10 text-right ltr:text-left"],
+  ["bg-default max-w-80 mb-4 rounded-md px-0 pt-0 md:max-w-full md:px-8 md:pt-10"],
   ["bg-default mb-0 flex items-center md:mb-6 md:mt-0", "lg:mb-7", "lg:mb-8", "sticky top-0 z-10"],
   ["bg-default mx-0 p-3"],
   ["bg-default no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto rounded-md p-1"],
@@ -616,7 +690,6 @@
   ["bg-inverted mx-auto h-full w-px"],
   [
     "bg-inverted relative -mr-1 inline-flex justify-center  overflow-hidden rounded-full",
-    "sm",
     "min-w-6 h-6",
     "min-w-16 h-16"
   ],
@@ -632,9 +705,7 @@
   ["bg-muted px-6 py-5"],
   [
     "bg-muted rounded-[10px] p-0.5",
-    "horizontal",
     "inline-flex gap-0.5 rtl:flex-row-reverse",
-    "vertical",
     "flex w-fit flex-col gap-0.5",
     "w-full"
   ],
@@ -738,6 +809,8 @@
   ["block w-full rounded-sm border-gray-300 pl-2 pr-12 text-sm"],
   ["block w-full rounded-sm pl-2 text-sm"],
   ["block xl:hidden"],
+  ["body-action"],
+  ["body-sub"],
   ["border bg-white p-4"],
   [
     "border border-orange-400 ",
@@ -793,6 +866,7 @@
   ["border-emphasis absolute -bottom-1 -right-1 h-4 w-4 overflow-hidden rounded border"],
   ["border-emphasis flex items-center border-b border-solid"],
   ["border-emphasis relative flex w-full items-start rounded-[10px] border p-4 text-sm"],
+  ["border-error"],
   [
     "border-l my-0 rounded-md font-sans text-sm leading-4 focus:ring-0! sm:rounded-l-none",
     "border border-orange-400 focus:border focus:border-orange-400",
@@ -819,7 +893,7 @@
   [
     "border-subtle [&:has(input:checked)]:border-emphasis relative flex items-start rounded-[10px] border "
   ],
-  ["border-subtle bg-cal-muted flex rounded-b-lg border px-6 py-4", "end", "justify-end"],
+  ["border-subtle bg-cal-muted flex rounded-b-lg border px-6 py-4", "justify-end"],
   [
     "border-subtle bg-cal-muted hidden h-full w-full flex-col overflow-hidden rounded-l-2xl border xl:flex"
   ],
@@ -947,7 +1021,11 @@
   ["border-subtle sticky top-0 ml-[-1px] h-full md:border-l"],
   ["border-subtle sticky top-0 ml-px h-full md:border-l"],
   ["border-subtle text-default bg-default flex flex-col justify-between rounded-md border", "card"],
-  ["border-subtle text-default mt-8 grid grid-cols-3 border-t pt-8 text-left"],
+  [
+    "border-subtle text-default bg-default flex flex-col justify-between rounded-md border",
+    "structure",
+    "card"
+  ],
   [
     "border-subtle text-default mt-8 grid grid-cols-3 gap-x-4 border-t pt-8 text-left rtl:text-right sm:gap-x-0"
   ],
@@ -966,38 +1044,23 @@
   ["bottom-7 right-8 flex flex-row-reverse sm:absolute"],
   ["break-all"],
   ["break-words font-semibold text-default ltr:mr-1 rtl:ml-1"],
+  ["button", "rounded-l-none px-2"],
   ["cal-embed"],
+  ["cal-inline-container"],
   ["cal-multiselect"],
   ["calcom-atoms"],
   [
     "calcom-tooltip",
-    "top",
     "-mt-7",
-    "left",
     "mr-2",
-    "right",
     "ml-2",
     "bg-inverted text-inverted relative z-50 rounded-sm px-2 py-1 text-xs font-semibold shadow-lg"
   ],
-  ["calendar", "-mb-8"],
   ["capitalize"],
   ["capitalize ltr:ml-2 rtl:mr-2"],
   ["center mt-10 justify-between stack-y-5 text-center align-baseline"],
   [
-    "checkbox",
-    "px-3 h-fit",
-    "p-1 h-fit",
-    "px-3 h-fit",
-    "sm",
-    "h-7 px-2 py-0.5",
-    "h-8 px-3 py-1",
-    "bg-subtle !cursor-not-allowed !pointer-events-auto hover:border-subtle",
-    "rounded-[10px]",
-    "[&:focus-within]:border-emphasis [&:focus-within]:shadow-outline-gray-focused focus-within:ring-0 flex! **:[input]:leading-none text-sm"
-  ],
-  [
     "col-end-1 flex w-16 items-center justify-center",
-    "subtle",
     "border-l-subtle border-l",
     "border-l-default border-l"
   ],
@@ -1015,23 +1078,34 @@
   ["col-start-2"],
   ["col-start-2 min-w-0"],
   ["col-start-2 row-span-2 row-start-1 self-start justify-self-end inline-flex"],
+  ["color", "minimal", "variant", "icon"],
+  [
+    "color",
+    "minimal",
+    "w-8 h-8 md:h-11 md:w-11 p-0 text-sm font-medium aria-selected:opacity-100 inline-flex items-center justify-center"
+  ],
+  ["color", "secondary"],
+  ["color", "secondary", "mt-0 w-full cursor-pointer justify-center text-center"],
+  ["content-cell"],
   [
     "contents",
-    "a",
-    "href",
-    "onClick",
-    "ref",
-    "wrapper",
-    "button",
-    "onClick",
-    "ref",
-    "button",
-    "submit",
-    "reset"
+    "invisible",
+    "visible",
+    "hidden md:contents",
+    "group-[:not(div):active]:translate-y-[0.5px]"
   ],
+  ["Countries"],
+  ["Country"],
+  ["CountryFlag"],
+  ["CountryFlagContainer"],
+  ["CountryFlagLink"],
   ["cover w-full rounded-lg"],
   ["crop-container h-40 max-h-40 w-40 rounded-full"],
   ["cropper mt-6 flex flex-col items-center justify-center p-8"],
+  [
+    "current-timezone before:bg-subtle min-w-32 -mt-[2px] flex h-6 max-w-full items-center justify-start before:absolute before:inset-0 before:bottom-[-3px] before:left-[-30px] before:top-[-3px] before:w-[calc(100%+35px)] before:rounded-md before:py-3 before:opacity-0 before:transition-opacity  ",
+    "cursor-not-allowed"
+  ],
   ["cursor-default"],
   ["cursor-ew-resize"],
   ["cursor-not-allowed"],
@@ -1058,6 +1132,7 @@
   ["cursor-pointer underline"],
   ["custom-class"],
   ["custom-nav"],
+  ["dark"],
   ["dark:bg-cal-muted bg-yellow-100"],
   [
     "dark:bg-cal-muted dark:before:bg-cal-muted mb-3 flex w-full flex-row items-center font-medium",
@@ -1086,22 +1161,18 @@
   ],
   [
     "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-    "sm",
     "text-xs",
-    "md",
     "text-sm",
     "group-data-[collapsible=icon]:hidden"
   ],
   ["data-[orientation=horizontal]:w-full"],
   [
     "data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=autocomplete-input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(8)-1px)]",
-    "sm",
     "has-[+[data-slot=autocomplete-trigger],+[data-slot=autocomplete-clear]]:*:data-[slot=autocomplete-input]:pe-6.5",
     "has-[+[data-slot=autocomplete-trigger],+[data-slot=autocomplete-clear]]:*:data-[slot=autocomplete-input]:pe-7"
   ],
   [
     "data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-1px)]",
-    "sm",
     "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-6.5",
     "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-7"
   ],
@@ -1150,17 +1221,12 @@
     "default",
     "h-9 px-[calc(--spacing(3)-1px)] sm:h-8",
     "size-9 sm:size-8",
-    "icon-lg",
     "size-10 sm:size-9",
-    "icon-sm",
     "size-8 sm:size-7",
-    "icon-xl",
-    "icon-xs",
     "h-10 px-[calc(--spacing(3.5)-1px)] sm:h-9",
     "h-8 gap-1.5 px-[calc(--spacing(2.5)-1px)] sm:h-7",
     "not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] border-primary bg-primary text-primary-foreground shadow-primary/24 shadow-xs [:active,[data-pressed]]:inset-shadow-[0_1px_--theme(--color-black/8%)] [:disabled,:active,[data-pressed]]:shadow-none [:hover,[data-pressed]]:bg-primary/90",
     "not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] border-destructive bg-destructive text-white shadow-destructive/24 shadow-xs [:active,[data-pressed]]:inset-shadow-[0_1px_--theme(--color-black/8%)] [:disabled,:active,[data-pressed]]:shadow-none [:hover,[data-pressed]]:bg-destructive/90",
-    "destructive-outline",
     "border-input bg-popover not-dark:bg-clip-padding text-destructive-foreground shadow-xs/5 not-disabled:not-active:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)] dark:bg-input/32 dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/2%)] dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)] [:disabled,:active,[data-pressed]]:shadow-none [:hover,[data-pressed]]:border-destructive/32 [:hover,[data-pressed]]:bg-destructive/4",
     "border-transparent text-foreground data-pressed:bg-accent [:hover,[data-pressed]]:bg-accent",
     "border-transparent underline-offset-4 [:hover,[data-pressed]]:underline",
@@ -1169,7 +1235,7 @@
   ],
   ["default", "min-h-10 sm:min-h-9", "min-h-8 gap-1.5 px-[calc(--spacing(2.5)-1px)] sm:min-h-7"],
   ["description", "pt-1"],
-  ["destructive", "destructive"],
+  ["destructive"],
   [
     "disabled:bg-subtle disabled:hover:border-subtle mb-0 rounded-r-none border-r-0 disabled:cursor-not-allowed",
     "rounded-l-none border-l-0",
@@ -1180,7 +1246,16 @@
   ["disabled:opacity-40"],
   [
     "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
-    "bg-brand-default text-brand"
+    "bg-brand-default text-brand",
+    "hover:border-brand-default text-emphasis bg-emphasis",
+    "hover:border-brand-default  "
+  ],
+  [
+    "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
+    "bg-brand-default text-brand",
+    "hover:border-brand-default text-emphasis bg-emphasis",
+    "hover:border-brand-default  ",
+    " text-mute"
   ],
   ["divide-subtle bg-default mx-auto flex max-w-4xl flex-row divide-y"],
   [
@@ -1202,6 +1277,16 @@
   ],
   ["editor-inner scroll-bar overflow-x-hidden!", "bg-subtle!"],
   ["editor-input focus:outline-none"],
+  ["email-body"],
+  ["email-body_inner"],
+  ["email-content"],
+  ["email-footer"],
+  ["email-wrapper"],
+  ["end-0", "end-0.5"],
+  ["f-fallback"],
+  ["f-fallback button"],
+  ["f-fallback sub"],
+  ["f-fallback sub align-center"],
   [
     "fadeIn bg-default scroll-bar fixed left-1/2 top-1/2 z-50 w-[95vw] m-auto -translate-x-1/2 -translate-y-1/2 rounded-2xl text-left shadow-xl focus-visible:outline-none sm:align-middle",
     "px-8 pt-8 sm:max-w-360",
@@ -1215,9 +1300,7 @@
   ["fadeIn fixed inset-0 z-50 bg-neutral-800/70 transition-opacity sm:hidden"],
   [
     "field-sizing-content min-h-17.5 w-full rounded-[inherit] px-[calc(--spacing(3)-1px)] py-[calc(--spacing(1.5)-1px)] outline-none max-sm:min-h-20.5",
-    "sm",
     "min-h-16.5 px-[calc(--spacing(2.5)-1px)] py-[calc(--spacing(1)-1px)] max-sm:min-h-19.5",
-    "lg",
     "min-h-18.5 py-[calc(--spacing(2)-1px)] max-sm:min-h-21.5"
   ],
   ["fill-default"],
@@ -1237,15 +1320,10 @@
   ["fixed inset-0 z-50 flex flex-col items-center px-4 py-[max(--spacing(4),4vh)] sm:py-[10vh]"],
   [
     "fixed inset-0 z-50 grid",
-    "bottom",
     "grid grid-rows-[1fr_auto] pt-12",
-    "top",
     "grid grid-rows-[auto_1fr] pb-12",
-    "left",
     "flex justify-start",
-    "right",
     "flex justify-end",
-    "inset",
     "sm:p-4"
   ],
   ["fixed inset-0 z-50 grid grid-rows-[1fr_auto_3fr] justify-items-center p-4"],
@@ -1259,18 +1337,15 @@
   ["fixed inset-x-0 bottom-0 pb-2 sm:hidden sm:pb-5"],
   [
     "fixed inset-x-0 inset-y-4 mx-auto flex w-[95vw] flex-1 flex-col overflow-y-auto rounded-xl border p-4 shadow-lg focus:outline-none sm:inset-x-auto sm:right-2 sm:max-w-lg sm:p-6",
-    "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm sm:p-6 p-4 shadow-lg rounded-xl border ",
     "border-subtle",
     "bg-default",
-    "data-[state=closed]:animate-SheetSlideRightAndFade data-[state=open]:animate-SheetSlideLeftAndFade"
+    "data-[state=closed]:animate-SheetSlideRightAndFade data-[state=open]:animate-SheetSlideLeftAndFade",
+    "z-50"
   ],
   [
     "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
-    "left",
     "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]",
     "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-    "floating",
-    "inset",
     "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]",
     "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l"
   ],
@@ -1302,6 +1377,9 @@
   ],
   ["fle-row flex"],
   ["flex"],
+  ["flex    flex-col items-center", "max-w-[420px]"],
+  ["flex   text-default dark flex flex-col"],
+  ["flex   text-default flex flex-col"],
   ["flex absolute inset-0 justify-center items-center"],
   ["flex cursor-default items-center pb-3"],
   ["flex cursor-ew-resize"],
@@ -1348,6 +1426,7 @@
   ["flex flex-col gap-2 p-6 text-center max-sm:pb-4 sm:text-left"],
   ["flex flex-col gap-2 pt-8"],
   ["flex flex-col gap-2 px-4 pt-12 pb-4"],
+  ["flex flex-col gap-2", "scroll-bar flex max-h-72 flex-col gap-2 overflow-y-auto"],
   ["flex flex-col gap-2 sm:flex-row sm:items-end"],
   ["flex flex-col gap-2.5 text-muted-foreground [svg~&]:col-start-2"],
   ["flex flex-col gap-3"],
@@ -1393,7 +1472,7 @@
   ["flex flex-col overflow-y-hidden"],
   ["flex flex-col px-10 py-4"],
   ["flex flex-col px-2 py-2"],
-  ["flex flex-col px-3 py-2  "],
+  ["flex flex-col px-3 py-2  ", "border-subtle border-b"],
   ["flex flex-col px-5 py-4"],
   ["flex flex-col rounded-md border-subtle"],
   ["flex flex-col sm:flex-row"],
@@ -1412,23 +1491,17 @@
   ["flex flex-col xl:flex-row xl:space-x-6"],
   [
     "flex flex-col-reverse gap-2 px-6 sm:flex-row sm:justify-end",
-    "default",
     "border-t bg-muted/72 py-4",
-    "bare",
     "in-[[data-slot=sheet-popup]:has([data-slot=sheet-panel])]:pt-3 pt-4 pb-6"
   ],
   [
     "flex flex-col-reverse gap-2 px-6 sm:flex-row sm:justify-end sm:rounded-b-[calc(var(--radius-2xl)-1px)]",
-    "default",
     "border-t bg-muted/72 py-4",
-    "bare",
     "in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pt-3 pt-4 pb-6"
   ],
   [
     "flex flex-col-reverse gap-2 px-6 sm:flex-row sm:justify-end sm:rounded-b-[calc(var(--radius-2xl)-1px)]",
-    "default",
     "border-t bg-muted/72 py-4",
-    "bare",
     "pb-6"
   ],
   ["flex flex-col-reverse rtl:space-x-reverse "],
@@ -1462,6 +1535,7 @@
   ["flex flex-wrap items-center gap-1"],
   ["flex flex-wrap items-center gap-1.5"],
   ["flex flex-wrap items-center gap-2"],
+  ["flex flex-wrap items-center gap-x-1 gap-y-1  "],
   ["flex flex-wrap items-center justify-between"],
   ["flex gap-[70px]"],
   ["flex gap-1"],
@@ -1543,9 +1617,14 @@
   ["flex h-full items-center justify-center border p-5 last:font-medium"],
   ["flex h-full items-center justify-center", "min-h-[calc(100dvh)]"],
   ["flex h-full items-center justify-center rounded-full"],
+  ["flex h-full items-center text-lg  "],
   ["flex h-full max-w-full flex-1 flex-col flex-nowrap truncate text-sm leading-4"],
   ["flex h-full min-h-[calc(100dvh)] items-center justify-center"],
   ["flex h-full min-h-0 flex-col"],
+  [
+    "flex h-full min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto [container-type:size]  ",
+    "pb-16"
+  ],
   ["flex h-full min-h-0 w-full flex-col"],
   ["flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground"],
   ["flex h-full w-full flex-1 flex-col gap-6 "],
@@ -1567,14 +1646,14 @@
   ["flex items-center"],
   ["flex items-center border-b px-3 py-2"],
   ["flex items-center gap-1"],
-  ["flex items-center gap-1", "horizontal", "justify-center", "vertical", "justify-start"],
+  ["flex items-center gap-1", "justify-center", "justify-start"],
   ["flex items-center gap-1 mt-1 text-xs text-subtle"],
   ["flex items-center gap-1 self-center"],
   ["flex items-center gap-1 text-default text-sm underline"],
   ["flex items-center gap-1.5"],
   ["flex items-center gap-2"],
-  ["flex items-center gap-2", "between", "justify-between", "justify-start"],
   ["flex items-center gap-2 font-medium"],
+  ["flex items-center gap-2", "justify-between", "justify-start"],
   ["flex items-center gap-2 min-h-5"],
   ["flex items-center gap-2 overflow-x-hidden"],
   ["flex items-center gap-2 pr-2"],
@@ -1605,6 +1684,7 @@
   ["flex items-center justify-between gap-4"],
   ["flex items-center justify-between gap-x-4"],
   ["flex items-center justify-between p-2"],
+  ["flex items-center justify-between p-4  ", "border-subtle border-b"],
   ["flex items-center justify-between px-2 md:px-4"],
   ["flex items-center justify-between px-4 py-2.5 text-sm transition hover:cursor-pointer"],
   ["flex items-center justify-between py-5  ltr:pl-4 rtl:pr-4 sm:ltr:pl-0 sm:rtl:pr-0"],
@@ -1708,6 +1788,11 @@
     "flex min-h-8 cursor-default select-none items-center rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm"
   ],
   ["flex min-h-screen flex-col"],
+  ["flex min-h-screen flex-col  "],
+  ["flex min-h-screen flex-col   items-center justify-center"],
+  [
+    "flex min-h-screen flex-col   main text-default flex min-h-full w-full flex-col items-center overflow-visible"
+  ],
   ["flex min-h-screen flex-col items-center justify-between p-24"],
   ["flex min-h-screen flex-col items-center justify-center px-6"],
   ["flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0"],
@@ -1732,7 +1817,8 @@
   ["flex overflow-hidden rounded-md border border-gray-200 bg-white"],
   ["flex p-3 mt-8 mb-8 rounded-md bg-subtle"],
   ["flex pl-2"],
-  ["flex px-3 py-2  "],
+  ["flex px-3 py-2  ", "border-b"],
+  ["flex px-3 py-2  ", "border-subtle border-b"],
   ["flex rounded-md"],
   ["flex select-none items-center truncate font-medium leading-none"],
   ["flex shrink-0 items-center gap-1"],
@@ -1762,7 +1848,6 @@
   ["flex space-x-4"],
   ["flex text-muted-foreground hover:text-foreground"],
   ["flex text-sm font-medium text-emphasis"],
-  ["flex text-sm text-default"],
   [
     "flex touch-none select-none data-disabled:pointer-events-none data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=horizontal]:w-full data-[orientation=horizontal]:min-w-44 data-[orientation=vertical]:flex-col data-disabled:opacity-64"
   ],
@@ -1784,12 +1869,9 @@
   ],
   [
     "flex w-fit *:focus-visible:z-10 dark:*:[[data-slot=separator]:has(+[data-slot=toggle]:hover)]:before:bg-input/64 dark:*:[[data-slot=separator]:has(+[data-slot=toggle][data-pressed])]:before:bg-input dark:*:[[data-slot=toggle]:hover+[data-slot=separator]]:before:bg-input/64 dark:*:[[data-slot=toggle][data-pressed]+[data-slot=separator]]:before:bg-input",
-    "horizontal",
     "*:pointer-coarse:after:min-w-auto",
     "*:pointer-coarse:after:min-h-auto",
-    "default",
     "gap-0.5",
-    "horizontal",
     "*:not-first:not-data-[slot=separator]:before:-start-[0.5px] *:not-last:not-data-[slot=separator]:before:-end-[0.5px] *:not-first:rounded-s-none *:not-last:rounded-e-none *:not-first:border-s-0 *:not-last:border-e-0 *:not-first:before:rounded-s-none *:not-last:before:rounded-e-none",
     "*:not-first:not-data-[slot=separator]:before:-top-[0.5px] *:not-last:not-data-[slot=separator]:before:-bottom-[0.5px] flex-col *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-first:border-t-0 *:not-last:border-b-0 *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none *:data-[slot=toggle]:not-last:before:hidden dark:*:last:before:hidden dark:*:first:before:block"
   ],
@@ -1816,6 +1898,7 @@
   ["flex w-full flex-col", "pl-11"],
   ["flex w-full flex-col pt-2"],
   ["flex w-full flex-col pt-4 md:flex-row md:justify-between md:pt-0 lg:w-auto"],
+  ["flex w-full", "flex-col py-1"],
   ["flex w-full flex-col stack-y-4 lg:flex-row lg:space-x-4 lg:stack-y-0"],
   ["flex w-full flex-row justify-between"],
   ["flex w-full flex-row justify-center"],
@@ -1870,7 +1953,6 @@
     "flex w-full shrink-0 gap-2 overflow-hidden text-ellipsis whitespace-nowrap text-left leading-4",
     "items-center"
   ],
-  ["flex w-full", "single-line", "flex-col py-1"],
   ["flex w-full space-x-2 rtl:space-x-reverse"],
   [
     "flex w-full w-full max-w-[43em] flex-col items-center justify-center stack-y-4 p-4 lg:stack-y-5"
@@ -1968,10 +2050,9 @@
   ["font-medium"],
   ["font-medium [svg~&]:col-start-2"],
   ["font-medium capitalize"],
-  ["font-medium", "element-click", "hidden"],
+  ["font-medium", "hidden"],
   [
     "font-medium inline-flex items-center justify-center rounded bg-emphasis text-emphasis leading-none text-xs",
-    "sm",
     "px-1.5 py-px rounded-md",
     "py-1 px-1.5 leading-none rounded-lg"
   ],
@@ -2069,6 +2150,7 @@
     "grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 p-6 in-[[data-slot=card]:has(>[data-slot=card-panel])]:pb-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]"
   ],
   ["grid", "bg-cal-muted grid rounded-xl px-0.5 pb-0.5"],
+  ["grid flex-1 items-start gap-2 md:grid-cols-2", "flex-1"],
   [
     "grid flex-auto grid-cols-1 grid-rows-1 [--disabled-gradient-background:#F8F9FB] [--disabled-gradient-foreground:#E6E7EB] dark:[--disabled-gradient-background:#262626] dark:[--disabled-gradient-foreground:#393939]"
   ],
@@ -2092,12 +2174,15 @@
     "grid-rows-[1fr] opacity-100 visible",
     "grid-rows-[0fr] opacity-0 invisible"
   ],
+  ["grid w-full grid-cols-1 gap-2 sm:grid-cols-2", "flex-1"],
   ["grid w-full items-center gap-2 pb-4"],
   ["grid w-full items-center gap-2 py-4"],
   [
     "grid w-full max-w-[1440px] grid-cols-1 grid-rows-1 overflow-hidden bg-cal-muted lg:grid-cols-2 2xl:rounded-[20px] 2xl:border 2xl:border-subtle 2xl:py-6"
   ],
   ["grid-col-1 grid grid-cols-1 gap-3 md:grid-cols-3"],
+  ["grid-cols-[1fr_auto] gap-4 pe-1.5", "grid-cols-[1rem_1fr] pe-4"],
+  ["grid-row-gap"],
   [
     "group absolute inset-0 flex h-full flex-col  hover:cursor-not-allowed",
     "[--disabled-gradient-background:#E5E7EB] [--disabled-gradient-foreground:#D1D5DB] dark:[--disabled-gradient-background:#262626] dark:[--disabled-gradient-foreground:#393939]"
@@ -2341,15 +2426,23 @@
   ],
   ["h-24 text-center"],
   ["h-24 w-full"],
+  [
+    "h-3 w-[20px]",
+    "h-4 w-[28px]",
+    "focus:ring-brand-default data-[state=checked]:bg-brand-default dark:data-[state=checked]:bg-brand-emphasis data-[state=unchecked]:bg-emphasis peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-inner transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+    "h-4 w-7",
+    "h-6 w-11"
+  ],
   ["h-3 w-20"],
   ["h-3 w-3"],
+  ["h-3 w-3  ", "text-attention", "text-subtle"],
   ["h-3 w-3 ltr:mr-2 rtl:ml-2"],
   [
     "h-3 w-3 opacity-70 ltr:mr-[10px] rtl:ml-[10px] dark:opacity-100 ",
     "/app-store",
     "dark:invert-[.65]"
   ],
-  ["h-3 w-3 shrink-0 rounded-full", "unavailable", "bg-red-500", "bg-green-500"],
+  ["h-3 w-3 shrink-0 rounded-full", "bg-red-500", "bg-green-500"],
   ["h-3 w-3 stroke-[3px]"],
   ["h-3 w-3 text-emphasis"],
   ["h-3.5 w-3.5"],
@@ -2367,7 +2460,9 @@
   ["h-4 w-32 animate-pulse rounded-md bg-emphasis"],
   ["h-4 w-36"],
   ["h-4 w-4"],
+  ["h-4 w-4  "],
   ["h-4 w-4", "h-5 w-5 ltr:mr-2 rtl:ml-2", "relative shrink-0 rounded-full"],
+  ["h-4 w-4", "h-6 w-6"],
   ["h-4 w-4 hover:cursor-pointer"],
   ["h-4 w-4", "invisible"],
   ["h-4 w-4 ltr:mr-2 rtl:ml-2"],
@@ -2477,13 +2572,9 @@
   ],
   [
     "h-8.5 w-full min-w-0 rounded-[inherit] px-[calc(--spacing(3)-1px)] leading-8.5 outline-none placeholder:text-muted-foreground/72 sm:h-7.5 sm:leading-7.5 [transition:background-color_5000000s_ease-in-out_0s]",
-    "sm",
     "h-7.5 px-[calc(--spacing(2.5)-1px)] leading-7.5 sm:h-6.5 sm:leading-6.5",
-    "lg",
     "h-9.5 leading-9.5 sm:h-8.5 sm:leading-8.5",
-    "search",
     "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none",
-    "file",
     "text-muted-foreground file:me-3 file:bg-transparent file:font-medium file:text-foreground file:text-sm"
   ],
   ["h-9 sm:h-8 w-32"],
@@ -2503,6 +2594,7 @@
   ["h-9 w-9 rounded-md"],
   ["h-auto max-h-[85vh]"],
   ["h-auto min-h-[36px]! text-sm"],
+  ["h-auto min-h-7 w-fit px-2! py-1!  ", "mb-3!"],
   ["h-auto p-0 border-0 hover:border-0"],
   ["h-fit min-w-0 flex-1"],
   ["h-fit p-0 font-normal underline hover:bg-transparent focus-visible:bg-transparent"],
@@ -2538,7 +2630,7 @@
   ["hidden dark:block"],
   ["hidden flex-grow md:block"],
   ["hidden font-normal text-subtle leading-4 sm:inline"],
-  ["hidden gap-2", "week_view", "column_view", "xl:flex", "md:flex"],
+  ["hidden gap-2", "xl:flex", "md:flex"],
   ["hidden grow md:block"],
   ["hidden h-12 w-12 dark:block"],
   ["hidden h-4 rounded-md px-1 py-1 md:flex md:items-center"],
@@ -2622,6 +2714,10 @@
     "hover:bg-subtle disabled:hover:bg-default border-default focus:ring-emphasis absolute left-3 top-[0.9rem] mt-0.5 h-4 w-4 shrink-0 rounded-full border transition focus:ring-2 disabled:cursor-not-allowed",
     "opacity-60"
   ],
+  [
+    "hover:bg-subtle flex cursor-pointer items-center justify-between p-4 transition-colors  ",
+    "border-subtle border-b"
+  ],
   ["hover:bg-subtle flex items-center justify-between p-5 transition"],
   ["hover:bg-subtle flex w-full border-none"],
   ["hover:bg-subtle flex w-full items-center justify-between p-5 text-left transition"],
@@ -2634,6 +2730,9 @@
   ],
   [
     "hover:bg-subtle hover:text-emphasis text-default flex cursor-pointer select-none items-center justify-between rounded-lg p-2 text-sm font-medium outline-none ring-inset first-of-type:rounded-t-[inherit] last-of-type:rounded-b-[inherit] focus:bg-subtle focus:text-emphasis"
+  ],
+  [
+    "hover:bg-subtle hover:text-emphasis text-default text-sm ring-inset first-of-type:rounded-t-[inherit] last-of-type:rounded-b-[inherit] hover:ring-0 focus:outline-none focus:bg-subtle focus:text-emphasis  "
   ],
   ["hover:bg-subtle hover:text-emphasis w-full border-0"],
   ["hover:bg-subtle relative flex w-fit items-center rounded-md p-1"],
@@ -2664,12 +2763,13 @@
   ],
   [
     "hover:text-emphasis text-default inline-flex w-full items-center space-x-1 rounded-lg  p-2 disabled:cursor-not-allowed",
-    "destructive",
     "hover:bg-error hover:text-error text-error",
     "hover:bg-subtle"
   ],
   ["hover:text-emphasis text-subtle h-4 w-4"],
   ["hover:underline"],
+  ["icon "],
+  ["icon block-type  "],
   ["image"],
   ["in-data-[slot=frame]:my-4 mt-4 text-muted-foreground text-sm"],
   [
@@ -2696,6 +2796,7 @@
     " bg-default dark:bg-cal-muted border-booker border-booker-width",
     "px-8 pb-4 pt-5 text-left align-bottom transition-all sm:w-full sm:py-8 sm:align-middle"
   ],
+  ["inline-embed-container"],
   ["inline-flex"],
   ["inline-flex align-baseline"],
   [
@@ -2718,6 +2819,9 @@
   ["inline-flex items-center justify-center"],
   [
     "inline-flex items-center justify-center rounded-2xl border border-transparent bg-white p-2 font-medium text-black shadow-sm hover:brightness-95 focus:outline-none focus:ring-offset-2"
+  ],
+  [
+    "inline-flex items-center justify-center rounded-2xl rounded-md border border-transparent bg-[#ffc439] px-12 py-2 text-base\n        font-medium text-black shadow-sm hover:brightness-95 focus:outline-none focus:ring-offset-2"
   ],
   [
     "inline-flex items-center justify-center rounded-lg text-sm leading-none transition",
@@ -2744,13 +2848,9 @@
   ],
   [
     "inline-start",
-    "block-end",
     "order-last w-full justify-start px-[calc(--spacing(3)-1px)] pb-[calc(--spacing(3)-1px)] [.border-t]:pt-[calc(--spacing(3)-1px)] [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]",
-    "block-start",
     "order-first w-full justify-start px-[calc(--spacing(3)-1px)] pt-[calc(--spacing(3)-1px)] [.border-b]:pb-[calc(--spacing(3)-1px)] [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]",
-    "inline-end",
     "has-[>:last-child[data-slot=badge]]:-me-1.5 has-[>button]:-me-2 order-last pe-[calc(--spacing(3)-1px)] has-[>kbd:last-child]:me-[-0.35rem] [[data-size=sm]+&]:pe-[calc(--spacing(2.5)-1px)]",
-    "inline-start",
     "has-[>:last-child[data-slot=badge]]:-ms-1.5 has-[>button]:-ms-2 order-first ps-[calc(--spacing(3)-1px)] has-[>kbd:last-child]:ms-[-0.35rem] [[data-size=sm]+&]:ps-[calc(--spacing(2.5)-1px)]"
   ],
   ["inset-0 my-4 transition-opacity sm:my-0"],
@@ -2773,7 +2873,7 @@
     "hover:bg-cal-muted"
   ],
   ["items-center capitalize"],
-  ["items-center justify-between", "floating-popup", "text-emphasis", "hidden"],
+  ["items-center justify-between", "text-emphasis", "hidden"],
   ["items-center justify-center p-1", "bg-brand-default text-brand ml-1 rounded-md"],
   ["items-center text-emphasis"],
   ["items-center truncate p-2 md:max-w-[300px]"],
@@ -2789,10 +2889,12 @@
   ["justify-left mb-6 flex items-center font-normal! "],
   ["justify-left mt-1 flex text-left sm:mt-0"],
   ["justify-start text-xs font-medium text-subtle h-6"],
+  ["last-action"],
   ["leading-6"],
   ["lg:hidden"],
   ["lg:ml-0"],
   ["lg:ml-14"],
+  ["light"],
   [
     "light flex min-h-screen w-full flex-col items-center justify-center bg-cal-muted [--cal-brand:#111827] 2xl:bg-default dark:[--cal-brand:#FFFFFF]",
     "[--cal-brand-subtle:#9CA3AF]",
@@ -2805,6 +2907,7 @@
   ["link-edit"],
   ["link-editor"],
   ["link-input"],
+  ["loader"],
   ["loader border-brand-default dark:border-darkmodebrand"],
   ["loader-inner bg-brand dark:bg-darkmodebrand"],
   ["logo", "inline"],
@@ -2903,6 +3006,10 @@
   ["mb-0 h-8 ltr:mr-2 rtl:ml-2"],
   ["mb-0 inline-block leading-none"],
   ["mb-0 inline-block text-sm font-medium"],
+  [
+    "mb-0 inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2  ",
+    "cursor-not-allowed opacity-50"
+  ],
   ["mb-0 ml-2 w-full capitalize md:min-w-[150px] md:max-w-[200px]"],
   [
     "mb-0 mt-0 rounded-md rounded-l-none pl-0",
@@ -2932,6 +3039,7 @@
   ["mb-11 mt-2 w-full rounded-md text-sm"],
   ["mb-16"],
   ["mb-2"],
+  ["mb-2  "],
   ["mb-2 block font-medium text-default text-sm"],
   ["mb-2 block font-medium text-default text-sm leading-none"],
   ["mb-2 block font-medium text-emphasis text-sm leading-none"],
@@ -2968,6 +3076,7 @@
   ["mb-3 pr-6"],
   ["mb-3 text-sm text-subtle"],
   ["mb-3 w-full max-w-none cursor-pointer"],
+  ["mb-3!"],
   ["mb-4"],
   ["mb-4 flex flex-col"],
   ["mb-4 flex flex-wrap items-center gap-2"],
@@ -3049,13 +3158,13 @@
   ["min-w-[150px] text-base font-semibold leading-4"],
   ["min-w-[300px]"],
   ["min-w-0"],
+  ["min-w-0", "*:flex-1 flex flex-1"],
   ["min-w-0 border-l py-2 pl-3"],
   ["min-w-0 flex-1"],
   ["min-w-0 overflow-hidden truncate whitespace-nowrap text-default"],
   ["min-w-0 truncate"],
   [
     "min-w-12 flex-1 text-base outline-none sm:text-sm [[data-slot=combobox-chip]+&]:ps-0.5",
-    "sm",
     "ps-1.5",
     "ps-2"
   ],
@@ -3074,11 +3183,6 @@
   ["min-w-8 relative inline-block"],
   ["min-w-max rounded-none rounded-r-md"],
   ["min-w-none"],
-  ["minimal", "icon"],
-  [
-    "minimal",
-    "w-8 h-8 md:h-11 md:w-11 p-0 text-sm font-medium aria-selected:opacity-100 inline-flex items-center justify-center"
-  ],
   ["mj-column-per-100 mj-outlook-group-fix"],
   ["ml-[-1px] border-subtle [grid-area:main]"],
   ["ml-1"],
@@ -3089,7 +3193,6 @@
   ["ml-1 mr-1 text-orange-600 underline"],
   ["ml-1 mr-4 mt-3 h-5 w-full"],
   ["ml-1 mt-[2px] h-4 w-4"],
-  ["ml-1 mt-0.5 h-4 w-4 text-yellow-600"],
   ["ml-1 mt-2.5 h-6 w-48"],
   ["ml-16 inline"],
   ["ml-2"],
@@ -3139,7 +3242,6 @@
   ["ml-auto flex gap-2"],
   ["ml-auto flex items-center"],
   ["ml-auto flex items-center justify-center gap-1 md:justify-start"],
-  ["ml-auto flex rounded-md border border-subtle py-[10x] px-4 font-sans text-sm"],
   ["ml-auto flex w-full space-x-4", "justify-end"],
   ["ml-auto h-4 w-4"],
   ["ml-auto h-8 w-20"],
@@ -3261,6 +3363,7 @@
   ["mt-12 h-8 w-8"],
   ["mt-2"],
   ["mt-2 block first:mt-0"],
+  ["mt-2 block", "hidden"],
   ["mt-2 block items-center sm:flex"],
   ["mt-2 block text-xs text-red-500"],
   ["mt-2 block w-full sm:hidden"],
@@ -3281,6 +3384,11 @@
   ["mt-2 flex items-start justify-between gap-4"],
   ["mt-2 flex justify-end md:hidden"],
   ["mt-2 flex space-x-4 rtl:space-x-reverse "],
+  [
+    "mt-2 flex w-full items-center rounded-[10px] border transition-all  ",
+    "border-emphasis shadow-outline-gray-focused",
+    "border-default hover:border-emphasis shadow-outline-gray-rested"
+  ],
   ["mt-2 flex-1 md:px-2 lg:mt-4 lg:px-0"],
   ["mt-2 font-cal font-extrabold text-4xl text-emphasis sm:text-5xl"],
   ["mt-2 font-semibold text-sm text-subtle"],
@@ -3310,6 +3418,7 @@
   ["mt-2 w-[180px]"],
   ["mt-2 w-40 xl:mt-0 xl:w-full"],
   ["mt-2 w-60"],
+  ["mt-2 w-fit", "w-fit"],
   ["mt-2 w-full justify-center p-2 text-sm sm:mt-8"],
   ["mt-2 w-full rounded-md text-sm"],
   ["mt-2! ml-1 text-gray-600 text-sm"],
@@ -3339,13 +3448,9 @@
   ["mt-4 flex gap-2 self-end"],
   ["mt-4 flex h-full w-full flex-col items-center justify-center"],
   ["mt-4 flex items-center"],
+  ["mt-4 flex items-center gap-2  "],
   ["mt-4 flex items-center justify-between space-x-2 rtl:space-x-reverse"],
-  [
-    "mt-4 flex items-center justify-start",
-    "floating-popup",
-    "text-emphasis space-x-2 rtl:space-x-reverse",
-    "hidden"
-  ],
+  ["mt-4 flex items-center justify-start", "text-emphasis space-x-2 rtl:space-x-reverse", "hidden"],
   ["mt-4 flex items-center text-sm"],
   ["mt-4 flex justify-between"],
   ["mt-4 flex justify-center"],
@@ -3353,7 +3458,6 @@
   ["mt-4 flex justify-end space-x-2 rtl:space-x-reverse"],
   ["mt-4 flex text-red-500"],
   ["mt-4 flex w-full items-center justify-start py-2"],
-  ["mt-4", "floating-popup", "hidden"],
   ["mt-4 grid gap-4 md:grid-cols-2"],
   ["mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3"],
   ["mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"],
@@ -3365,10 +3469,11 @@
   ["mt-4 h-4 w-3/4"],
   ["mt-4 h-5 w-auto shrink-0"],
   ["mt-4 h-7 w-28"],
+  ["mt-4", "hidden"],
   ["mt-4 hidden shrink-0 sm:ml-5 sm:mt-0 lg:flex"],
   ["mt-4 hidden sm:mt-0 sm:flex"],
   ["mt-4 inline-block"],
-  ["mt-4 items-center justify-between", "floating-popup", "text-emphasis", "hidden"],
+  ["mt-4 items-center justify-between", "text-emphasis", "hidden"],
   ["mt-4 rounded bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-950 dark:text-blue-300"],
   ["mt-4 rounded-2xl bg-cal-muted p-4"],
   ["mt-4 rounded-md border-subtle bg-default sm:mx-0 xl:mt-0", "border-0", "p-2 md:border md:p-6"],
@@ -3429,9 +3534,6 @@
   ["mx-1 -mt-1 inline h-6 w-6 fill-blue-500 text-white dark:text-black"],
   ["mx-1 -mt-1 inline h-6 w-6 fill-yellow-500 text-white dark:text-black"],
   ["mx-1 h-8 w-8 rounded-md"],
-  [
-    "mx-1 rounded-[4px] bg-cal-success py-[2px] px-[6px] font-sans text-xs font-medium text-green-600"
-  ],
   ["mx-10 mb-4 flex flex-col gap-4"],
   [
     "mx-10 my-2 flex w-[80vw] cursor-pointer items-center justify-between overflow-hidden rounded border-[0.8px] border-black py-4"
@@ -3464,8 +3566,8 @@
     "group-data-[collapsible=icon]:hidden"
   ],
   ["mx-4"],
-  ["mx-4 h-5 w-5 animate-spin", "primary", "text-inverted", "text-emphasis"],
   ["mx-4 h-5 w-5 animate-spin", "text-inverted dark:text-emphasis"],
+  ["mx-4 h-5 w-5 animate-spin", "text-inverted", "text-emphasis"],
   ["mx-5"],
   ["mx-5 flex min-w-9 sm:hidden"],
   ["mx-6 h-8 w-8 px-4"],
@@ -3493,6 +3595,7 @@
   ["mx-auto max-w-full justify-center lg:max-w-3xl"],
   ["mx-auto max-w-xl pt-16 pb-6 sm:pt-24"],
   ["mx-auto mb-auto"],
+  ["mx-auto mt-0! max-w-sm", "mt-0! max-w-sm"],
   [
     "mx-auto mt-24 w-full max-w-2xl flex-col justify-between rounded-l-2xl border-subtle pl-4 lg:mt-0 lg:flex lg:max-w-full lg:border lg:bg-subtle lg:py-12 lg:pl-12 dark:bg-none"
   ],
@@ -3553,6 +3656,7 @@
     "translate-x-0",
     "-translate-x-[232px]"
   ],
+  ["no-scrollbar flex flex-col stack-y-1 overflow-scroll  "],
   ["no-scrollbar flex flex-col stack-y-1 overflow-scroll  ", "sticky"],
   ["no-scrollbar flex items-center gap-2 overflow-x-auto"],
   ["no-scrollbar flex space-x-0.5 overflow-x-scroll rounded-lg bg-subtle p-0.5"],
@@ -3588,7 +3692,6 @@
   ["opacity-80 [&>svg]:size-4"],
   ["order-2 shrink-0 sm:order-3"],
   ["origin-(--transform-origin) text-foreground"],
-  ["outline", "ghost"],
   ["outline-none"],
   ["outline-none hover:ring-0 focus:ring-0 rounded-md"],
   ["overflow-hidden"],
@@ -3605,7 +3708,7 @@
   ["p-0!"],
   ["p-0.5"],
   ["p-1 border border-subtle rounded-xl w-full object-cover"],
-  ["p-1 h-fit", "px-3 h-fit", "sm", "h-7 px-2", "h-9 py-0 px-3", "bg-subtle", "rounded-[10px]"],
+  ["p-1 h-fit", "px-3 h-fit", "h-7 px-2", "h-9 py-0 px-3", "bg-subtle", "rounded-[10px]"],
   ["p-1 text-orange-600 text-sm", "successRedirectUrl", "block", "hidden"],
   ["p-2"],
   ["p-2 md:mx-0 md:p-0 xl:hidden"],
@@ -3636,8 +3739,9 @@
   ["pl-0"],
   ["pl-1"],
   ["pl-1 text-sm leading-none text-red-600"],
-  ["pl-1 text-subtle"],
   ["pl-10"],
+  ["pl-6"],
+  ["place"],
   ["place-self-end pr-2"],
   [
     "pointer-events-auto flex items-center justify-between gap-1.5 overflow-hidden px-3.5 py-3 text-sm"
@@ -3674,13 +3778,11 @@
   ["pointer-events-none relative bg-input before:absolute before:inset-0 dark:before:bg-input/32"],
   [
     "pointer-events-none relative z-60 col-start-1 col-end-2 row-start-1 grid auto-cols-auto grid-rows-1 divide-x",
-    "subtle",
     "divide-subtle",
     "divide-default"
   ],
   [
     "pointer-events-none relative z-60 col-start-1 col-end-2 row-start-1 grid divide-y",
-    "subtle",
     "divide-subtle",
     "divide-default"
   ],
@@ -3700,6 +3802,8 @@
   ["pr-2"],
   ["pr-4"],
   ["pr-6 focus:outline-none"],
+  ["pr-8"],
+  ["preheader"],
   ["primary-navigation w-64"],
   ["primary-navigation w-64 shrink-0"],
   ["prose prose-sm dark:prose-invert max-w-none"],
@@ -3729,6 +3833,16 @@
   ["px-2 py-1.5 font-medium text-muted-foreground text-xs data-inset:ps-9 sm:data-inset:ps-8"],
   ["px-2.5 py-1.5"],
   ["px-3"],
+  [
+    "px-3 h-fit",
+    "p-1 h-fit",
+    "px-3 h-fit",
+    "h-7 px-2 py-0.5",
+    "h-8 px-3 py-1",
+    "bg-subtle !cursor-not-allowed !pointer-events-auto hover:border-subtle",
+    "rounded-[10px]",
+    "[&:focus-within]:border-emphasis [&:focus-within]:shadow-outline-gray-focused focus-within:ring-0 flex! **:[input]:leading-none text-sm"
+  ],
   ["px-3 mb-2"],
   ["px-3 py-2"],
   ["px-3 py-2 font-medium text-muted-foreground text-xs empty:m-0 empty:p-0"],
@@ -3801,15 +3915,10 @@
   ["relative flex items-start", "text-emphasis", "text-emphasis", "text-error"],
   [
     "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[opacity,translate] duration-200 ease-in-out will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 max-sm:before:hidden dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
-    "bottom",
     "row-start-2 border-t data-ending-style:translate-y-8 data-starting-style:translate-y-8",
-    "top",
     "data-ending-style:-translate-y-8 data-starting-style:-translate-y-8 border-b",
-    "left",
     "data-ending-style:-translate-x-8 data-starting-style:-translate-x-8 w-[calc(100%-(--spacing(12)))] max-w-md border-e",
-    "right",
     "col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s data-ending-style:translate-x-8 data-starting-style:translate-x-8",
-    "inset",
     "before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=sheet-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]"
   ],
   [
@@ -3895,7 +4004,7 @@
   ["relative mx-auto"],
   ["relative mx-auto h-[465px] w-[465px] shrink-0 overflow-visible"],
   ["relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64"],
-  ["relative overflow-auto", "scrollbar-thin relative rounded-md ", "infinite", "h-[80dvh]"],
+  ["relative overflow-auto", "scrollbar-thin relative rounded-md ", "h-[80dvh]"],
   ["relative p-1"],
   ["relative pl-5"],
   [
@@ -3931,8 +4040,6 @@
     "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
     "group-data-[collapsible=offcanvas]:w-0",
     "group-data-[side=right]:rotate-180",
-    "floating",
-    "inset",
     "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]",
     "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
   ],
@@ -3942,7 +4049,6 @@
   [
     "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
     "data-[orientation=vertical]:flex-col",
-    "default",
     "rounded-lg bg-muted p-0.5 text-muted-foreground/72",
     "data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-tab]:hover:bg-accent"
   ],
@@ -4096,9 +4202,7 @@
     "invisible",
     "visible",
     "button-icon group-[:not(div):active]:translate-y-[0.5px]",
-    "icon",
     "h-4 w-4",
-    "button",
     "h-4 w-4 stroke-[1.5px] "
   ],
   [
@@ -4106,12 +4210,11 @@
     "invisible",
     "visible",
     "group-[:not(div):active]:translate-y-[0.5px]",
-    "icon",
     "h-4 w-4",
-    "button",
     "h-4 w-4 stroke-[1.5px] "
   ],
   ["shrink-0 px-2 text-center text-brand-subtle text-xs leading-none sm:font-medium sm:text-sm"],
+  ["shrink-0 rounded-full transition-all"],
   [
     "shrink-0 rounded-full transition-all",
     "h-[6px] w-[6px] bg-[var(--cal-text)]",
@@ -4120,6 +4223,7 @@
   ],
   ["shrink-0 self-center"],
   ["shrink-0 whitespace-nowrap text-left leading-4"],
+  ["size", "max-h-[95vh]", "overflow-y-auto", "overflow-visible"],
   ["size-12 flex items-center justify-center"],
   ["size-3.5 shrink-0 sm:size-3"],
   ["size-3.5 sm:size-3"],
@@ -4138,17 +4242,6 @@
   ["slider-range"],
   ["slider-thumb"],
   ["slider-track"],
-  ["sm", "end-0", "end-0.5"],
-  [
-    "sm",
-    "h-3 w-[20px]",
-    "h-4 w-[28px]",
-    "focus:ring-brand-default data-[state=checked]:bg-brand-default dark:data-[state=checked]:bg-brand-emphasis data-[state=unchecked]:bg-emphasis peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-inner transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-    "sm",
-    "h-4 w-7",
-    "h-6 w-11"
-  ],
-  ["sm", "h-4 w-4", "md", "h-6 w-6"],
   ["sm:-me-1"],
   ["sm:-ms-1"],
   ["sm:border-subtle bg-cal-muted mt-10  border p-4 sm:rounded-md sm:p-8"],
@@ -4208,6 +4301,7 @@
   ["stack-y-6 rounded-lg border border-subtle p-6"],
   ["stack-y-6 text-sm leading-normal "],
   ["static! w-full divide-y divide-subtle"],
+  ["status", "borderOnly", "ring-brand-default shadow-lg ring-2 ring-offset-0"],
   [
     "sticky bottom-0 left-0 right-0 z-10 flex items-center justify-start rounded-[12px] bg-[rgba(255,255,255,0.01)] p-2 shadow-[0px_12px_32px_-6px_rgba(0,0,0,0.12),0px_0px_0px_1px_rgba(111,107,107,0.1),0px_1px_3px_0px_rgba(63,70,75,0.1)] backdrop-blur-[6px] backdrop-filter"
   ],
@@ -4221,7 +4315,8 @@
     "sticky top-0 z-20 flex w-full items-center justify-between border-muted border-b bg-cal-muted px-2 py-2 sm:relative lg:hidden"
   ],
   ["stroke-[3px]"],
-  ["switch", "grid-cols-[1fr_auto] gap-4 pe-1.5", "grid-cols-[1rem_1fr] pe-4"],
+  ["structure", "description", "pt-1"],
+  ["structure", "image"],
   ["table border-collapse text-sm"],
   ["text font-semibold text-sm leading-none"],
   ["text line-clamp-1 text-sm"],
@@ -4253,6 +4348,7 @@
   ["text-center text-sm"],
   ["text-center text-sm text-subtle"],
   ["text-default"],
+  ["text-default  ", "wrap-break-word block text-sm"],
   ["text-default  mb-1 block text-sm font-medium"],
   ["text-default -mb-2 ml-1 text-sm font-medium"],
   ["text-default -mt-1.5 text-sm leading-normal"],
@@ -4409,6 +4505,7 @@
   ["text-destructive-foreground text-xs"],
   ["text-ellipsis leading-0"],
   ["text-emphasis"],
+  ["text-emphasis   font-medium", "break-words text-sm"],
   ["text-emphasis -mb-1 ml-1 text-sm font-medium leading-none"],
   [
     "text-emphasis absolute right-4 top-4 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100"
@@ -4451,7 +4548,6 @@
   ["text-emphasis font-medium leading-6"],
   [
     "text-emphasis font-medium",
-    "sm",
     "m-1 text-xs",
     "mr-2 text-sm",
     "ml-2 text-sm",
@@ -4459,6 +4555,7 @@
     "cursor-pointer",
     "flex-1"
   ],
+  ["text-emphasis font-medium", "text-muted font-medium"],
   ["text-emphasis font-mono"],
   ["text-emphasis font-normal no-underline hover:underline"],
   ["text-emphasis font-semibold"],
@@ -4472,6 +4569,7 @@
   ["text-emphasis hover:underline"],
   ["text-emphasis inline-block text-sm"],
   ["text-emphasis inline-flex items-center justify-start gap-1 rounded-sm py-2"],
+  ["text-emphasis line-clamp-1 font-bold leading-5", "structure", "title"],
   ["text-emphasis line-clamp-1 font-bold leading-5", "title"],
   ["text-emphasis ltr:ml-2 rtl:mr-2"],
   ["text-emphasis ltr:mr-2 rtl:ml-2"],
@@ -4567,6 +4665,7 @@
   ["text-error mt-2 flex items-center gap-x-2 text-sm"],
   ["text-error", "mt-4"],
   ["text-error my-1 ml-6 text-sm"],
+  ["text-error", "text-green-600"],
   ["text-error text-sm"],
   ["text-foreground text-sm tabular-nums"],
   [
@@ -4576,6 +4675,7 @@
   ["text-gray text-subtle mt-2 flex items-start text-xs"],
   ["text-gray-400 text-sm"],
   ["text-green-500"],
+  ["text-green-600"],
   ["text-indigo-400"],
   ["text-info flex items-start"],
   [
@@ -4623,7 +4723,6 @@
   ["text-muted -mt-1 text-sm"],
   ["text-muted -mt-11 p-3 text-sm"],
   ["text-muted absolute left-0.5 ml-3 h-4 w-4 -translate-y-1/2"],
-  ["text-muted", "checkbox", "hidden"],
   ["text-muted dark:text-subtle text-base font-normal"],
   ["text-muted float-left mr-1 mt-1.5 inline-block h-3 w-3"],
   ["text-muted font-normal"],
@@ -4680,6 +4779,7 @@
   ["text-sm font-semibold leading-none"],
   ["text-sm leading-5"],
   ["text-sm leading-6 text-blue-600 hover:underline dark:text-blue-400"],
+  ["text-sm leading-normal"],
   ["text-sm leading-normal", "text-default", "text-subtle italic"],
   ["text-sm leading-tight"],
   ["text-sm opacity-90"],
@@ -4804,6 +4904,7 @@
   ["text-subtle text-sm leading-tight"],
   ["text-subtle text-sm ltr:mr-4"],
   ["text-subtle text-sm tabular-nums"],
+  ["text-subtle text-sm", "text-muted text-sm"],
   ["text-subtle text-xs"],
   ["text-subtle text-xs font-medium"],
   ["text-subtle text-xs font-normal"],
@@ -4821,6 +4922,7 @@
   ["to-default flex h-10 w-5 bg-linear-to-r from-transparent"],
   ["to-default flex h-9 w-5 bg-linear-to-l from-transparent"],
   ["to-default flex h-9 w-5 bg-linear-to-r from-transparent"],
+  ["todesktop"],
   [
     "todesktop:-mt-3 todesktop:flex-col-reverse items-center justify-between todesktop:[-webkit-app-region:drag] md:hidden lg:flex"
   ],
@@ -4833,7 +4935,8 @@
   ],
   ["todesktop:mt-4 w-full"],
   [
-    "todesktop:py-[7px] text-default group flex items-center rounded-md px-2 py-1.5 text-sm font-medium transition"
+    "todesktop:py-[7px] text-default group flex items-center rounded-md px-2 py-1.5 text-sm font-medium transition",
+    "mt-0"
   ],
   [
     "todesktop:py-[7px] text-default group relative flex w-full items-center rounded-md px-2 py-1.5 text-sm font-medium transition",
@@ -4862,6 +4965,7 @@
   ["underline decoration-gray-400 decoration-dashed underline-offset-2"],
   ["underline hover:cursor-pointer"],
   ["underline underline-offset-2"],
+  ["variant", "outline", "ghost"],
   ["w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"],
   ["w-[120px]"],
   ["w-[130px]"],
@@ -4869,6 +4973,7 @@
   ["w-[200px] p-0"],
   ["w-[200px] p-0 shadow-md"],
   ["w-[40px]"],
+  ["w-[70%] font-normal   pb-3 text-2xl"],
   ["w-[90%] self-center"],
   ["w-[90px]"],
   ["w-0.5 shrink-0 self-stretch rounded-lg bg-emphasis"],
@@ -4902,6 +5007,8 @@
   ["w-fit"],
   ["w-fit p-2"],
   ["w-full"],
+  ["w-full  ", "block", "hidden"],
+  ["w-full  ", "line-through"],
   ["w-full  leading-none"],
   [
     "w-full caption-bottom in-data-[slot=frame]:border-separate in-data-[slot=frame]:border-spacing-0 text-sm"
@@ -4910,6 +5017,7 @@
   ["w-full grow"],
   ["w-full justify-center"],
   ["w-full justify-center rounded-md text-center"],
+  ["w-full justify-center text-center", "color", "secondary"],
   ["w-full justify-center text-center", "secondary"],
   ["w-full ltr:mr-2 rtl:ml-2"],
   ["w-full max-w-4xl ltr:mr-2 rtl:ml-2"],
@@ -4935,6 +5043,7 @@
   ["w-full rounded-lg"],
   ["w-full rounded-md focus:ring-0", "bg-subtle w-full"],
   ["w-full rounded-md p-1 hover:ring-0 focus:outline-none"],
+  ["w-full rounded-md px-3 py-2 text-left transition-colors focus:outline-none  ", "bg-muted"],
   ["w-full rounded-none"],
   ["w-full rounded-none text-left"],
   [
@@ -4972,6 +5081,7 @@
   ["wrap-break-word scroll-bar max-h-[180px] max-w-full overflow-y-auto pr-4"],
   ["wrap-break-word whitespace-pre-line"],
   ["xl:max-w-80 w-full pr-4 sm:ml-0 sm:mr-36 sm:p-0"],
+  ["xs"],
   ["z-10 w-full max-w-(--breakpoint-sm) overflow-hidden rounded-md bg-default shadow-lg"],
   ["z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex"],
   ["z-50"],

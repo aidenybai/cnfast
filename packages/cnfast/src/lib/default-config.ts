@@ -544,7 +544,7 @@ export const getDefaultConfig = () => {
 
       "min-h": [{ "min-h": ["screen", "lh", "none", ...scaleSizing()] }],
 
-      "max-h": [{ "max-h": ["screen", "lh", "none", ...scaleSizing()] }],
+      "max-h": [{ "max-h": ["screen", "lh", ...scaleSizing()] }],
 
       "font-size": [{ text: ["base", themeText, isArbitraryVariableLength, isArbitraryLength] }],
 
@@ -820,15 +820,7 @@ export const getDefaultConfig = () => {
 
       shadow: [
         {
-          shadow: [
-            // Keep pre-v4 forms for backward compatibility.
-            "",
-            "inner",
-            "none",
-            themeShadow,
-            isArbitraryVariableShadow,
-            isArbitraryShadow,
-          ],
+          shadow: ["", "none", themeShadow, isArbitraryVariableShadow, isArbitraryShadow],
         },
       ],
 
@@ -1287,16 +1279,16 @@ export const getDefaultConfig = () => {
         "bottom",
         "left",
       ],
-      "inset-x": ["start", "end", "right", "left"],
-      "inset-y": ["inset-bs", "inset-be", "top", "bottom"],
+      "inset-x": ["right", "left"],
+      "inset-y": ["top", "bottom"],
       flex: ["basis", "grow", "shrink"],
       gap: ["gap-x", "gap-y"],
       p: ["px", "py", "ps", "pe", "pbs", "pbe", "pt", "pr", "pb", "pl"],
-      px: ["ps", "pe", "pr", "pl"],
-      py: ["pbs", "pbe", "pt", "pb"],
+      px: ["pr", "pl"],
+      py: ["pt", "pb"],
       m: ["mx", "my", "ms", "me", "mbs", "mbe", "mt", "mr", "mb", "ml"],
-      mx: ["ms", "me", "mr", "ml"],
-      my: ["mbs", "mbe", "mt", "mb"],
+      mx: ["mr", "ml"],
+      my: ["mt", "mb"],
       size: ["w", "h"],
       "font-size": ["leading"],
       "fvn-normal": [
@@ -1347,8 +1339,8 @@ export const getDefaultConfig = () => {
         "border-w-b",
         "border-w-l",
       ],
-      "border-w-x": ["border-w-s", "border-w-e", "border-w-r", "border-w-l"],
-      "border-w-y": ["border-w-bs", "border-w-be", "border-w-t", "border-w-b"],
+      "border-w-x": ["border-w-r", "border-w-l"],
+      "border-w-y": ["border-w-t", "border-w-b"],
       "border-color": [
         "border-color-x",
         "border-color-y",
@@ -1361,8 +1353,8 @@ export const getDefaultConfig = () => {
         "border-color-b",
         "border-color-l",
       ],
-      "border-color-x": ["border-color-s", "border-color-e", "border-color-r", "border-color-l"],
-      "border-color-y": ["border-color-bs", "border-color-be", "border-color-t", "border-color-b"],
+      "border-color-x": ["border-color-r", "border-color-l"],
+      "border-color-y": ["border-color-t", "border-color-b"],
       translate: ["translate-x", "translate-y", "translate-none"],
       "translate-none": ["translate", "translate-x", "translate-y", "translate-z"],
       "scroll-m": [
@@ -1377,8 +1369,8 @@ export const getDefaultConfig = () => {
         "scroll-mb",
         "scroll-ml",
       ],
-      "scroll-mx": ["scroll-ms", "scroll-me", "scroll-mr", "scroll-ml"],
-      "scroll-my": ["scroll-mbs", "scroll-mbe", "scroll-mt", "scroll-mb"],
+      "scroll-mx": ["scroll-mr", "scroll-ml"],
+      "scroll-my": ["scroll-mt", "scroll-mb"],
       "scroll-p": [
         "scroll-px",
         "scroll-py",
@@ -1391,8 +1383,8 @@ export const getDefaultConfig = () => {
         "scroll-pb",
         "scroll-pl",
       ],
-      "scroll-px": ["scroll-ps", "scroll-pe", "scroll-pr", "scroll-pl"],
-      "scroll-py": ["scroll-pbs", "scroll-pbe", "scroll-pt", "scroll-pb"],
+      "scroll-px": ["scroll-pr", "scroll-pl"],
+      "scroll-py": ["scroll-pt", "scroll-pb"],
       touch: ["touch-x", "touch-y", "touch-pz"],
       "touch-x": ["touch"],
       "touch-y": ["touch"],

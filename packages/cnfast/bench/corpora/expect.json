@@ -1,4 +1,7 @@
 [
+  ["    h-full antialiased"],
+  ["  -translate-x-1/2"],
+  ["  left-0"],
   ["-mx-1 my-1 h-px bg-border"],
   ["!uppercase !font-semibold"],
   ["[font-synthesis:none] flex flex-col bg-white antialiased"],
@@ -38,6 +41,9 @@
   ],
   ["absolute inset-0 z-20 flex flex-col items-center justify-center gap-4"],
   [
+    "absolute inset-y-1.5 left-1.5 z-[30] flex w-12.75 items-center justify-center gap-0 rounded-full bg-white px-2.75 py-0.75 text-[#2F2F2F]   active:scale-[0.97]"
+  ],
+  [
     "absolute left-1/2 px-3 py-2 bg-[#1a1a1a] text-white text-[13px] font-normal rounded-xl whitespace-nowrap overflow-hidden text-ellipsis leading-[1.4] pointer-events-none shadow-[0_4px_20px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.08)] min-w-[120px] max-w-[280px] text-center animate-[expect-tooltip-in_0.1s_ease-out_forwards]"
   ],
   ["absolute pointer-events-none"],
@@ -61,10 +67,7 @@
     "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
     "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
     "size-8",
-    "icon-xs",
-    "icon-sm",
     "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-    "icon-lg",
     "size-9",
     "default",
     "default"
@@ -79,10 +82,7 @@
     "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
     "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
     "size-8",
-    "icon-xs",
-    "icon-sm",
     "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-    "icon-lg",
     "size-9",
     "default",
     "default"
@@ -110,8 +110,19 @@
     "bg-zinc-900 text-zinc-300 p-4 rounded-none text-sm overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed"
   ],
   ["border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1"],
+  [
+    "border text-white px-3 py-1.5 rounded-md text-xs cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-left  ",
+    "bg-blue-600 border-blue-500 hover:bg-blue-500",
+    "bg-gray-700 border-gray-600 hover:bg-gray-600"
+  ],
   ["border-b border-gray-100"],
   ["border-b border-gray-200"],
+  [
+    "border-b border-r shrink-0 relative cursor-cell    ",
+    "border-blue-600 z-10 ring-2 ring-blue-600 ring-inset",
+    "bg-blue-50 border-blue-300",
+    "border-zinc-200"
+  ],
   ["border-b border-zinc-200 bg-emerald-700 sticky top-0 z-20"],
   ["col-start-2 row-span-2 row-start-1 self-start justify-self-end"],
   [
@@ -122,6 +133,7 @@
     "cursor-pointer appearance-none rounded-full bg-transparent px-1.5 py-1 text-[13px] font-medium text-[color(display-p3_0.361_0.361_0.361)] outline-none disabled:cursor-default disabled:opacity-40 md:px-2 md:text-[15px]"
   ],
   ["cursor-pointer flex items-center gap-1.5 outline-none"],
+  ["cursor-pointer font-medium text-[15px]/5.75  ", "text-[#1a1a1a] bg-accent", "text-[#696969]"],
   ["cursor-pointer shrink-0 content-center group"],
   ["cursor-pointer text-left"],
   ["fill-[#C0C0C0] transition-colors group-hover:fill-[#FFC200]"],
@@ -141,11 +153,21 @@
   ["flex flex-col gap-[5px] mt-10"],
   ["flex flex-col gap-0.5 cursor-pointer text-left"],
   ["flex flex-col gap-1.5"],
+  [
+    "flex flex-col gap-2 rounded-[28px] px-3 pt-2 pb-3 md:gap-3 md:pr-6 md:pt-3 md:pb-5  ",
+    "md:pl-[295px]",
+    "md:pl-6"
+  ],
   ["flex flex-col gap-2.75"],
   ["flex flex-col h-full"],
   ["flex flex-col items-center justify-center gap-4 text-xs/4 mt-10 sm:mt-11.5 p-3 pb-4 sm:pb-14"],
   ["flex flex-col items-start gap-0 px-2 py-0.75 rounded-full"],
   ["flex flex-col items-start w-49 text-xs/4 gap-1"],
+  [
+    "flex flex-col items-start w-56 h-46 relative z-10 rounded-2xl pt-4.5 pr-3.75 pb-6.5 pl-3.75 overflow-clip bg-white  ",
+    "[box-shadow:#69696920_0px_0px_0px_0.5px,#C4C4C430_0px_2px_6px]",
+    "[box-shadow:#69696920_0px_0px_0px_0.5px]"
+  ],
   ["flex flex-col mt-1.5"],
   ["flex flex-col p-[1px]"],
   ["flex flex-col relative pt-0.5 pr-2.25 pb-2.5 pl-3.75 gap-3.25 h-15.5"],
@@ -189,6 +211,7 @@
   ["flex items-start gap-2.75 min-w-0 pr-3.5 pb-3 pl-3.75 pt-0 rounded-b-[14px] bg-white"],
   ["flex items-start gap-3.5"],
   ["flex items-start shrink-0 gap-2.5"],
+  ["flex items-start shrink-0 gap-2.5  ", "mb-2.5"],
   [
     "flex justify-between items-start transition-colors group-hover/faq:text-[#1E1E1E] pt-2.75 cursor-pointer"
   ],
@@ -219,7 +242,17 @@
   ["font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm"],
   ["glow-pulse pointer-events-none absolute inset-0"],
   [
+    "grid transition-[grid-template-rows,opacity] duration-200  ",
+    "grid-rows-[1fr] opacity-100",
+    "grid-rows-[0fr] opacity-0"
+  ],
+  [
     "group [font-synthesis:none] items-center flex justify-between mt-[20px] w-fit rounded-full overflow-clip gap-0.5 pl-[14px] pr-1.75 py-2 bg-white [box-shadow:#0000000F_0px_0px_0px_1px,#0000000F_0px_1px_2px_-1px,#0000000A_0px_2px_4px] antialiased transition-shadow hover:[box-shadow:#00000014_0px_0px_0px_1px,#00000014_0px_1px_2px_-1px,#0000000F_0px_2px_4px]"
+  ],
+  [
+    "group-hover/faq:text-[#1E1E1E] transition-all duration-200  ",
+    "text-[#1E1E1E] rotate-45",
+    "text-[#5A5A5A]"
   ],
   [
     "group/accordion-trigger [font-synthesis:none] flex flex-1 justify-between items-center gap-0 rounded-[12px] pt-2.5 pb-2.5 pl-4 pr-3.5 sm:pt-1.75 sm:pb-1.75 sm:pl-3.5 sm:pr-3 antialiased outline-none transition-opacity duration-100",
@@ -323,12 +356,24 @@
   [
     "pointer-events-none absolute inset-0 z-10 flex flex-col items-end justify-end gap-2 p-2 md:p-5"
   ],
+  ["pointer-events-none absolute inset-y-0 left-0  "],
   ["pointer-events-none absolute right-2 flex items-center justify-center"],
   [
     "pointer-events-none absolute top-1/2 z-[1] h-2.75 w-px -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color(display-p3_0.882_0.882_0.882)]"
   ],
   ["primary bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600"],
   ["px-1.5 py-1 text-xs font-medium text-muted-foreground data-inset:pl-7"],
+  [
+    "px-2 h-full flex items-center text-lg truncate  ",
+    "font-bold text-zinc-900 bg-zinc-50",
+    "text-emerald-700 font-medium",
+    "text-blue-700 font-medium",
+    "text-amber-700 font-medium",
+    "text-zinc-800",
+    "text-red-600",
+    "text-emerald-600",
+    "text-zinc-800"
+  ],
   ["px-4 flex items-center h-14"],
   ["px-4 group-data-[size=sm]/card:px-3"],
   [
@@ -339,6 +384,11 @@
   ["py-2"],
   ["py-2 text-gray-400"],
   ["py-2 text-green-600"],
+  [
+    "relative flex flex-col w-68.5 h-46 rounded-2xl pt-2.5 pr-2.25 pb-6.75 pl-4.75 bg-white overflow-hidden  ",
+    "[box-shadow:#69696920_0px_0px_0px_0.5px,#C4C4C430_0px_2px_6px]",
+    "[box-shadow:#69696920_0px_0px_0px_0.5px]"
+  ],
   ["relative flex h-full flex-col overflow-hidden rounded-xl bg-white"],
   ["relative flex items-center justify-center"],
   [
@@ -359,6 +409,7 @@
   ["relative w-full max-w-112.75 min-w-0 px-4 sm:px-0"],
   ["relative w-full max-w-112.75 min-w-0 px-4 sm:px-0 pb-16"],
   ["relative z-10 flex min-w-0 items-start gap-1.5"],
+  ["relative z-10 size-2 shrink-0 rounded-full  "],
   ["rounded-full bg-[#E7E7E7] shrink-0 size-2"],
   ["rounded-full bg-[#EAEAEA] shrink-0 size-2.5"],
   ["rounded-full bg-[#F1F1F1] shrink-0 size-2"],
@@ -379,7 +430,13 @@
   [
     "shrink-0 group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 focus:z-10 focus-visible:z-10 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-lg group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-lg group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-lg group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-lg group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t"
   ],
+  [
+    "shrink-0 group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 focus:z-10 focus-visible:z-10 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-lg group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-lg group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-lg group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-lg group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
+    "variant",
+    "size"
+  ],
   ["shrink-0 text-black dark:text-white size-[17px] sm:size-[15px]"],
+  ["size-1.5 rounded-full bg-red-500  ", "animate-pulse"],
   ["size-3 shrink-0 rounded-full"],
   ["size-3.75"],
   ["size-4"],
@@ -394,9 +451,15 @@
   ["text-[#000000]"],
   ["text-[#0033B3]"],
   ["text-[#067D17]"],
+  ["text-[#1E1E1E]", "text-[#5A5A5A]"],
+  ["text-[#414141]", "text-[#A0A0A0]"],
   ["text-[#871094]"],
   ["text-[#E07800]"],
   ["text-[11px] font-semibold uppercase tracking-wider text-red-500"],
+  [
+    "text-[color(display-p3_0.188_0.188_0.188)]",
+    "text-[color(display-p3_0.332_0.332_0.332)] group-hover/replay-step:text-[color(display-p3_0.188_0.188_0.188)] group-focus-visible/replay-step:text-[color(display-p3_0.188_0.188_0.188)]"
+  ],
   ["text-[color(display-p3_0.727_0.727_0.727)]"],
   ["text-2xl font-extrabold text-zinc-900"],
   ["text-3xl font-bold mb-2"],
@@ -408,6 +471,7 @@
   ["text-lg font-bold text-zinc-800 font-mono"],
   ["text-lg font-semibold mb-3"],
   ["text-shimmer text-sm font-medium"],
+  ["text-sm  ", "text-green-400", "text-red-400"],
   ["text-sm font-medium text-white/90 drop-shadow-sm"],
   ["text-sm text-muted-foreground"],
   ["text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide"],

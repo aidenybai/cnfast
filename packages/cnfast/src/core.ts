@@ -19,17 +19,9 @@ export interface ClassNameFunction {
 }
 
 /**
- * An argument-cache bucket contains calls with the same last truthy class name.
- *
- *     [entryCount, restLength, ...rest, mergedClassName, entryId, ...]
- *
- * Real call sites reuse leading classes and vary the last class. First-argument keys required
- * buckets of 542 to 1,195 slots on measured pages. Last-argument keys kept every bucket within
- * its limit. Comparing the remaining classes from right to left also rejects shared prefixes
- * sooner.
- *
- * Flat entries avoid two arrays and one object allocation per insertion. This layout measured
- * twice as fast as object entries on JavaScriptCore.
+ * Calls with the same last class share a flat bucket:
+ * `[callCount, otherClassCount, ...otherClasses, result, id, ...]`.
+ * Last-class keys kept measured buckets small. Flat entries avoid per-call arrays and objects.
  */
 type ArgumentCacheBucket = (string | number)[];
 
@@ -51,9 +43,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   let previousArgumentCache = new Map<string, ArgumentCacheBucket>();
   let argumentCacheSlotCount = 0;
 
-  // Component renders repeat class-name calls in a stable order. Each hit records the next entry
-  // ID, avoiding a map lookup when that order repeats. The lookup still compares every class name.
-  // Trimming, rotation, and reused IDs therefore cause misses instead of incorrect results.
+  // Component renders repeat calls in order. Predictions skip the map lookup but still verify each class.
   const successorIds = new Int32Array(ARGUMENT_CACHE_PREDICTION_SLOTS).fill(-1);
   const predictedAnchors: string[] = createFilledArray(ARGUMENT_CACHE_PREDICTION_SLOTS, "");
   const predictedBuckets: ArgumentCacheBucket[] = createFilledArray(
@@ -64,7 +54,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   let lastHitId = 0;
   let nextEntryId = 0;
 
-  const recordEntryHit = (
+  const setArgumentCachePrediction = (
     anchorClassName: string,
     bucket: ArgumentCacheBucket,
     position: number,
@@ -77,7 +67,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     lastHitId = entryId;
   };
 
-  const createEntryId = (
+  const createArgumentCacheEntryId = (
     anchorClassName: string,
     bucket: ArgumentCacheBucket,
     position: number,
@@ -85,17 +75,15 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     const entryId = nextEntryId;
     nextEntryId = (entryId + 1) & ARGUMENT_CACHE_PREDICTION_ID_MASK;
     successorIds[entryId] = -1;
-    recordEntryHit(anchorClassName, bucket, position, entryId);
+    setArgumentCachePrediction(anchorClassName, bucket, position, entryId);
     return entryId;
   };
 
-  // Interpolated arbitrary values rarely repeat and reduced dynamic-grid throughput by 18% when
-  // cached immediately. Class lists containing `[` enter the argument cache after a second use.
+  // Dynamic arbitrary values rarely repeat, so cache them only after the second use.
   let seenClassListsOnce = new Set<string>();
   let previousSeenClassListsOnce = new Set<string>();
 
-  // Reuse one array for calls with four or more values. Merges are synchronous and read the array
-  // before returning.
+  // Synchronous merges can safely reuse one array.
   const classListPartsScratch: string[] = [];
 
   const shouldCacheArguments = (classList: string): boolean => {
@@ -109,8 +97,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return false;
   };
 
-  // Promote previous-generation buckets by reference. An empty replacement would hide surviving
-  // entries after the next insertion.
+  // Promote the existing bucket so its entries survive the next rotation.
   const getArgumentCacheBucket = (anchorClassName: string): ArgumentCacheBucket | undefined => {
     const bucket = argumentCache.get(anchorClassName);
     if (bucket !== undefined) return bucket;
@@ -119,7 +106,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return previous;
   };
 
-  const recordCacheInsert = (slotCount: number): void => {
+  const addArgumentCacheSlots = (slotCount: number): void => {
     argumentCacheSlotCount += slotCount;
     if (argumentCacheSlotCount > ARGUMENT_CACHE_ROTATION_SLOTS) {
       argumentCacheSlotCount = 0;
@@ -128,7 +115,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     }
   };
 
-  const getBucketForInsert = (
+  const getWritableArgumentCacheBucket = (
     anchorClassName: string,
     bucket: ArgumentCacheBucket | undefined,
   ): ArgumentCacheBucket => {
@@ -141,8 +128,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return bucket;
   };
 
-  // Mutable arrays and objects can resolve differently without changing identity. Bypass the
-  // argument cache when a truthy value is not a string.
+  // Mutable values can resolve differently without changing identity, so they bypass this cache.
   const mergeResolvedList = (classValues: ClassValue[]): string => {
     const classValueCount = classValues.length;
     let classList = "";
@@ -198,7 +184,12 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
           for (let position = 1, slots = bucket.length; position < slots; ) {
             const restLength = bucket[position] as number;
             if (restLength === 1 && bucket[position + 1] === firstClassValue) {
-              recordEntryHit(secondClassValue, bucket, position, bucket[position + 3] as number);
+              setArgumentCachePrediction(
+                secondClassValue,
+                bucket,
+                position,
+                bucket[position + 3] as number,
+              );
               return bucket[position + 2] as string;
             }
             position += restLength + 3;
@@ -207,15 +198,15 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         const classList = firstClassValue + SPACE_CHARACTER + secondClassValue;
         const mergedClassName = twMerge.mergeParts2(classList, firstClassValue, secondClassValue);
         if (shouldCacheArguments(classList)) {
-          const cacheBucket = getBucketForInsert(secondClassValue, bucket);
+          const cacheBucket = getWritableArgumentCacheBucket(secondClassValue, bucket);
           cacheBucket.push(
             1,
             firstClassValue,
             mergedClassName,
-            createEntryId(secondClassValue, cacheBucket, cacheBucket.length),
+            createArgumentCacheEntryId(secondClassValue, cacheBucket, cacheBucket.length),
           );
           cacheBucket[0] = (cacheBucket[0] as number) + 1;
-          recordCacheInsert(3);
+          addArgumentCacheSlots(3);
         }
         return mergedClassName;
       }
@@ -230,7 +221,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeResolvedList([firstClassValue, secondClassValue]);
   };
 
-  // Reduce falsy values to the two-value path so equivalent calls share cache entries.
   const getMergedClassNameForThreeValues = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
@@ -261,7 +251,12 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
                 bucket[position + 2] === secondClassValue &&
                 bucket[position + 1] === firstClassValue
               ) {
-                recordEntryHit(thirdClassValue, bucket, position, bucket[position + 4] as number);
+                setArgumentCachePrediction(
+                  thirdClassValue,
+                  bucket,
+                  position,
+                  bucket[position + 4] as number,
+                );
                 return bucket[position + 3] as string;
               }
               position += restLength + 3;
@@ -280,16 +275,16 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
             thirdClassValue,
           );
           if (shouldCacheArguments(classList)) {
-            const cacheBucket = getBucketForInsert(thirdClassValue, bucket);
+            const cacheBucket = getWritableArgumentCacheBucket(thirdClassValue, bucket);
             cacheBucket.push(
               2,
               firstClassValue,
               secondClassValue,
               mergedClassName,
-              createEntryId(thirdClassValue, cacheBucket, cacheBucket.length),
+              createArgumentCacheEntryId(thirdClassValue, cacheBucket, cacheBucket.length),
             );
             cacheBucket[0] = (cacheBucket[0] as number) + 1;
-            recordCacheInsert(4);
+            addArgumentCacheSlots(4);
           }
           return mergedClassName;
         }
@@ -379,7 +374,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
               }
             }
             if (isMatch) {
-              recordEntryHit(
+              setArgumentCachePrediction(
                 anchorClassName,
                 bucket,
                 position,
@@ -405,7 +400,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
 
       if (shouldCacheArguments(classList)) {
-        const cacheBucket = getBucketForInsert(anchorClassName, bucket);
+        const cacheBucket = getWritableArgumentCacheBucket(anchorClassName, bucket);
         const entryPosition = cacheBucket.length;
         cacheBucket.push(restLengthWanted);
         for (let index = firstClassNameIndex; index < anchorClassNameIndex; index++) {
@@ -414,10 +409,10 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         }
         cacheBucket.push(
           mergedClassName,
-          createEntryId(anchorClassName, cacheBucket, entryPosition),
+          createArgumentCacheEntryId(anchorClassName, cacheBucket, entryPosition),
         );
         cacheBucket[0] = (cacheBucket[0] as number) + 1;
-        recordCacheInsert(restLengthWanted + 2);
+        addArgumentCacheSlots(restLengthWanted + 2);
       }
 
       return mergedClassName;

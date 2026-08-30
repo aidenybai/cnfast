@@ -86,9 +86,9 @@ test("supports Tailwind CSS v4.0 features", () => {
   expect(twMerge("via-red-500 via-(length:--mobile-header-gradient)")).toBe(
     "via-red-500 via-(length:--mobile-header-gradient)",
   );
-  expect(twMerge("shadow-inner shadow-lg")).toBe("shadow-lg");
-  expect(twMerge("shadow-lg shadow-inner")).toBe("shadow-inner");
-  expect(twMerge("shadow-initial shadow-inner")).toBe("shadow-initial shadow-inner");
+  expect(twMerge("shadow-inner shadow-lg")).toBe("shadow-inner shadow-lg");
+  expect(twMerge("shadow-lg shadow-inner")).toBe("shadow-lg shadow-inner");
+  expect(twMerge("shadow-initial shadow-inner")).toBe("shadow-inner");
 });
 
 test("supports Tailwind CSS v4.1 features", () => {

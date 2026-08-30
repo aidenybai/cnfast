@@ -1,7 +1,6 @@
 import { SLICED_REPRESENTATION_MIN_LENGTH } from "../lib/constants";
 
-// V8 and JavaScriptCore retain a sliced string's parent. Copying longer canonical strings releases
-// the source and avoids an offset lookup on later reads.
+// V8 and JSC retain the source of long slices. Copying lets the source be released.
 
 export const sliceFlat = (source: string, start: number, end: number): string => {
   if (end - start < SLICED_REPRESENTATION_MIN_LENGTH) return source.slice(start, end);
