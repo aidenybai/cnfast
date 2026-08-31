@@ -4,7 +4,7 @@ interface BenchmarkReportRow {
   cnfast: number;
   reference: number;
   speedup: number;
-  cacheState?: "cached" | "uncached";
+  cacheState?: string;
   emphasis: boolean;
 }
 
