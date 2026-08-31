@@ -20,56 +20,69 @@ interface PendingMigration {
   changeCount: number;
 }
 
+interface MigrateOptions {
+  cwd: string;
+  dryRun: boolean;
+  yes: boolean;
+}
+
 export const migrate = new Command()
   .name("migrate")
   .description("rewrite clsx / classnames / tailwind-merge imports to cnfast")
   .option("-c, --cwd <cwd>", "working directory (defaults to current directory)", process.cwd())
   .option("-d, --dry-run", "preview changes without writing files", false)
   .option("-y, --yes", "apply changes without confirmation", false)
-  .action(async (opts) => {
+  .action(async (options: MigrateOptions) => {
     console.log(`${pc.magenta("✿")} ${pc.bold("cnfast")} ${pc.gray(VERSION)}`);
     console.log();
 
     try {
-      const cwd = resolve(opts.cwd);
+      const workingDirectory = resolve(options.cwd);
 
       const scanSpinner = spinner("Scanning files.").start();
-      const files = await findSourceFiles(cwd);
+      const sourceFilePaths = await findSourceFiles(workingDirectory);
 
-      const pending: PendingMigration[] = [];
-      for (const filePath of files) {
+      const pendingMigrations: PendingMigration[] = [];
+      for (const filePath of sourceFilePaths) {
         const originalContent = readFileSync(filePath, "utf-8");
         const { code, changeCount } = migrateSource(originalContent);
         if (changeCount > 0 && code !== originalContent) {
-          pending.push({ filePath, originalContent, newContent: code, changeCount });
+          pendingMigrations.push({ filePath, originalContent, newContent: code, changeCount });
         }
       }
 
-      if (pending.length === 0) {
+      if (pendingMigrations.length === 0) {
         scanSpinner.succeed("No clsx / classnames / tailwind-merge imports found.");
         return;
       }
 
-      const totalChanges = pending.reduce((sum, item) => sum + item.changeCount, 0);
+      const totalChanges = pendingMigrations.reduce(
+        (total, pendingMigration) => total + pendingMigration.changeCount,
+        0,
+      );
       scanSpinner.succeed(
-        `Found ${highlighter.info(String(totalChanges))} import(s) across ${highlighter.info(String(pending.length))} file(s).`,
+        `Found ${highlighter.info(String(totalChanges))} import(s) across ${highlighter.info(String(pendingMigrations.length))} file(s).`,
       );
       logger.break();
 
-      for (const item of pending) {
-        printDiff(relative(cwd, item.filePath), item.originalContent, item.newContent);
+      for (const pendingMigration of pendingMigrations) {
+        printDiff(
+          relative(workingDirectory, pendingMigration.filePath),
+          pendingMigration.originalContent,
+          pendingMigration.newContent,
+        );
       }
 
-      if (opts.dryRun) {
+      if (options.dryRun) {
         logger.info("Dry run: no files were changed.");
         return;
       }
 
-      if (!opts.yes) {
+      if (!options.yes) {
         const { confirm } = await prompts({
           type: "confirm",
           name: "confirm",
-          message: `Migrate ${pending.length} file(s) to cnfast?`,
+          message: `Migrate ${pendingMigrations.length} file(s) to cnfast?`,
           initial: true,
         });
         if (!confirm) {
@@ -81,10 +94,10 @@ export const migrate = new Command()
       }
 
       const writeSpinner = spinner("Writing files.").start();
-      for (const item of pending) {
-        writeFileSync(item.filePath, item.newContent);
+      for (const pendingMigration of pendingMigrations) {
+        writeFileSync(pendingMigration.filePath, pendingMigration.newContent);
       }
-      writeSpinner.succeed(`Migrated ${pending.length} file(s) to cnfast.`);
+      writeSpinner.succeed(`Migrated ${pendingMigrations.length} file(s) to cnfast.`);
       logger.break();
       logger.log(
         `Next: install cnfast and remove unused deps with ${highlighter.info("npm i cnfast")}.`,

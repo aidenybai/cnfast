@@ -6,10 +6,10 @@ import {
   FINGERPRINT_MIDDLE_CHARACTER_FACTOR,
   MERGE_CACHE_CAPACITY,
   MERGE_CACHE_CAPACITY_MAX,
-} from "./constants";
-import { createMergeClassList, MergeClassListEngine } from "./merge-class-list";
-import { ClassNameValue, twJoin } from "./tw-join";
-import { AnyConfig } from "./types";
+} from "./constants.js";
+import { createMergeClassList, type MergeClassListEngine } from "./merge-class-list.js";
+import { twJoin, type ClassNameValue } from "./tw-join.js";
+import type { AnyConfig } from "./types.js";
 
 export interface TailwindMerge {
   (...classLists: ClassNameValue[]): string;
@@ -65,10 +65,10 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     const engine = createMergeClassList(createConfig());
     mergeClassList = engine.mergeClassList;
     mergePreparedParts = engine.mergePreparedParts;
-    merge.mergeString = tailwindMerge;
-    merge.mergeParts2 = tailwindMergeParts2;
-    merge.mergeParts3 = tailwindMergeParts3;
-    merge.mergeParts = tailwindMergeParts;
+    mergeClassNames.mergeString = tailwindMerge;
+    mergeClassNames.mergeParts2 = tailwindMergeParts2;
+    mergeClassNames.mergeParts3 = tailwindMergeParts3;
+    mergeClassNames.mergeParts = tailwindMergeParts;
   };
 
   const initTailwindMerge = (classList: string) => {
@@ -105,16 +105,19 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
   };
 
   const admitComputedResult = (classList: string, mergedClassName: string): string => {
-    const length = classList.length;
-    if (length > 0) {
-      const slot =
-        (length * FINGERPRINT_LENGTH_FACTOR +
+    const classListLength = classList.length;
+    if (classListLength > 0) {
+      const doorkeeperSlot =
+        (classListLength * FINGERPRINT_LENGTH_FACTOR +
           classList.charCodeAt(0) * FINGERPRINT_FIRST_CHARACTER_FACTOR +
-          classList.charCodeAt(length - 1) * FINGERPRINT_LAST_CHARACTER_FACTOR +
-          classList.charCodeAt(length >> 1) * FINGERPRINT_MIDDLE_CHARACTER_FACTOR) &
+          classList.charCodeAt(classListLength - 1) * FINGERPRINT_LAST_CHARACTER_FACTOR +
+          classList.charCodeAt(classListLength >> 1) * FINGERPRINT_MIDDLE_CHARACTER_FACTOR) &
         doorkeeperSlotMask;
-      if (doorkeeperFingerprints[slot] === 0 && previousDoorkeeperFingerprints[slot] === 0) {
-        doorkeeperFingerprints[slot] = 1;
+      if (
+        doorkeeperFingerprints[doorkeeperSlot] === 0 &&
+        previousDoorkeeperFingerprints[doorkeeperSlot] === 0
+      ) {
+        doorkeeperFingerprints[doorkeeperSlot] = 1;
         if (++doorkeeperCount >= doorkeeperSwapCount) {
           doorkeeperCount = 0;
           const retiredDoorkeeper = previousDoorkeeperFingerprints;
@@ -200,12 +203,12 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
   const tailwindMergeParts = (classList: string, parts: readonly string[], partCount: number) =>
     admitComputedResult(classList, mergePreparedParts(parts, partCount, classList));
 
-  const merge: TailwindMerge = (...classValues: ClassNameValue[]) =>
-    merge.mergeString(twJoin(...classValues));
-  merge.mergeString = initTailwindMerge;
-  merge.peekString = peekString;
-  merge.mergeParts2 = initTailwindMergeParts2;
-  merge.mergeParts3 = initTailwindMergeParts3;
-  merge.mergeParts = initTailwindMergeParts;
-  return merge;
+  const mergeClassNames: TailwindMerge = (...classValues: ClassNameValue[]) =>
+    mergeClassNames.mergeString(twJoin(...classValues));
+  mergeClassNames.mergeString = initTailwindMerge;
+  mergeClassNames.peekString = peekString;
+  mergeClassNames.mergeParts2 = initTailwindMergeParts2;
+  mergeClassNames.mergeParts3 = initTailwindMergeParts3;
+  mergeClassNames.mergeParts = initTailwindMergeParts;
+  return mergeClassNames;
 };

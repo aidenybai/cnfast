@@ -18,10 +18,12 @@ export interface ClassNameFunction {
   (...classValues: ClassValue[]): string;
 }
 
-type ArgumentCacheBucket = (string | number)[];
+interface ArgumentCacheBucket extends Array<string | number> {
+  0: number;
+}
 
 const trimBucket = (bucket: ArgumentCacheBucket): void => {
-  const entryCount = bucket[0] as number;
+  const entryCount = bucket[0];
   const dropCount = entryCount >> 1;
   let position = 1;
   for (let index = 0; index < dropCount; index++) position += (bucket[position] as number) + 3;
@@ -115,7 +117,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (bucket === undefined) {
       bucket = [0];
       argumentCache.set(anchorClassName, bucket);
-    } else if ((bucket[0] as number) >= ARGUMENT_CACHE_BUCKET_ENTRIES) {
+    } else if (bucket[0] >= ARGUMENT_CACHE_BUCKET_ENTRIES) {
       trimBucket(bucket);
     }
     return bucket;
@@ -195,7 +197,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
             mergedClassName,
             createArgumentCacheEntryId(secondClassValue, cacheBucket, cacheBucket.length),
           );
-          cacheBucket[0] = (cacheBucket[0] as number) + 1;
+          cacheBucket[0] = cacheBucket[0] + 1;
           addArgumentCacheSlots(3);
         }
         return mergedClassName;
@@ -273,7 +275,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
               mergedClassName,
               createArgumentCacheEntryId(thirdClassValue, cacheBucket, cacheBucket.length),
             );
-            cacheBucket[0] = (cacheBucket[0] as number) + 1;
+            cacheBucket[0] = cacheBucket[0] + 1;
             addArgumentCacheSlots(4);
           }
           return mergedClassName;
@@ -398,7 +400,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
           mergedClassName,
           createArgumentCacheEntryId(anchorClassName, cacheBucket, entryPosition),
         );
-        cacheBucket[0] = (cacheBucket[0] as number) + 1;
+        cacheBucket[0] = cacheBucket[0] + 1;
         addArgumentCacheSlots(restLengthWanted + 2);
       }
 

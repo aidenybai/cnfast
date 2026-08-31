@@ -3074,3 +3074,5 @@
 {"timestamp":"2026-08-31T04:37:22.301Z","label":"chart","gitSha":"1a42318","group":"page","corpus":"unkey (452 calls)","cnfast":31955.60420250369,"reference":9147.47996388706,"speedup":3.493377884254443}
 {"timestamp":"2026-08-31T04:37:22.301Z","label":"chart","gitSha":"1a42318","group":"grid","corpus":"200x60 stable (warm cache)","cnfast":2471.7795744544455,"reference":616.9789892768716,"speedup":4.006262153840097}
 {"timestamp":"2026-08-31T04:37:22.301Z","label":"chart","gitSha":"1a42318","group":"grid","corpus":"200x60 dynamic (live arbitrary -> misses)","cnfast":133.1855873643133,"reference":24.32109052563219,"speedup":5.476135505681703}
+{"timestamp":"2026-08-31T04:58:37.843Z","label":"quality-cleanup-verified","gitSha":"8cc0704","group":"cached","corpus":"cached / re-render (1322 calls, 57 unique)","cnfast":11336.111193017756,"reference":3354.8671836895837,"speedup":3.3790044649548947}
+{"timestamp":"2026-08-31T04:58:37.843Z","label":"quality-cleanup-verified","gitSha":"8cc0704","group":"uncached","corpus":"uncached / merge engine (2304 unique)","cnfast":43496.934026600255,"reference":453.78572782570996,"speedup":95.85346422200955}

@@ -6,8 +6,8 @@ import {
   CHAR_OPEN_BRACKET,
   CHAR_OPEN_PAREN,
   CHAR_SLASH,
-} from "./char-codes";
-import { ParsedClassName } from "./types";
+} from "./char-codes.js";
+import type { ParsedClassName } from "./types.js";
 
 export const IMPORTANT_MODIFIER = "!";
 

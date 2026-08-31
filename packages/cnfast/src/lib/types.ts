@@ -31,10 +31,9 @@ export interface ClassValidator {
 export interface ThemeReference {
   themeGroupId: string;
 }
-type ClassObject<ThemeGroupIds extends string> = Record<
-  string,
-  readonly ClassDefinition<ThemeGroupIds>[]
->;
+interface ClassObject<ThemeGroupIds extends string> {
+  [classPart: string]: readonly ClassDefinition<ThemeGroupIds>[];
+}
 
 export type NoInfer<T> = [T][T extends unknown ? 0 : never];
 

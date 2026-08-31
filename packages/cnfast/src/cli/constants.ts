@@ -1,6 +1,6 @@
 export const TARGET_PACKAGE = "cnfast";
 
-export const MIGRATABLE_SOURCES = ["clsx", "classnames", "tailwind-merge"] as const;
+export const MIGRATABLE_SOURCES: readonly string[] = ["clsx", "classnames", "tailwind-merge"];
 
 export const DEFAULT_EXPORT_NAME: Record<string, string> = {
   clsx: "clsx",

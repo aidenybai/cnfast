@@ -1,4 +1,4 @@
-import { AnyConfig, ConfigExtension } from "./types";
+import type { AnyConfig, ConfigExtension } from "./types.js";
 
 interface PropertyObject {
   [property: string]: readonly unknown[] | undefined;

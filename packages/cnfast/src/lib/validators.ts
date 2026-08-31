@@ -19,7 +19,7 @@ import {
   CHAR_UPPER_A,
   CHAR_UPPER_Z,
   CHAR_ZERO,
-} from "./char-codes";
+} from "./char-codes.js";
 
 const fractionRegex = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/;
 const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
@@ -126,7 +126,7 @@ export const isTshirtSize = (value: string) => tshirtUnitRegex.test(value);
 
 export const isAny = () => true;
 
-const isLengthOnly = (value: string) =>
+const isLengthValue = (value: string) =>
   lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
 
 const isNever = () => false;
@@ -148,7 +148,8 @@ export const isNamedContainerQuery = (value: string) => {
   );
 };
 
-export const isArbitrarySize = (value: string) => getIsArbitraryValue(value, isLabelSize, isNever);
+export const isArbitrarySize = (value: string) =>
+  isArbitraryValueMatching(value, isLabelSize, isNever);
 
 export const isArbitraryValue = (value: string) => {
   parseBracketToken(value);
@@ -156,25 +157,25 @@ export const isArbitraryValue = (value: string) => {
 };
 
 export const isArbitraryLength = (value: string) =>
-  getIsArbitraryValue(value, isLabelLength, isLengthOnly);
+  isArbitraryValueMatching(value, isLabelLength, isLengthValue);
 
 export const isArbitraryNumber = (value: string) =>
-  getIsArbitraryValue(value, isLabelNumber, isNumber);
+  isArbitraryValueMatching(value, isLabelNumber, isNumber);
 
 export const isArbitraryWeight = (value: string) =>
-  getIsArbitraryValue(value, isLabelWeight, isAny);
+  isArbitraryValueMatching(value, isLabelWeight, isAny);
 
 export const isArbitraryFamilyName = (value: string) =>
-  getIsArbitraryValue(value, isLabelFamilyName, isNever);
+  isArbitraryValueMatching(value, isLabelFamilyName, isNever);
 
 export const isArbitraryPosition = (value: string) =>
-  getIsArbitraryValue(value, isLabelPosition, isNever);
+  isArbitraryValueMatching(value, isLabelPosition, isNever);
 
 export const isArbitraryImage = (value: string) =>
-  getIsArbitraryValue(value, isLabelImage, isImage);
+  isArbitraryValueMatching(value, isLabelImage, isImage);
 
 export const isArbitraryShadow = (value: string) =>
-  getIsArbitraryValue(value, isLabelShadow, isShadow);
+  isArbitraryValueMatching(value, isLabelShadow, isShadow);
 
 export const isArbitraryVariable = (value: string) => {
   parseParenToken(value);
@@ -182,27 +183,27 @@ export const isArbitraryVariable = (value: string) => {
 };
 
 export const isArbitraryVariableLength = (value: string) =>
-  getIsArbitraryVariable(value, isLabelLength);
+  isArbitraryVariableMatching(value, isLabelLength);
 
 export const isArbitraryVariableFamilyName = (value: string) =>
-  getIsArbitraryVariable(value, isLabelFamilyName);
+  isArbitraryVariableMatching(value, isLabelFamilyName);
 
 export const isArbitraryVariablePosition = (value: string) =>
-  getIsArbitraryVariable(value, isLabelPosition);
+  isArbitraryVariableMatching(value, isLabelPosition);
 
 export const isArbitraryVariableSize = (value: string) =>
-  getIsArbitraryVariable(value, isLabelSize);
+  isArbitraryVariableMatching(value, isLabelSize);
 
 export const isArbitraryVariableImage = (value: string) =>
-  getIsArbitraryVariable(value, isLabelImage);
+  isArbitraryVariableMatching(value, isLabelImage);
 
 export const isArbitraryVariableShadow = (value: string) =>
-  getIsArbitraryVariable(value, isLabelShadow, true);
+  isArbitraryVariableMatching(value, isLabelShadow, true);
 
 export const isArbitraryVariableWeight = (value: string) =>
-  getIsArbitraryVariable(value, isLabelWeight, true);
+  isArbitraryVariableMatching(value, isLabelWeight, true);
 
-const getIsArbitraryValue = (
+const isArbitraryValueMatching = (
   value: string,
   testLabel: (label: string) => boolean,
   testValue: (value: string) => boolean,
@@ -218,7 +219,7 @@ const getIsArbitraryValue = (
   return testValue(bracketInnerValue);
 };
 
-const getIsArbitraryVariable = (
+const isArbitraryVariableMatching = (
   value: string,
   testLabel: (label: string) => boolean,
   shouldMatchNoLabel = false,

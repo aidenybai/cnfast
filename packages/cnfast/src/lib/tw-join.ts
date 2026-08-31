@@ -1,7 +1,9 @@
-import { SPACE_CHARACTER } from "./constants";
+import { SPACE_CHARACTER } from "./constants.js";
 
 export type ClassNameValue = ClassNameArray | string | null | undefined | 0 | 0n | false;
-type ClassNameArray = readonly ClassNameValue[];
+interface ClassNameArray extends ReadonlyArray<ClassNameValue> {
+  readonly [index: number]: ClassNameValue;
+}
 
 export const twJoin = (...classValues: ClassNameValue[]): string => {
   let index = 0;

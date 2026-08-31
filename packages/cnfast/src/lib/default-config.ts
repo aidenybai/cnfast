@@ -1,5 +1,5 @@
-import { createThemeReference } from "../utils/create-theme-reference";
-import { Config, DefaultClassGroupIds, DefaultThemeGroupIds } from "./types";
+import { createThemeReference } from "../utils/create-theme-reference.js";
+import type { Config, DefaultClassGroupIds, DefaultThemeGroupIds } from "./types.js";
 import {
   isAny,
   isAnyNonArbitrary,
@@ -26,7 +26,7 @@ import {
   isNumber,
   isPercent,
   isTshirtSize,
-} from "./validators";
+} from "./validators.js";
 
 export const getDefaultConfig = () => {
   /**

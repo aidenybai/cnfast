@@ -7,9 +7,9 @@ import {
   CHAR_SLASH,
   CHAR_SPACE,
   CHAR_TAB,
-} from "./char-codes";
-import { createClassGroupLookup } from "./class-groups";
-import { createFilledArray } from "../utils/create-filled-array";
+} from "./char-codes.js";
+import { createClassGroupLookup } from "./class-groups.js";
+import { createFilledArray } from "../utils/create-filled-array.js";
 import {
   FNV_PRIME,
   FNV_SIGNED_OFFSET_BASIS,
@@ -26,12 +26,12 @@ import {
   PREPARED_PART_CACHE_SIZE,
   RESULT_INTERN_SLOTS,
   SPACE_CHARACTER,
-} from "./constants";
-import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name";
-import { createSortModifiers } from "./sort-modifiers";
-import { AnyClassGroupIds, AnyConfig } from "./types";
-import { IS_JSC } from "../utils/is-jsc";
-import { sliceFlat } from "../utils/slice-flat";
+} from "./constants.js";
+import { IMPORTANT_MODIFIER, parseClassName } from "./parse-class-name.js";
+import { createSortModifiers } from "./sort-modifiers.js";
+import { IS_JSC } from "../utils/is-jsc.js";
+import { sliceFlat } from "../utils/slice-flat.js";
+import type { AnyClassGroupIds, AnyConfig } from "./types.js";
 
 interface ClassDescriptor {
   classId: number;

@@ -1,5 +1,5 @@
-import { CHAR_OPEN_BRACKET } from "./char-codes";
-import { AnyConfig } from "./types";
+import { CHAR_OPEN_BRACKET } from "./char-codes.js";
+import type { AnyConfig } from "./types.js";
 
 export const createSortModifiers = (config: AnyConfig) => {
   const orderSensitiveModifiers = new Set(config.orderSensitiveModifiers);

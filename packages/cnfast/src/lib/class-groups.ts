@@ -4,19 +4,19 @@ import {
   CHAR_DASH,
   CHAR_OPEN_BRACKET,
   CHAR_OPEN_PAREN,
-} from "./char-codes";
+} from "./char-codes.js";
 import {
   CLASS_PART_SEPARATOR,
-  ClassPartObject,
   createClassMap,
   SHAPE_BRACKET,
   SHAPE_OTHER,
   SHAPE_PAREN,
-} from "./class-map";
-import { AnyClassGroupIds, AnyConfig } from "./types";
-import { concatArrays } from "../utils/concat-arrays";
-import { createFilledArray } from "../utils/create-filled-array";
-import { COLON_CHARACTER } from "./constants";
+  type ClassPartObject,
+} from "./class-map.js";
+import { concatArrays } from "../utils/concat-arrays.js";
+import { createFilledArray } from "../utils/create-filled-array.js";
+import { COLON_CHARACTER } from "./constants.js";
+import type { AnyClassGroupIds, AnyConfig } from "./types.js";
 
 const ARBITRARY_PROPERTY_PREFIX = "arbitrary..";
 
@@ -27,11 +27,11 @@ export const createClassGroupLookup = (config: AnyConfig) => {
   const { conflictingClassGroups, conflictingClassGroupModifiers } = config;
 
   const getClassGroupId = (className: string): AnyClassGroupIds | undefined => {
-    const length = className.length;
+    const classNameLength = className.length;
     if (
-      length !== 0 &&
+      classNameLength !== 0 &&
       className.charCodeAt(0) === CHAR_OPEN_BRACKET &&
-      className.charCodeAt(length - 1) === CHAR_CLOSE_BRACKET
+      className.charCodeAt(classNameLength - 1) === CHAR_CLOSE_BRACKET
     ) {
       return getArbitraryPropertyGroupId(className);
     }
@@ -108,7 +108,7 @@ const getGroupIdRecursive = (
   startIndex: number,
   classPartObject: ClassPartObject,
 ): AnyClassGroupIds | undefined => {
-  if (classParts.length - startIndex === 0) {
+  if (startIndex === classParts.length) {
     return classPartObject.classGroupId;
   }
 
@@ -123,23 +123,23 @@ const getGroupIdRecursive = (
     return undefined;
   }
 
-  const classRest =
+  const remainingClassName =
     startIndex === 0
       ? classParts.join(CLASS_PART_SEPARATOR)
       : classParts.slice(startIndex).join(CLASS_PART_SEPARATOR);
 
   let classNameShape = SHAPE_OTHER;
-  const restLength = classRest.length;
-  if (restLength > 2) {
-    const firstCharCode = classRest.charCodeAt(0);
+  const remainingLength = remainingClassName.length;
+  if (remainingLength > 2) {
+    const firstCharCode = remainingClassName.charCodeAt(0);
     if (
       firstCharCode === CHAR_OPEN_BRACKET &&
-      classRest.charCodeAt(restLength - 1) === CHAR_CLOSE_BRACKET
+      remainingClassName.charCodeAt(remainingLength - 1) === CHAR_CLOSE_BRACKET
     ) {
       classNameShape = SHAPE_BRACKET;
     } else if (
       firstCharCode === CHAR_OPEN_PAREN &&
-      classRest.charCodeAt(restLength - 1) === CHAR_CLOSE_PAREN
+      remainingClassName.charCodeAt(remainingLength - 1) === CHAR_CLOSE_PAREN
     ) {
       classNameShape = SHAPE_PAREN;
     }
@@ -149,7 +149,7 @@ const getGroupIdRecursive = (
     const validatorObject = validators[index]!;
     if (
       (validatorObject.shapeMask & classNameShape) !== 0 &&
-      validatorObject.validator(classRest)
+      validatorObject.validator(remainingClassName)
     ) {
       return validatorObject.classGroupId;
     }
@@ -159,11 +159,11 @@ const getGroupIdRecursive = (
 };
 
 const getArbitraryPropertyGroupId = (className: string): AnyClassGroupIds | undefined => {
-  const content = className.slice(1, -1);
-  const colonIndex = content.indexOf(COLON_CHARACTER);
+  const arbitraryProperty = className.slice(1, -1);
+  const colonIndex = arbitraryProperty.indexOf(COLON_CHARACTER);
   if (colonIndex === -1) {
     return undefined;
   }
-  const property = content.slice(0, colonIndex);
-  return property ? ARBITRARY_PROPERTY_PREFIX + property : undefined;
+  const propertyName = arbitraryProperty.slice(0, colonIndex);
+  return propertyName ? ARBITRARY_PROPERTY_PREFIX + propertyName : undefined;
 };

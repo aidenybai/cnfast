@@ -10,8 +10,7 @@ const STATIC_IMPORT_REGEX = /^[ \t]*(import|export)\s+([^;'"()]*?)\s+from\s*(['"
 const DYNAMIC_IMPORT_REGEX = /\b(import|require)\s*\(\s*(['"])([^'"]+)\2\s*\)/g;
 const SIDE_EFFECT_IMPORT_REGEX = /(^|\n)([ \t]*import\s+)(['"])([^'"]+)\3/g;
 
-const isMigratableSource = (source: string): boolean =>
-  (MIGRATABLE_SOURCES as readonly string[]).includes(source);
+const isMigratableSource = (source: string): boolean => MIGRATABLE_SOURCES.includes(source);
 
 const rewriteImportClause = (rawClause: string, source: string): string | null => {
   const clause = rawClause.trim();

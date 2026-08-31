@@ -4,6 +4,10 @@ export interface ClassDictionary {
   [className: string]: any;
 }
 
+interface ClassArray extends Array<ClassValue> {
+  [index: number]: ClassValue;
+}
+
 export type ClassValue =
   | string
   | number
@@ -11,7 +15,7 @@ export type ClassValue =
   | boolean
   | null
   | undefined
-  | ClassValue[]
+  | ClassArray
   | ClassDictionary;
 
 const isArray = Array.isArray;

@@ -24,8 +24,8 @@ import {
   isNumber,
   isPercent,
   isTshirtSize,
-} from "./validators";
-import {
+} from "./validators.js";
+import type {
   AnyClassGroupIds,
   AnyThemeGroupIds,
   ClassGroup,
@@ -33,7 +33,7 @@ import {
   Config,
   ThemeReference,
   ThemeObject,
-} from "./types";
+} from "./types.js";
 
 export const CLASS_PART_SEPARATOR = "-";
 
@@ -157,9 +157,9 @@ const addStringDefinition = (
   classPartObject: ClassPartObject,
   classGroupId: AnyClassGroupIds,
 ): void => {
-  const target =
+  const targetClassPart =
     classDefinition === "" ? classPartObject : getPart(classPartObject, classDefinition);
-  target.classGroupId = classGroupId;
+  targetClassPart.classGroupId = classGroupId;
 };
 
 const addValidatorDefinition = (
@@ -187,20 +187,20 @@ const addObjectDefinition = (
 };
 
 const getPart = (classPartObject: ClassPartObject, path: string): ClassPartObject => {
-  let current = classPartObject;
-  const parts = path.split(CLASS_PART_SEPARATOR);
+  let currentClassPart = classPartObject;
+  const pathParts = path.split(CLASS_PART_SEPARATOR);
 
-  for (let index = 0; index < parts.length; index++) {
-    const part = parts[index]!;
-    let next = current.nextPart.get(part);
-    if (!next) {
-      next = createClassPartObject();
-      current.nextPart.set(part, next);
+  for (let index = 0; index < pathParts.length; index++) {
+    const pathPart = pathParts[index]!;
+    let nextClassPart = currentClassPart.nextPart.get(pathPart);
+    if (!nextClassPart) {
+      nextClassPart = createClassPartObject();
+      currentClassPart.nextPart.set(pathPart, nextClassPart);
     }
-    current = next;
+    currentClassPart = nextClassPart;
   }
 
-  return current;
+  return currentClassPart;
 };
 
 const isThemeReference = (

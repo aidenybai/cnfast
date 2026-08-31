@@ -1,4 +1,4 @@
-import { SLICED_REPRESENTATION_MIN_LENGTH } from "../lib/constants";
+import { SLICED_REPRESENTATION_MIN_LENGTH } from "../lib/constants.js";
 
 // V8 and JSC retain the source of long slices. Copying lets the source be released.
 
