@@ -2,7 +2,6 @@ import latestBenchmarkReport from "../../../cnfast/bench/latest.json";
 import { Suspense } from "react";
 
 import { BenchmarkSectionTable } from "@/components/benchmark-section-table";
-import { PerformanceChart } from "@/components/performance-chart";
 import { SiteHeader } from "@/components/site-header";
 import { BENCHMARK_COMMIT_BASE_URL } from "@/constants";
 import generatedBenchmarkData from "@/generated/benchmark-data.json";
@@ -88,7 +87,6 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
 
               <div className="space-y-10">
                 <section className="space-y-6">
-                  <PerformanceChart report={benchmarkReport} />
                   <Suspense
                     fallback={
                       <div

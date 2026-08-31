@@ -96,10 +96,6 @@ interface BenchmarkSectionTableProps {
   sortState: BenchmarkSortState;
 }
 
-interface PerformanceChartProps {
-  report: BenchmarkReport;
-}
-
 interface SortableBenchmarkHeaderProps {
   alignEnd?: boolean;
   column: string;
