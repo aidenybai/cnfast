@@ -36,6 +36,12 @@ const ARGUMENT_CACHE_PREDICTION_ID_MASK = ARGUMENT_CACHE_PREDICTION_SLOTS - 1;
 const EMPTY_BUCKET: ArgumentCacheBucket = [0];
 
 const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
+  const mergeString = twMerge.mergeString;
+  const mergeParts2 = twMerge.mergeParts2;
+  const mergeParts3 = twMerge.mergeParts3;
+  const mergeParts = twMerge.mergeParts;
+  const peekString = twMerge.peekString;
+
   let argumentCache = new Map<string, ArgumentCacheBucket>();
   let previousArgumentCache = new Map<string, ArgumentCacheBucket>();
   let argumentCacheSlotCount = 0;
@@ -146,7 +152,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       const classValue = classValues[index];
       if (classValue) classListPartsScratch[partCount++] = classValue as string;
     }
-    return twMerge.mergeParts(classList, classListPartsScratch, partCount);
+    return mergeParts(classList, classListPartsScratch, partCount);
   };
 
   const insertTwoValuesOnMiss = (
@@ -155,7 +161,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     bucket: ArgumentCacheBucket | undefined,
   ): string => {
     const classList = firstClassName + SPACE_CHARACTER + secondClassName;
-    const mergedClassName = twMerge.mergeParts2(classList, firstClassName, secondClassName);
+    const mergedClassName = mergeParts2(classList, firstClassName, secondClassName);
     if (shouldCacheArguments(classList)) {
       const cacheBucket = getWritableArgumentCacheBucket(secondClassName, bucket);
       cacheBucket.push(
@@ -175,13 +181,13 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     secondClassValue: ClassValue,
   ): string => {
     if (typeof firstClassValue === "string" && firstClassValue !== "") {
-      if (!secondClassValue) return twMerge.mergeString(firstClassValue);
-        return getMergedClassNameForTwoValues(firstClassValue, resolveClassValue(secondClassValue));
+      if (!secondClassValue) return mergeString(firstClassValue);
+      return getMergedClassNameForTwoValues(firstClassValue, resolveClassValue(secondClassValue));
     }
     if (!firstClassValue) {
       if (!secondClassValue) return "";
-      if (typeof secondClassValue === "string") return twMerge.mergeString(secondClassValue);
-      return twMerge.mergeString(resolveClassValue(secondClassValue));
+      if (typeof secondClassValue === "string") return mergeString(secondClassValue);
+      return mergeString(resolveClassValue(secondClassValue));
     }
     return getMergedClassNameForTwoValues(resolveClassValue(firstClassValue), secondClassValue);
   };
@@ -240,12 +246,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   ): string => {
     const classList =
       firstClassName + SPACE_CHARACTER + secondClassName + SPACE_CHARACTER + thirdClassName;
-    const mergedClassName = twMerge.mergeParts3(
-      classList,
-      firstClassName,
-      secondClassName,
-      thirdClassName,
-    );
+    const mergedClassName = mergeParts3(classList, firstClassName, secondClassName, thirdClassName);
     if (shouldCacheArguments(classList)) {
       const cacheBucket = getWritableArgumentCacheBucket(thirdClassName, bucket);
       cacheBucket.push(
@@ -270,14 +271,14 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       if (typeof secondClassValue === "string" && secondClassValue !== "") {
         if (!thirdClassValue)
           return getMergedClassNameForTwoValues(firstClassValue, secondClassValue);
-            return getMergedClassNameForThreeValues(
+        return getMergedClassNameForThreeValues(
           firstClassValue,
           secondClassValue,
           resolveClassValue(thirdClassValue),
         );
       }
       if (!secondClassValue) {
-        if (!thirdClassValue) return twMerge.mergeString(firstClassValue);
+        if (!thirdClassValue) return mergeString(firstClassValue);
         if (typeof thirdClassValue === "string")
           return getMergedClassNameForTwoValues(firstClassValue, thirdClassValue);
         return getMergedClassNameForTwoValues(firstClassValue, resolveClassValue(thirdClassValue));
@@ -363,7 +364,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       if (classValue) classList += SPACE_CHARACTER + (classValue as string);
     }
 
-    let mergedClassName = twMerge.peekString(classList);
+    let mergedClassName = peekString(classList);
     if (mergedClassName === undefined)
       mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
 
@@ -413,7 +414,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
     if (everyTruthyIsString) {
       if (truthyStringCount === 0) return "";
-      if (truthyStringCount === 1) return twMerge.mergeString(firstClassName);
+      if (truthyStringCount === 1) return mergeString(firstClassName);
 
       const restLengthWanted = truthyStringCount - 1;
 
@@ -493,8 +494,8 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
     if (classValueCount === 1) {
       return typeof firstClassValue === "string"
-        ? twMerge.mergeString(firstClassValue)
-        : twMerge.mergeString(resolveClassValue(firstClassValue));
+        ? mergeString(firstClassValue)
+        : mergeString(resolveClassValue(firstClassValue));
     }
 
     if (classValueCount === 2) return getMergedClassNameForTwoValues(firstClassValue, arguments[1]);
