@@ -123,21 +123,17 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return bucket;
   };
 
-  const mergeUncachedClassValues = (classValues: ClassValue[]): string => {
-    const classValueCount = classValues.length;
-    let classList = "";
-    for (let index = 0; index < classValueCount; index++) {
+  // Objects/arrays must be re-resolved every call (clsx semantics), but the merged
+  // result depends only on the resolved strings, so after resolving in place the row
+  // can share the argument cache with plain-string calls — bucket === compares on the
+  // fresh strings beat hashing the fresh full class list in the whole-string cache.
+  const resolveAndMergeClassValues = (classValues: ClassValue[]): string => {
+    for (let index = 0, length = classValues.length; index < length; index++) {
       const classValue = classValues[index];
-      if (!classValue) continue;
-      const resolvedClassName =
-        typeof classValue === "string" ? classValue : resolveClassValue(classValue);
-      if (resolvedClassName) {
-        if (classList) classList += SPACE_CHARACTER;
-        classList += resolvedClassName;
-      }
+      if (classValue && typeof classValue !== "string")
+        classValues[index] = resolveClassValue(classValue);
     }
-
-    return twMerge.mergeString(classList);
+    return getMergedClassNameForManyValues(classValues);
   };
 
   const mergePartsOnMiss = (
@@ -180,14 +176,14 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
   ): string => {
     if (typeof firstClassValue === "string" && firstClassValue !== "") {
       if (!secondClassValue) return twMerge.mergeString(firstClassValue);
-      return mergeUncachedClassValues([firstClassValue, secondClassValue]);
+        return getMergedClassNameForTwoValues(firstClassValue, resolveClassValue(secondClassValue));
     }
     if (!firstClassValue) {
       if (!secondClassValue) return "";
       if (typeof secondClassValue === "string") return twMerge.mergeString(secondClassValue);
-      return mergeUncachedClassValues([firstClassValue, secondClassValue]);
+      return twMerge.mergeString(resolveClassValue(secondClassValue));
     }
-    return mergeUncachedClassValues([firstClassValue, secondClassValue]);
+    return getMergedClassNameForTwoValues(resolveClassValue(firstClassValue), secondClassValue);
   };
 
   const getMergedClassNameForTwoValues = (
@@ -274,18 +270,30 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       if (typeof secondClassValue === "string" && secondClassValue !== "") {
         if (!thirdClassValue)
           return getMergedClassNameForTwoValues(firstClassValue, secondClassValue);
-        return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
+            return getMergedClassNameForThreeValues(
+          firstClassValue,
+          secondClassValue,
+          resolveClassValue(thirdClassValue),
+        );
       }
       if (!secondClassValue) {
         if (!thirdClassValue) return twMerge.mergeString(firstClassValue);
         if (typeof thirdClassValue === "string")
           return getMergedClassNameForTwoValues(firstClassValue, thirdClassValue);
-        return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
+        return getMergedClassNameForTwoValues(firstClassValue, resolveClassValue(thirdClassValue));
       }
-      return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
+      return getMergedClassNameForThreeValues(
+        firstClassValue,
+        resolveClassValue(secondClassValue),
+        thirdClassValue,
+      );
     }
     if (!firstClassValue) return getMergedClassNameForTwoValues(secondClassValue, thirdClassValue);
-    return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
+    return getMergedClassNameForThreeValues(
+      resolveClassValue(firstClassValue),
+      secondClassValue,
+      thirdClassValue,
+    );
   };
 
   const getMergedClassNameForThreeValues = (
@@ -476,7 +484,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       );
     }
 
-    return mergeUncachedClassValues(classValues);
+    return resolveAndMergeClassValues(classValues);
   };
 
   const cn: ClassNameFunction = function (): string {
