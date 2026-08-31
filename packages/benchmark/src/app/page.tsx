@@ -61,7 +61,7 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                 <p>
                   The latest committed result was generated{" "}
                   {formatBenchmarkDate(benchmarkReport.generatedAt)} with {benchmarkReport.runtime}.
-                  Each workload records the highest mean throughput from {benchmarkReport.bestOf}
+                  Each workload records the highest mean throughput from {benchmarkReport.bestOf}{" "}
                   timed attempts of {benchmarkReport.timeMs} ms after warmup.
                 </p>
                 <p>
