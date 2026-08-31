@@ -65,6 +65,8 @@
     "test": "vp test",
     "typecheck": "tsc --noEmit",
     "bench": "bun bench/cn.bench.ts",
+    "bench:ab": "bun bench/ab-compare.ts",
+    "bench:parity:sequence": "bun scripts/verify-parity-sequence.ts",
     "bench:all": "bun bench/index.ts",
     "bench:coverage": "bun bench/coverage.bench.ts",
     "bench:chart": "bun scripts/generate-bench-chart.ts",

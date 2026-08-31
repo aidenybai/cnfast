@@ -26,8 +26,18 @@ export interface TailwindMerge {
 }
 
 export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerge => {
-  let mergeClassList: MergeClassListEngine["mergeClassList"];
-  let mergePreparedParts: MergeClassListEngine["mergePreparedParts"];
+  let mergeClassList: MergeClassListEngine["mergeClassList"] = (classList) => {
+    initConfig();
+    return mergeClassList(classList);
+  };
+  let mergePreparedParts: MergeClassListEngine["mergePreparedParts"] = (
+    classListParts,
+    partCount,
+    classList,
+  ) => {
+    initConfig();
+    return mergePreparedParts(classListParts, partCount, classList);
+  };
 
   let mergeCache: Record<string, string> = Object.create(null);
   let previousMergeCache: Record<string, string> = Object.create(null);
@@ -65,43 +75,6 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     const engine = createMergeClassList(createConfig());
     mergeClassList = engine.mergeClassList;
     mergePreparedParts = engine.mergePreparedParts;
-    mergeClassNames.mergeString = tailwindMerge;
-    mergeClassNames.mergeParts2 = tailwindMergeParts2;
-    mergeClassNames.mergeParts3 = tailwindMergeParts3;
-    mergeClassNames.mergeParts = tailwindMergeParts;
-  };
-
-  const initTailwindMerge = (classList: string) => {
-    initConfig();
-    return tailwindMerge(classList);
-  };
-
-  const initTailwindMergeParts2 = (
-    classList: string,
-    firstClassName: string,
-    secondClassName: string,
-  ) => {
-    initConfig();
-    return tailwindMergeParts2(classList, firstClassName, secondClassName);
-  };
-
-  const initTailwindMergeParts3 = (
-    classList: string,
-    firstClassName: string,
-    secondClassName: string,
-    thirdClassName: string,
-  ) => {
-    initConfig();
-    return tailwindMergeParts3(classList, firstClassName, secondClassName, thirdClassName);
-  };
-
-  const initTailwindMergeParts = (
-    classList: string,
-    parts: readonly string[],
-    partCount: number,
-  ) => {
-    initConfig();
-    return tailwindMergeParts(classList, parts, partCount);
   };
 
   const admitComputedResult = (classList: string, mergedClassName: string): string => {
@@ -149,16 +122,16 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     return mergedClassName;
   };
 
-  const tailwindMerge = (classList: string) => {
-    let mergedClassName = mergeCache[classList];
-    if (mergedClassName !== undefined) {
-      return mergedClassName;
-    }
-
-    mergedClassName = previousMergeCache[classList];
+  const mergeMissingString = (classList: string): string => {
+    const mergedClassName = previousMergeCache[classList];
     if (mergedClassName !== undefined) return promoteHit(classList, mergedClassName);
-
     return admitComputedResult(classList, mergeClassList(classList));
+  };
+
+  const tailwindMerge = (classList: string): string => {
+    const mergedClassName = mergeCache[classList];
+    if (mergedClassName !== undefined) return mergedClassName;
+    return mergeMissingString(classList);
   };
 
   const tailwindMergeParts2 = (
@@ -204,11 +177,11 @@ export const createTailwindMerge = (createConfig: () => AnyConfig): TailwindMerg
     admitComputedResult(classList, mergePreparedParts(parts, partCount, classList));
 
   const mergeClassNames: TailwindMerge = (...classValues: ClassNameValue[]) =>
-    mergeClassNames.mergeString(twJoin(...classValues));
-  mergeClassNames.mergeString = initTailwindMerge;
+    tailwindMerge(twJoin(...classValues));
+  mergeClassNames.mergeString = tailwindMerge;
   mergeClassNames.peekString = peekString;
-  mergeClassNames.mergeParts2 = initTailwindMergeParts2;
-  mergeClassNames.mergeParts3 = initTailwindMergeParts3;
-  mergeClassNames.mergeParts = initTailwindMergeParts;
+  mergeClassNames.mergeParts2 = tailwindMergeParts2;
+  mergeClassNames.mergeParts3 = tailwindMergeParts3;
+  mergeClassNames.mergeParts = tailwindMergeParts;
   return mergeClassNames;
 };
