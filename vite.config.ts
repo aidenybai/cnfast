@@ -45,6 +45,13 @@ export default defineConfig({
         },
       },
       {
+        files: ["packages/cnfast/src/call-site-cn.ts"],
+        rules: {
+          "prefer-rest-params": "off",
+          "prefer-spread": "off",
+        },
+      },
+      {
         files: ["packages/cnfast/src/clsx.ts"],
         rules: {
           "@typescript-eslint/no-explicit-any": "off",
