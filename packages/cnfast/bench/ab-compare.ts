@@ -21,6 +21,7 @@ interface LoadedCnModule {
 interface ParentOptions {
   baseModulePath: string;
   candidateModulePath: string;
+  datasetPath: string;
   engines: string[];
   processCount: number;
   lanes: BenchmarkLane[];
@@ -120,7 +121,7 @@ const parseParentOptions = (argv: string[]): ParentOptions => {
   if (!baseModulePath || !candidateModulePath) {
     console.error(
       "Usage: bun bench/ab-compare.ts --base <module> --cand <module> " +
-        "[--engines bun,node] [--processes N] [--lanes fixed,shuffled] " +
+        "[--data <rows.json>] [--engines bun,node] [--processes N] [--lanes fixed,shuffled] " +
         "[--quads N] [--block-replays N] [--seed N] [--json]",
     );
     process.exit(2);
@@ -128,6 +129,7 @@ const parseParentOptions = (argv: string[]): ParentOptions => {
   return {
     baseModulePath: resolve(baseModulePath),
     candidateModulePath: resolve(candidateModulePath),
+    datasetPath: resolve(readFlagValue(argv, "--data") ?? DATASET_PATH),
     engines: (readFlagValue(argv, "--engines") ?? DEFAULT_ENGINES.join(",")).split(","),
     processCount: Number(readFlagValue(argv, "--processes") ?? DEFAULT_PROCESS_COUNT),
     lanes: parseLanes(readFlagValue(argv, "--lanes") ?? DEFAULT_LANES.join(",")),
@@ -478,7 +480,7 @@ const runParent = async (argv: string[]): Promise<void> => {
             "--cand-bundle",
             candidateBundlePath,
             "--data",
-            DATASET_PATH,
+            options.datasetPath,
             "--lanes",
             options.lanes.join(","),
             "--quads",
