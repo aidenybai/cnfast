@@ -196,16 +196,24 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
   ): string => {
-    // predictedAnchors and cached rest slots only ever hold truthy interned
-    // strings, so these identity checks double as the type/truthiness guards
-    // for both operands on the hit path.
+    // predictedAnchors only holds truthy strings, so the anchor compare is a
+    // sound guard for secondClassValue — but predictedPosition can be stale
+    // after trimBucket, letting the slot compares land on numeric bookkeeping
+    // slots (restLength/entryId) that a truthy NUMBER argument can strict-
+    // equal. A matched slot therefore only proves a hit once the argument is
+    // verified to be a truthy string: then either the window is a genuine
+    // same-restLength entry of this anchor (byte-identical result) or a
+    // string-vs-number compare has already failed. The typeof checks sit
+    // after the identity compares so probe misses pay nothing.
     const predictedId = successorIds[lastHitId]!;
     if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
       const predictedBucket = predictedBuckets[predictedId]!;
       const predictedPosition = predictedPositions[predictedId]!;
       if (
         predictedBucket[predictedPosition] === 1 &&
-        predictedBucket[predictedPosition + 1] === firstClassValue
+        predictedBucket[predictedPosition + 1] === firstClassValue &&
+        typeof firstClassValue === "string" &&
+        firstClassValue !== ""
       ) {
         lastHitId = predictedId;
         return predictedBucket[predictedPosition + 2] as string;
@@ -309,7 +317,11 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       if (
         predictedBucket[predictedPosition] === 2 &&
         predictedBucket[predictedPosition + 2] === secondClassValue &&
-        predictedBucket[predictedPosition + 1] === firstClassValue
+        predictedBucket[predictedPosition + 1] === firstClassValue &&
+        typeof firstClassValue === "string" &&
+        firstClassValue !== "" &&
+        typeof secondClassValue === "string" &&
+        secondClassValue !== ""
       ) {
         lastHitId = predictedId;
         return predictedBucket[predictedPosition + 3] as string;
@@ -420,7 +432,10 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
       // The entry-level probe only covers truthy final arguments; re-probe
       // here so rows whose anchor precedes trailing falsy values still take
-      // the prediction hit instead of a bucket scan.
+      // the prediction hit instead of a bucket scan. No stale-position guards
+      // are needed: every compared value is a verified truthy string and
+      // restLengthWanted >= 1, so a stale window either fails on a numeric
+      // slot or is a genuine same-anchor entry with a byte-identical result.
       if (anchorClassNameIndex !== classValueCount - 1) {
         const predictedId = successorIds[lastHitId]!;
         if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
@@ -502,24 +517,37 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (classValueCount === 3)
       return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
 
-    // A truthy final argument is by definition the LAST-truthy anchor, so
-    // matching it against the predicted anchor (always a truthy interned
-    // string) doubles as the type/truthiness guard; probing here lets a
-    // prediction hit skip the new Array copy, the dominant steady-state
-    // allocation. Any falsy or non-string value fails the identity checks
-    // and falls through to the full path.
+    // A truthy final argument is by definition the LAST-truthy anchor, and
+    // predictedAnchors only holds truthy strings, so the anchor compare
+    // guards the anchor operand; probing here lets a prediction hit skip the
+    // new Array copy, the dominant steady-state allocation. predictedPosition
+    // can be stale after trimBucket, so the header read must be verified as a
+    // real restLength (a stale slot can hold a string or an entryId — id 0
+    // would let an all-falsy prefix "consume" zero rest slots and return a
+    // number), and each raw argument that matches a rest slot must be a
+    // truthy string: a stale window that still matches string-for-string is
+    // a genuine same-anchor entry, while only a NUMBER argument can equal
+    // the numeric slot a misaligned window puts in its path.
     const predictedId = successorIds[lastHitId]!;
     if (predictedId !== -1 && predictedAnchors[predictedId] === arguments[classValueCount - 1]) {
       const predictedBucket = predictedBuckets[predictedId]!;
       const predictedPosition = predictedPositions[predictedId]!;
-      const predictedRestLength = predictedBucket[predictedPosition] as number;
-      if (predictedRestLength < classValueCount) {
+      const predictedRestLength = predictedBucket[predictedPosition];
+      if (
+        typeof predictedRestLength === "number" &&
+        predictedRestLength !== 0 &&
+        predictedRestLength < classValueCount
+      ) {
         let restIndex = predictedPosition + predictedRestLength;
         let isMatch = true;
         for (let index = classValueCount - 2; index >= 0; index--) {
           const classValue = arguments[index];
           if (!classValue) continue;
-          if (restIndex === predictedPosition || classValue !== predictedBucket[restIndex]) {
+          if (
+            restIndex === predictedPosition ||
+            classValue !== predictedBucket[restIndex] ||
+            typeof classValue !== "string"
+          ) {
             isMatch = false;
             break;
           }
