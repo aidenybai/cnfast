@@ -139,7 +139,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       if (classValue && typeof classValue !== "string")
         classValues[index] = resolveClassValue(classValue);
     }
-    return getMergedClassNameForManyValues(classValues);
+    return getMergedClassNameForManyValues(classValues, true);
   };
 
   const mergePartsOnMiss = (
@@ -410,7 +410,10 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergedClassName;
   };
 
-  const getMergedClassNameForManyValues = (classValues: ClassValue[]): string => {
+  const getMergedClassNameForManyValues = (
+    classValues: ClassValue[],
+    probeWanted: boolean,
+  ): string => {
     const classValueCount = classValues.length;
 
     let firstClassName = "";
@@ -441,13 +444,14 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
       const restLengthWanted = truthyStringCount - 1;
 
-      // The entry-level probe only covers truthy final arguments; re-probe
-      // here so rows whose anchor precedes trailing falsy values still take
-      // the prediction hit instead of a bucket scan. No stale-position guards
-      // are needed: every compared value is a verified truthy string and
-      // restLengthWanted >= 1, so a stale window either fails on a numeric
-      // slot or is a genuine same-anchor entry with a byte-identical result.
-      if (anchorClassNameIndex !== classValueCount - 1) {
+      // The entry-level probe already tried this exact anchor for raw-string
+      // rows, so re-probing is wanted only after resolveClassValue rewrote
+      // values (the probe can then match strings the raw row could not). No
+      // stale-position guards are needed: every compared value is a verified
+      // truthy string and restLengthWanted >= 1, so a stale window either
+      // fails on a numeric slot or is a genuine same-anchor entry with a
+      // byte-identical result.
+      if (probeWanted) {
         const predictedId = successorIds[lastHitId]!;
         if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
           const predictedBucket = predictedBuckets[predictedId]!;
@@ -528,10 +532,12 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (classValueCount === 3)
       return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
 
-    // A truthy final argument is by definition the LAST-truthy anchor, and
-    // predictedAnchors only holds truthy strings, so the anchor compare
-    // guards the anchor operand; probing here lets a prediction hit skip the
-    // new Array copy, the dominant steady-state allocation. predictedPosition
+    // The anchor is the LAST truthy argument, so a short backward walk over
+    // the falsy tail finds it without the new Array copy or the forward
+    // anchor-selection scan — falsy-tail high-arity rows otherwise pay both
+    // just to reach the identical interior re-probe. predictedAnchors only
+    // holds truthy strings, so the anchor compare guards the anchor operand
+    // (a truthy non-string last value can never match). predictedPosition
     // can be stale after trimBucket, so the header read must be verified as a
     // real restLength (a stale slot can hold a string or an entryId — id 0
     // would let an all-falsy prefix "consume" zero rest slots and return a
@@ -539,8 +545,13 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     // truthy string: a stale window that still matches string-for-string is
     // a genuine same-anchor entry, while only a NUMBER argument can equal
     // the numeric slot a misaligned window puts in its path.
+    // anchorIndex > 0 (not !== 0) also terminates the zero-argument call,
+    // which lands here with anchorIndex already -1.
+    let anchorIndex = classValueCount - 1;
+    let anchorClassValue = arguments[anchorIndex];
+    while (!anchorClassValue && anchorIndex > 0) anchorClassValue = arguments[--anchorIndex];
     const predictedId = successorIds[lastHitId]!;
-    if (predictedId !== -1 && predictedAnchors[predictedId] === arguments[classValueCount - 1]) {
+    if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassValue) {
       const predictedBucket = predictedBuckets[predictedId]!;
       const predictedPosition = predictedPositions[predictedId]!;
       const predictedRestLength = predictedBucket[predictedPosition];
@@ -551,7 +562,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
       ) {
         let restIndex = predictedPosition + predictedRestLength;
         let isMatch = true;
-        for (let index = classValueCount - 2; index >= 0; index--) {
+        for (let index = anchorIndex - 1; index >= 0; index--) {
           const classValue = arguments[index];
           if (!classValue) continue;
           if (
@@ -573,7 +584,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
     const classValues: ClassValue[] = new Array(classValueCount);
     for (let index = 0; index < classValueCount; index++) classValues[index] = arguments[index];
-    return getMergedClassNameForManyValues(classValues);
+    return getMergedClassNameForManyValues(classValues, false);
   };
   return cn;
 };
