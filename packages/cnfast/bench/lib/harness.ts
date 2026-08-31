@@ -4,14 +4,15 @@ import { fileURLToPath } from "node:url";
 import { Bench } from "tinybench";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { cn } from "../../src/index.js";
+import { cn, type ClassValue } from "../../src/index.js";
 import {
   BENCHMARK_WARMUP_TIME_MS,
   DEFAULT_BENCHMARK_ATTEMPT_COUNT,
   DEFAULT_BENCHMARK_TIME_MS,
 } from "../constants";
+import { getGeometricMean } from "../utils/get-geometric-mean";
 
-export type ClassListArgs = (string | number | false | null | undefined)[];
+export type ClassListArgs = ClassValue[];
 export interface ClassNameImplementation {
   (...classListArguments: ClassListArgs): string;
 }
@@ -50,6 +51,7 @@ const getGitCommitHash = (): string => {
 export const GIT_COMMIT_HASH = getGitCommitHash();
 
 const resultsPath = fileURLToPath(new URL("../results.jsonl", import.meta.url));
+const shouldRecordResults = process.env.BENCH_RECORD_RESULTS !== "0";
 
 let resultLengthSink = 0;
 export const keepAlive = (): void => {
@@ -67,6 +69,7 @@ export interface Workload {
   group: string;
   name: string;
   meta?: string;
+  classListCases?: ClassListArgs[];
   run: (implementation: ClassNameImplementation) => number;
 }
 
@@ -89,16 +92,26 @@ export const runImplementationBenchmark = async (
       time: BENCHMARK_TIME_MS,
       warmupTime: BENCHMARK_WARMUP_TIME_MS,
     });
-    bench
-      .add("cnfast", () => {
+    const addCnfast = (): void => {
+      bench.add("cnfast", () => {
         resultLengthSink += runWorkload(cn);
-      })
-      .add("reference", () => {
+      });
+    };
+    const addReference = (): void => {
+      bench.add("reference", () => {
         resultLengthSink += runWorkload(referenceCn);
       });
+    };
+    if (attempt % 2 === 0) {
+      addCnfast();
+      addReference();
+    } else {
+      addReference();
+      addCnfast();
+    }
     await bench.run();
-    cnfast = Math.max(cnfast, getMeanOperationsPerSecond(bench.tasks[0]!));
-    reference = Math.max(reference, getMeanOperationsPerSecond(bench.tasks[1]!));
+    cnfast = Math.max(cnfast, getMeanOperationsPerSecond(bench.getTask("cnfast")!));
+    reference = Math.max(reference, getMeanOperationsPerSecond(bench.getTask("reference")!));
   }
   return { cnfast, reference };
 };
@@ -113,13 +126,6 @@ const runWorkloadBenchmark = async (workload: Workload): Promise<WorkloadResult>
     reference,
     speedup: cnfast / reference,
   };
-};
-
-const getGeometricMean = (values: number[]): number => {
-  if (values.length === 0) return Number.NaN;
-  let logSum = 0;
-  for (let index = 0; index < values.length; index++) logSum += Math.log(values[index]!);
-  return Math.exp(logSum / values.length);
 };
 
 const printSummary = (workloadResults: WorkloadResult[], suiteLabel: string): void => {
@@ -144,45 +150,91 @@ const printSummary = (workloadResults: WorkloadResult[], suiteLabel: string): vo
         speedup: `${result.speedup.toFixed(2)}x`,
       })),
     );
+    const groupSpeedup = getGeometricMean(groupResults.map((result) => result.speedup));
+    const slowestGroupResult = groupResults.reduce((slowest, result) =>
+      result.speedup < slowest.speedup ? result : slowest,
+    );
+    console.log(
+      `${group}: ${groupSpeedup.toFixed(2)}x geomean across ${groupResults.length} workloads ` +
+        `(worst: ${slowestGroupResult.name} ${slowestGroupResult.speedup.toFixed(2)}x)`,
+    );
   }
 
   const workloadSpeedups = workloadResults
     .map((result) => result.speedup)
     .filter((value) => Number.isFinite(value));
   const overallSpeedup = getGeometricMean(workloadSpeedups);
+  const groupSpeedups: number[] = [];
+  for (const groupResults of resultsByGroup.values()) {
+    groupSpeedups.push(getGeometricMean(groupResults.map((result) => result.speedup)));
+  }
+  const groupBalancedSpeedup = getGeometricMean(groupSpeedups);
   const slowestResult = workloadResults.reduce((slowest, result) =>
     result.speedup < slowest.speedup ? result : slowest,
   );
   console.log(
-    `\noverall: ${overallSpeedup.toFixed(2)}x geomean across ${workloadSpeedups.length} workloads ` +
+    `\noverall: ${groupBalancedSpeedup.toFixed(2)}x group-balanced geomean across ` +
+      `${groupSpeedups.length} groups and ${workloadSpeedups.length} workloads\n` +
+      `workload geomean: ${overallSpeedup.toFixed(2)}x ` +
       `(worst: ${slowestResult.name} ${slowestResult.speedup.toFixed(2)}x)`,
   );
+};
+
+const verifyWorkloads = (workloads: Workload[]): void => {
+  for (const workload of workloads) {
+    if (workload.classListCases) {
+      for (let index = 0; index < workload.classListCases.length; index++) {
+        const classListArguments = workload.classListCases[index]!;
+        const cnfastResult = cn(...classListArguments);
+        const referenceResult = referenceCn(...classListArguments);
+        if (cnfastResult !== referenceResult) {
+          throw new Error(
+            `${workload.group}/${workload.name} case ${index} differs:\n` +
+              `input: ${JSON.stringify(classListArguments)}\n` +
+              `cnfast: ${JSON.stringify(cnfastResult)}\n` +
+              `reference: ${JSON.stringify(referenceResult)}`,
+          );
+        }
+      }
+    }
+    const cnfastChecksum = workload.run(cn);
+    const referenceChecksum = workload.run(referenceCn);
+    if (cnfastChecksum !== referenceChecksum) {
+      throw new Error(
+        `${workload.group}/${workload.name} checksum differs: ` +
+          `cnfast=${cnfastChecksum}, reference=${referenceChecksum}`,
+      );
+    }
+  }
 };
 
 export const runSuite = async (
   workloads: Workload[],
   suiteLabel: string = BENCHMARK_LABEL,
 ): Promise<WorkloadResult[]> => {
+  verifyWorkloads(workloads);
   const timestamp = new Date().toISOString();
   const workloadResults: WorkloadResult[] = [];
   for (const workload of workloads) {
     const workloadResult = await runWorkloadBenchmark(workload);
     workloadResults.push(workloadResult);
-    appendFileSync(
-      resultsPath,
-      `${JSON.stringify({
-        timestamp,
-        label: suiteLabel,
-        gitSha: GIT_COMMIT_HASH,
-        group: workloadResult.group,
-        corpus: workloadResult.meta
-          ? `${workloadResult.name} ${workloadResult.meta}`
-          : workloadResult.name,
-        cnfast: workloadResult.cnfast,
-        reference: workloadResult.reference,
-        speedup: workloadResult.speedup,
-      })}\n`,
-    );
+    if (shouldRecordResults) {
+      appendFileSync(
+        resultsPath,
+        `${JSON.stringify({
+          timestamp,
+          label: suiteLabel,
+          gitSha: GIT_COMMIT_HASH,
+          group: workloadResult.group,
+          corpus: workloadResult.meta
+            ? `${workloadResult.name} ${workloadResult.meta}`
+            : workloadResult.name,
+          cnfast: workloadResult.cnfast,
+          reference: workloadResult.reference,
+          speedup: workloadResult.speedup,
+        })}\n`,
+      );
+    }
   }
   printSummary(workloadResults, suiteLabel);
   keepAlive();

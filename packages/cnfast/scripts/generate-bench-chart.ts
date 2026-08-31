@@ -6,6 +6,11 @@ import {
   microWorkloads,
   pageWorkloads,
 } from "../bench/lib/workloads";
+import { getCacheWorkloads } from "../bench/workloads/cache-workloads";
+import { getInputShapeWorkloads } from "../bench/workloads/input-shape-workloads";
+import { getMergeSyntaxWorkloads } from "../bench/workloads/merge-syntax-workloads";
+import { getResultReuseWorkloads } from "../bench/workloads/result-reuse-workloads";
+import { getToggleWorkloads } from "../bench/workloads/toggle-workloads";
 import {
   CHART_BENCHMARK_MINIMUM_TIME_MS,
   CHART_BENCHMARK_WARMUP_TIME_MS,
@@ -19,6 +24,7 @@ import {
   runSuite,
   type WorkloadResult,
 } from "../bench/lib/harness";
+import { getGeometricMean } from "../bench/utils/get-geometric-mean";
 import { cn } from "../src/index.js";
 import { measureBundles } from "./lib/measure-bundle";
 import {
@@ -31,13 +37,6 @@ import {
 const runtimeName = process.versions.bun
   ? `Bun ${process.versions.bun}`
   : `Node ${process.versions.node}`;
-
-const getGeometricMean = (values: number[]): number => {
-  if (values.length === 0) return Number.NaN;
-  let logSum = 0;
-  for (let index = 0; index < values.length; index++) logSum += Math.log(values[index]!);
-  return Math.exp(logSum / values.length);
-};
 
 const getWorkloadResult = (
   workloadResults: WorkloadResult[],
@@ -82,6 +81,11 @@ const createChartRow = (
 
 const benchmarkWorkloads = [
   ...microWorkloads(),
+  ...getInputShapeWorkloads(),
+  ...getMergeSyntaxWorkloads(),
+  ...getCacheWorkloads(),
+  ...getToggleWorkloads(),
+  ...getResultReuseWorkloads(),
   ...corpusWorkloads(),
   ...pageWorkloads(),
   ...gridWorkloads(),
@@ -131,6 +135,17 @@ const benchmarkForms: BenchForm[] = [
 const overallSpeedup = getGeometricMean(
   workloadResults.map((result) => result.speedup).filter((value) => Number.isFinite(value)),
 );
+const workloadGroups = [...new Set(workloadResults.map((result) => result.group))];
+const aggregatedGroupResults = workloadGroups.map((group) =>
+  aggregateWorkloadGroup(workloadResults, group),
+);
+const groupBalancedSpeedup = getGeometricMean(
+  aggregatedGroupResults.map((result) => result.speedup),
+);
+const groupBalancedCnfast = getGeometricMean(aggregatedGroupResults.map((result) => result.cnfast));
+const groupBalancedReference = getGeometricMean(
+  aggregatedGroupResults.map((result) => result.reference),
+);
 
 const chartRows: BenchChartRow[] = [
   createChartRow(
@@ -142,6 +157,31 @@ const chartRows: BenchChartRow[] = [
     getWorkloadResult(workloadResults, "micro", "merge engine"),
     "Merge engine (cold)",
     "unique strings, every call misses",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "input shape"),
+    "Input shapes",
+    "strings, arrays, objects, conditionals, geomean",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "merge syntax"),
+    "Tailwind syntax",
+    "conflicts, modifiers, arbitrary forms, geomean",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "cache"),
+    "Cache regimes",
+    "hot keys through full churn, geomean",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "toggle"),
+    "Conditional renders",
+    "2, 3, and 5 argument state changes, geomean",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "result reuse"),
+    "Result reuse",
+    "nested calls and keyed consumers, geomean",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "corpus"),
@@ -162,12 +202,12 @@ const chartRows: BenchChartRow[] = [
     {
       group: "overall",
       name: "overall",
-      cnfast: getGeometricMean(workloadResults.map((result) => result.cnfast)),
-      reference: getGeometricMean(workloadResults.map((result) => result.reference)),
-      speedup: overallSpeedup,
+      cnfast: groupBalancedCnfast,
+      reference: groupBalancedReference,
+      speedup: groupBalancedSpeedup,
     },
     "Overall",
-    `geometric mean of ${workloadResults.length} workloads`,
+    `group-balanced mean of ${workloadGroups.length} groups and ${workloadResults.length} workloads`,
     true,
   ),
 ];
@@ -179,7 +219,9 @@ const benchmarkReport: BenchReport = {
   bestOf: BENCHMARK_ATTEMPT_COUNT,
   timeMs: BENCHMARK_TIME_MS,
   workloadCount: workloadResults.length,
+  workloadGroupCount: workloadGroups.length,
   overallSpeedup,
+  groupBalancedSpeedup,
   bundle: {
     cnfastGzip: bundleComparison.cnfast.gzipped,
     referenceGzip: bundleComparison.reference.gzipped,

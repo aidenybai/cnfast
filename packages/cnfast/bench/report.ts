@@ -13,7 +13,7 @@ const reportSteps: ReportStep[] = [
   },
   { title: "2/4  Bundle size", file: "scripts/bundle-size.ts" },
   {
-    title: "3/4  Throughput: micro + corpus + page replay + data grid (unified geomean)",
+    title: "3/4  Throughput: full workload matrix (unified geomean)",
     file: "bench/index.ts",
   },
   { title: "4/4  SSR throughput", file: "bench/ssr.bench.ts" },

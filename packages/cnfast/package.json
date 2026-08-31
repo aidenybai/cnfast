@@ -66,6 +66,7 @@
     "typecheck": "tsc --noEmit",
     "bench": "bun bench/cn.bench.ts",
     "bench:all": "bun bench/index.ts",
+    "bench:coverage": "bun bench/coverage.bench.ts",
     "bench:chart": "bun scripts/generate-bench-chart.ts",
     "bench:chart:render": "bun scripts/render-chart.ts",
     "bench:lru": "bun bench/lru.bench.ts",

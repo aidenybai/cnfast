@@ -16,10 +16,16 @@ export const GITHUB_STAR_COUNT_REVALIDATION_SECONDS = 3600;
 export const BENCHMARK_SORT_COLUMNS = ["label", "cnfast", "reference", "comparison"];
 
 const WORKLOAD_SOURCE_URL = `${BENCHMARK_SOURCE_BASE_URL}/packages/cnfast/bench/lib/workloads.ts`;
+const WORKLOAD_DIRECTORY_URL = `${BENCHMARK_SOURCE_BASE_URL}/packages/cnfast/bench/workloads`;
 
 export const BENCHMARK_SOURCE_URL_BY_LABEL: BenchmarkSourceUrlMap = {
   "Cached re-render": WORKLOAD_SOURCE_URL,
   "Merge engine (cold)": WORKLOAD_SOURCE_URL,
+  "Input shapes": `${WORKLOAD_DIRECTORY_URL}/input-shape-workloads.ts`,
+  "Tailwind syntax": `${WORKLOAD_DIRECTORY_URL}/merge-syntax-workloads.ts`,
+  "Cache regimes": `${WORKLOAD_DIRECTORY_URL}/cache-workloads.ts`,
+  "Conditional renders": `${WORKLOAD_DIRECTORY_URL}/toggle-workloads.ts`,
+  "Result reuse": `${WORKLOAD_DIRECTORY_URL}/result-reuse-workloads.ts`,
   "Component corpus": WORKLOAD_SOURCE_URL,
   "Page render": WORKLOAD_SOURCE_URL,
   "Live data grid": WORKLOAD_SOURCE_URL,

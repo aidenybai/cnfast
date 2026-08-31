@@ -39,7 +39,9 @@ interface BenchmarkReport {
   bestOf: number;
   timeMs: number;
   workloadCount: number;
+  workloadGroupCount: number;
   overallSpeedup: number;
+  groupBalancedSpeedup: number;
   bundle: {
     cnfastGzip: number;
     referenceGzip: number;

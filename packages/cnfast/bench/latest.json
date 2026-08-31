@@ -5,7 +5,9 @@
   "bestOf": 3,
   "timeMs": 500,
   "workloadCount": 65,
+  "workloadGroupCount": 4,
   "overallSpeedup": 3.82839603050448,
+  "groupBalancedSpeedup": 3.82839603050448,
   "bundle": {
     "cnfastGzip": 9654,
     "referenceGzip": 8649

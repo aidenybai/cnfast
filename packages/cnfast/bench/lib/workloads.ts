@@ -4,6 +4,7 @@ import { type FrozenNode } from "../../scripts/capture-pages";
 import { loadCorpora } from "../../scripts/lib/load-corpus";
 import { DEFAULT_GRID_COLUMN_COUNT, DEFAULT_GRID_ROW_COUNT } from "../constants";
 import { type ClassListArgs, type ClassNameImplementation, type Workload } from "./harness";
+import { createClassListReplay } from "../utils/create-class-list-replay";
 
 const readJson = <T>(relativePath: string): T =>
   JSON.parse(readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8")) as T;
@@ -20,16 +21,6 @@ const getUniqueStringCount = (groups: ClassListArgs[]): number => {
   return uniqueClassLists.size;
 };
 
-const createGroupReplay =
-  (groups: ClassListArgs[]) =>
-  (implementation: ClassNameImplementation): number => {
-    let resultLengthSum = 0;
-    for (let index = 0; index < groups.length; index++) {
-      resultLengthSum += implementation(...groups[index]!).length;
-    }
-    return resultLengthSum;
-  };
-
 export const microWorkloads = (): Workload[] => {
   const dataset = readJson<ClassListArgs[]>(
     "../../tests/tailwind-merge/tw-merge-benchmark-data.json",
@@ -44,12 +35,14 @@ export const microWorkloads = (): Workload[] => {
       group: "micro",
       name: "cached / re-render",
       meta: `(${dataset.length} calls, ${uniqueDatasetCallCount} unique)`,
-      run: createGroupReplay(dataset),
+      classListCases: dataset,
+      run: createClassListReplay(dataset),
     },
     {
       group: "micro",
       name: "uncached / merge engine",
       meta: `(${testCases.length} unique)`,
+      classListCases: testCases.map((classList) => [classList]),
       run: (implementation) => {
         let resultLengthSum = 0;
         for (let index = 0; index < testCases.length; index++) {
@@ -66,7 +59,8 @@ export const corpusWorkloads = (requested?: string[]): Workload[] =>
     group: "corpus",
     name: corpus.name,
     meta: `(${corpus.groups.length} calls, ${getUniqueStringCount(corpus.groups)} unique)`,
-    run: createGroupReplay(corpus.groups),
+    classListCases: corpus.groups,
+    run: createClassListReplay(corpus.groups),
   }));
 
 const pagesDirectoryUrl = new URL("../pages/", import.meta.url);
@@ -100,7 +94,8 @@ export const pageWorkloads = (): Workload[] => {
       group: "page",
       name: pageFileName.replace(".json", ""),
       meta: `(${classListCalls.length} calls)`,
-      run: createGroupReplay(classListCalls),
+      classListCases: classListCalls,
+      run: createClassListReplay(classListCalls),
     };
   });
 };
@@ -108,12 +103,13 @@ export const pageWorkloads = (): Workload[] => {
 export const gridWorkloads = (): Workload[] => {
   const gridRowCount = Number(process.env.GRID_ROWS ?? DEFAULT_GRID_ROW_COUNT);
   const gridColumnCount = Number(process.env.GRID_COLS ?? DEFAULT_GRID_COLUMN_COUNT);
-  let frameIndex = 0;
+  const frameIndexes = new WeakMap<ClassNameImplementation, number>();
 
   const renderGrid = (
     implementation: ClassNameImplementation,
     hasDynamicClassNames: boolean,
   ): number => {
+    const frameIndex = frameIndexes.get(implementation) ?? 0;
     let resultLengthSum = 0;
     const selectedRowIndex = frameIndex % gridRowCount;
     const selectedColumnIndex = frameIndex % gridColumnCount;
@@ -136,7 +132,7 @@ export const gridWorkloads = (): Workload[] => {
         ).length;
       }
     }
-    frameIndex++;
+    frameIndexes.set(implementation, frameIndex + 1);
     return resultLengthSum;
   };
 

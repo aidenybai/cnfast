@@ -67,8 +67,9 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                   timed attempts of {benchmarkReport.timeMs} ms after warmup.
                 </p>
                 <p>
-                  Overall speedup is the geometric mean of {benchmarkReport.workloadCount} common
-                  workloads. Bundle size is reported separately because smaller is better.
+                  Overall speedup is balanced across {benchmarkReport.workloadGroupCount} workload
+                  groups containing {benchmarkReport.workloadCount} workloads. Bundle size is
+                  reported separately because smaller is better.
                 </p>
               </div>
 
