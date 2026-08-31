@@ -96,6 +96,10 @@ interface BenchmarkSectionTableProps {
   sortState: BenchmarkSortState;
 }
 
+interface BenchmarkSectionTableSkeletonProps {
+  section: BenchmarkSection;
+}
+
 interface SortableBenchmarkHeaderProps {
   alignEnd?: boolean;
   column: string;
