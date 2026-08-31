@@ -76,6 +76,7 @@
     "bench:report": "bun bench/report.ts",
     "bench:setup": "bun scripts/extract-cases.ts && bun scripts/capture-pages.ts",
     "bench:parity": "bun scripts/verify-parity.ts",
+    "bench:callsite": "bun bench/call-site-replay.bench.ts",
     "bench:corpus": "bun bench/corpus.bench.ts",
     "bench:replay": "bun bench/page-replay.bench.ts",
     "bench:hard": "bun bench/hard-task.bench.ts",
