@@ -3,10 +3,7 @@ import { fileURLToPath } from "node:url";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cn, type ClassValue } from "../src/index.js";
-import {
-  ARGUMENT_CACHE_BUCKET_ENTRIES,
-  MERGE_CACHE_CAPACITY_MAX,
-} from "../src/lib/constants.js";
+import { ARGUMENT_CACHE_BUCKET_ENTRIES, MERGE_CACHE_CAPACITY_MAX } from "../src/lib/constants.js";
 import { createSeededRandom } from "../bench/utils/create-seeded-random";
 import { createShuffledIndices } from "../bench/utils/create-shuffled-indices";
 import { loadCorpora } from "./lib/load-corpus";

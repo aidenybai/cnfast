@@ -132,9 +132,7 @@ const parseParentOptions = (argv: string[]): ParentOptions => {
     processCount: Number(readFlagValue(argv, "--processes") ?? DEFAULT_PROCESS_COUNT),
     lanes: parseLanes(readFlagValue(argv, "--lanes") ?? DEFAULT_LANES.join(",")),
     quadCount: Number(readFlagValue(argv, "--quads") ?? DEFAULT_QUAD_COUNT),
-    blockReplayCount: Number(
-      readFlagValue(argv, "--block-replays") ?? DEFAULT_BLOCK_REPLAY_COUNT,
-    ),
+    blockReplayCount: Number(readFlagValue(argv, "--block-replays") ?? DEFAULT_BLOCK_REPLAY_COUNT),
     seed: Number(readFlagValue(argv, "--seed") ?? DEFAULT_CHILD_SEED),
     jsonOutput: argv.includes("--json"),
   };
@@ -317,10 +315,7 @@ const getMedian = (values: number[]): number => {
 const getSortedQuantile = (sortedValues: number[], quantile: number): number =>
   sortedValues[Math.min(sortedValues.length - 1, Math.floor(quantile * sortedValues.length))]!;
 
-const getBootstrapMedianInterval = (
-  samples: number[],
-  random: SeededRandom,
-): BootstrapInterval => {
+const getBootstrapMedianInterval = (samples: number[], random: SeededRandom): BootstrapInterval => {
   const resampleMedians = new Array<number>(BOOTSTRAP_RESAMPLE_COUNT);
   const resample = new Array<number>(samples.length);
   for (let resampleIndex = 0; resampleIndex < BOOTSTRAP_RESAMPLE_COUNT; resampleIndex++) {

@@ -335,11 +335,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
           return predictedBucket[predictedPosition + 3] as string;
         }
       }
-    } else if (
-      !secondClassValue &&
-      typeof firstClassValue === "string" &&
-      firstClassValue !== ""
-    ) {
+    } else if (!secondClassValue && typeof firstClassValue === "string" && firstClassValue !== "") {
       return mergeString(firstClassValue);
     }
     if (
