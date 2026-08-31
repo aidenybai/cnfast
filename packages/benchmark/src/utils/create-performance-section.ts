@@ -77,14 +77,12 @@ export const createPerformanceSection = (
   report: BenchmarkReport,
   siteData: BenchmarkSiteData,
 ): BenchmarkSection => {
-  const cachedRows: BenchmarkTableRow[] = [];
-  const uncachedRows: BenchmarkTableRow[] = [];
+  const workloadRows: BenchmarkTableRow[] = [];
   const scenarioRows: BenchmarkTableRow[] = [];
 
   for (const reportRow of report.rows) {
     const tableRow = createThroughputRow(reportRow);
-    if (reportRow.cacheState === "cached") cachedRows.push(tableRow);
-    else if (reportRow.cacheState === "uncached") uncachedRows.push(tableRow);
+    if (reportRow.cacheState) workloadRows.push(tableRow);
     else scenarioRows.push(tableRow);
   }
 
@@ -92,19 +90,13 @@ export const createPerformanceSection = (
   const applicationRows = scenarioRows.filter((row) => !row.isSummary);
   applicationRows.push(...siteData.repositories.map(createRepositoryRow), ...summaryRows);
 
-  const cachedSection = createThroughputSection(
-    "cached-performance",
-    "Cached performance",
-    "Working sets that fit in both implementations' caches.",
-    cachedRows,
+  const workloadSection = createThroughputSection(
+    "workload-performance",
+    "Workload performance",
+    "Working sets that fit in both implementations' caches alongside working sets that exceed them.",
+    workloadRows,
   );
-  cachedSection.relatedSections = [
-    createThroughputSection(
-      "uncached-performance",
-      "Uncached performance",
-      "Working sets that exceed both implementations' caches.",
-      uncachedRows,
-    ),
+  workloadSection.relatedSections = [
     createThroughputSection(
       "application-performance",
       "Application workloads",
@@ -113,5 +105,5 @@ export const createPerformanceSection = (
     ),
     createBundleSection(report),
   ];
-  return cachedSection;
+  return workloadSection;
 };

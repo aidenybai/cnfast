@@ -67,8 +67,7 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                 <p>
                   Overall speedup is balanced across {benchmarkReport.workloadGroupCount} workload
                   groups containing {benchmarkReport.workloadCount} workloads. Bundle size is
-                  reported separately because smaller is better. Cached and uncached results use
-                  separate tables.
+                  reported separately because smaller is better.
                 </p>
               </div>
 
