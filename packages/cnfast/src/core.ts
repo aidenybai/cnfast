@@ -8,6 +8,7 @@ import {
   SPACE_CHARACTER,
 } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
+import { IS_JSC } from "./utils/is-jsc.js";
 import { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
 import { getDefaultConfig } from "./lib/default-config.js";
 import { mergeConfigs } from "./lib/merge-configs.js";
@@ -192,7 +193,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return getMergedClassNameForTwoValues(resolveClassValue(firstClassValue), secondClassValue);
   };
 
-  const getMergedClassNameForTwoValues = (
+  const getMergedClassNameForTwoValuesProbeFirst = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
   ): string => {
@@ -250,6 +251,23 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     }
     return mergeTwoValuesUncacheable(firstClassValue, secondClassValue);
   };
+
+  // JSC-only front for the toggle-shaped falsy anchors the probe-first body
+  // routes through mergeTwoValuesUncacheable; the exit V8 cannot afford — it
+  // would push TwoValues past the bytecode budget that keeps it inlined in cn.
+  // Selected once at closure creation, never branched per call.
+  const getMergedClassNameForTwoValuesJsc = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+  ): string => {
+    if (!secondClassValue && typeof firstClassValue === "string" && firstClassValue !== "")
+      return mergeString(firstClassValue);
+    return getMergedClassNameForTwoValuesProbeFirst(firstClassValue, secondClassValue);
+  };
+
+  const getMergedClassNameForTwoValues = IS_JSC
+    ? getMergedClassNameForTwoValuesJsc
+    : getMergedClassNameForTwoValuesProbeFirst;
 
   const insertThreeValuesOnMiss = (
     firstClassName: string,
@@ -310,7 +328,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     );
   };
 
-  const getMergedClassNameForThreeValues = (
+  const getMergedClassNameForThreeValuesProbeFirst = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
     thirdClassValue: ClassValue,
@@ -370,6 +388,34 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     }
     return mergeThreeValuesUncacheable(firstClassValue, secondClassValue, thirdClassValue);
   };
+
+  // JSC-only front, mirroring the two-value one: the (string, string, falsy)
+  // and (string, falsy, string) toggle shapes drop to the equivalent two-value
+  // call inline instead of paying a wasted probe plus the uncacheable hop.
+  const getMergedClassNameForThreeValuesJsc = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+    thirdClassValue: ClassValue,
+  ): string => {
+    if (typeof firstClassValue === "string" && firstClassValue !== "") {
+      if (!thirdClassValue) {
+        if (!secondClassValue) return mergeString(firstClassValue);
+        if (typeof secondClassValue === "string")
+          return getMergedClassNameForTwoValuesJsc(firstClassValue, secondClassValue);
+      } else if (!secondClassValue && typeof thirdClassValue === "string") {
+        return getMergedClassNameForTwoValuesJsc(firstClassValue, thirdClassValue);
+      }
+    }
+    return getMergedClassNameForThreeValuesProbeFirst(
+      firstClassValue,
+      secondClassValue,
+      thirdClassValue,
+    );
+  };
+
+  const getMergedClassNameForThreeValues = IS_JSC
+    ? getMergedClassNameForThreeValuesJsc
+    : getMergedClassNameForThreeValuesProbeFirst;
 
   const insertManyValuesOnMiss = (
     classValues: ClassValue[],
