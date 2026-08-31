@@ -153,55 +153,32 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return twMerge.mergeParts(classList, classListPartsScratch, partCount);
   };
 
-  const getMergedClassNameForTwoValues = (
+  const insertTwoValuesOnMiss = (
+    firstClassName: string,
+    secondClassName: string,
+    bucket: ArgumentCacheBucket | undefined,
+  ): string => {
+    const classList = firstClassName + SPACE_CHARACTER + secondClassName;
+    const mergedClassName = twMerge.mergeParts2(classList, firstClassName, secondClassName);
+    if (shouldCacheArguments(classList)) {
+      const cacheBucket = getWritableArgumentCacheBucket(secondClassName, bucket);
+      cacheBucket.push(
+        1,
+        firstClassName,
+        mergedClassName,
+        createArgumentCacheEntryId(secondClassName, cacheBucket, cacheBucket.length),
+      );
+      cacheBucket[0] = cacheBucket[0] + 1;
+      addArgumentCacheSlots(3);
+    }
+    return mergedClassName;
+  };
+
+  const mergeTwoValuesUncacheable = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
   ): string => {
     if (typeof firstClassValue === "string" && firstClassValue !== "") {
-      if (typeof secondClassValue === "string" && secondClassValue !== "") {
-        const predictedId = successorIds[lastHitId]!;
-        if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
-          const predictedBucket = predictedBuckets[predictedId]!;
-          const predictedPosition = predictedPositions[predictedId]!;
-          if (
-            predictedBucket[predictedPosition] === 1 &&
-            predictedBucket[predictedPosition + 1] === firstClassValue
-          ) {
-            lastHitId = predictedId;
-            return predictedBucket[predictedPosition + 2] as string;
-          }
-        }
-        const bucket = getAndPromoteArgumentCacheBucket(secondClassValue);
-        if (bucket !== undefined) {
-          for (let position = 1, slots = bucket.length; position < slots; ) {
-            const restLength = bucket[position] as number;
-            if (restLength === 1 && bucket[position + 1] === firstClassValue) {
-              setArgumentCachePrediction(
-                secondClassValue,
-                bucket,
-                position,
-                bucket[position + 3] as number,
-              );
-              return bucket[position + 2] as string;
-            }
-            position += restLength + 3;
-          }
-        }
-        const classList = firstClassValue + SPACE_CHARACTER + secondClassValue;
-        const mergedClassName = twMerge.mergeParts2(classList, firstClassValue, secondClassValue);
-        if (shouldCacheArguments(classList)) {
-          const cacheBucket = getWritableArgumentCacheBucket(secondClassValue, bucket);
-          cacheBucket.push(
-            1,
-            firstClassValue,
-            mergedClassName,
-            createArgumentCacheEntryId(secondClassValue, cacheBucket, cacheBucket.length),
-          );
-          cacheBucket[0] = cacheBucket[0] + 1;
-          addArgumentCacheSlots(3);
-        }
-        return mergedClassName;
-      }
       if (!secondClassValue) return twMerge.mergeString(firstClassValue);
       return mergeUncachedClassValues([firstClassValue, secondClassValue]);
     }
@@ -213,73 +190,88 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeUncachedClassValues([firstClassValue, secondClassValue]);
   };
 
-  const getMergedClassNameForThreeValues = (
+  const getMergedClassNameForTwoValues = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+  ): string => {
+    // predictedAnchors and cached rest slots only ever hold truthy interned
+    // strings, so these identity checks double as the type/truthiness guards
+    // for both operands on the hit path.
+    const predictedId = successorIds[lastHitId]!;
+    if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
+      const predictedBucket = predictedBuckets[predictedId]!;
+      const predictedPosition = predictedPositions[predictedId]!;
+      if (
+        predictedBucket[predictedPosition] === 1 &&
+        predictedBucket[predictedPosition + 1] === firstClassValue
+      ) {
+        lastHitId = predictedId;
+        return predictedBucket[predictedPosition + 2] as string;
+      }
+    }
+    if (
+      typeof firstClassValue === "string" &&
+      firstClassValue !== "" &&
+      typeof secondClassValue === "string" &&
+      secondClassValue !== ""
+    ) {
+      const bucket = getAndPromoteArgumentCacheBucket(secondClassValue);
+      if (bucket !== undefined) {
+        for (let position = 1, slots = bucket.length; position < slots; ) {
+          const restLength = bucket[position] as number;
+          if (restLength === 1 && bucket[position + 1] === firstClassValue) {
+            setArgumentCachePrediction(
+              secondClassValue,
+              bucket,
+              position,
+              bucket[position + 3] as number,
+            );
+            return bucket[position + 2] as string;
+          }
+          position += restLength + 3;
+        }
+      }
+      return insertTwoValuesOnMiss(firstClassValue, secondClassValue, bucket);
+    }
+    return mergeTwoValuesUncacheable(firstClassValue, secondClassValue);
+  };
+
+  const insertThreeValuesOnMiss = (
+    firstClassName: string,
+    secondClassName: string,
+    thirdClassName: string,
+    bucket: ArgumentCacheBucket | undefined,
+  ): string => {
+    const classList =
+      firstClassName + SPACE_CHARACTER + secondClassName + SPACE_CHARACTER + thirdClassName;
+    const mergedClassName = twMerge.mergeParts3(
+      classList,
+      firstClassName,
+      secondClassName,
+      thirdClassName,
+    );
+    if (shouldCacheArguments(classList)) {
+      const cacheBucket = getWritableArgumentCacheBucket(thirdClassName, bucket);
+      cacheBucket.push(
+        2,
+        firstClassName,
+        secondClassName,
+        mergedClassName,
+        createArgumentCacheEntryId(thirdClassName, cacheBucket, cacheBucket.length),
+      );
+      cacheBucket[0] = cacheBucket[0] + 1;
+      addArgumentCacheSlots(4);
+    }
+    return mergedClassName;
+  };
+
+  const mergeThreeValuesUncacheable = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
     thirdClassValue: ClassValue,
   ): string => {
     if (typeof firstClassValue === "string" && firstClassValue !== "") {
       if (typeof secondClassValue === "string" && secondClassValue !== "") {
-        if (typeof thirdClassValue === "string" && thirdClassValue !== "") {
-          const predictedId = successorIds[lastHitId]!;
-          if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
-            const predictedBucket = predictedBuckets[predictedId]!;
-            const predictedPosition = predictedPositions[predictedId]!;
-            if (
-              predictedBucket[predictedPosition] === 2 &&
-              predictedBucket[predictedPosition + 2] === secondClassValue &&
-              predictedBucket[predictedPosition + 1] === firstClassValue
-            ) {
-              lastHitId = predictedId;
-              return predictedBucket[predictedPosition + 3] as string;
-            }
-          }
-          const bucket = getAndPromoteArgumentCacheBucket(thirdClassValue);
-          if (bucket !== undefined) {
-            for (let position = 1, slots = bucket.length; position < slots; ) {
-              const restLength = bucket[position] as number;
-              if (
-                restLength === 2 &&
-                bucket[position + 2] === secondClassValue &&
-                bucket[position + 1] === firstClassValue
-              ) {
-                setArgumentCachePrediction(
-                  thirdClassValue,
-                  bucket,
-                  position,
-                  bucket[position + 4] as number,
-                );
-                return bucket[position + 3] as string;
-              }
-              position += restLength + 3;
-            }
-          }
-          const classList =
-            firstClassValue +
-            SPACE_CHARACTER +
-            secondClassValue +
-            SPACE_CHARACTER +
-            thirdClassValue;
-          const mergedClassName = twMerge.mergeParts3(
-            classList,
-            firstClassValue,
-            secondClassValue,
-            thirdClassValue,
-          );
-          if (shouldCacheArguments(classList)) {
-            const cacheBucket = getWritableArgumentCacheBucket(thirdClassValue, bucket);
-            cacheBucket.push(
-              2,
-              firstClassValue,
-              secondClassValue,
-              mergedClassName,
-              createArgumentCacheEntryId(thirdClassValue, cacheBucket, cacheBucket.length),
-            );
-            cacheBucket[0] = cacheBucket[0] + 1;
-            addArgumentCacheSlots(4);
-          }
-          return mergedClassName;
-        }
         if (!thirdClassValue)
           return getMergedClassNameForTwoValues(firstClassValue, secondClassValue);
         return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
@@ -294,6 +286,96 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     }
     if (!firstClassValue) return getMergedClassNameForTwoValues(secondClassValue, thirdClassValue);
     return mergeUncachedClassValues([firstClassValue, secondClassValue, thirdClassValue]);
+  };
+
+  const getMergedClassNameForThreeValues = (
+    firstClassValue: ClassValue,
+    secondClassValue: ClassValue,
+    thirdClassValue: ClassValue,
+  ): string => {
+    const predictedId = successorIds[lastHitId]!;
+    if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
+      const predictedBucket = predictedBuckets[predictedId]!;
+      const predictedPosition = predictedPositions[predictedId]!;
+      if (
+        predictedBucket[predictedPosition] === 2 &&
+        predictedBucket[predictedPosition + 2] === secondClassValue &&
+        predictedBucket[predictedPosition + 1] === firstClassValue
+      ) {
+        lastHitId = predictedId;
+        return predictedBucket[predictedPosition + 3] as string;
+      }
+    }
+    if (
+      typeof firstClassValue === "string" &&
+      firstClassValue !== "" &&
+      typeof secondClassValue === "string" &&
+      secondClassValue !== "" &&
+      typeof thirdClassValue === "string" &&
+      thirdClassValue !== ""
+    ) {
+      const bucket = getAndPromoteArgumentCacheBucket(thirdClassValue);
+      if (bucket !== undefined) {
+        for (let position = 1, slots = bucket.length; position < slots; ) {
+          const restLength = bucket[position] as number;
+          if (
+            restLength === 2 &&
+            bucket[position + 2] === secondClassValue &&
+            bucket[position + 1] === firstClassValue
+          ) {
+            setArgumentCachePrediction(
+              thirdClassValue,
+              bucket,
+              position,
+              bucket[position + 4] as number,
+            );
+            return bucket[position + 3] as string;
+          }
+          position += restLength + 3;
+        }
+      }
+      return insertThreeValuesOnMiss(firstClassValue, secondClassValue, thirdClassValue, bucket);
+    }
+    return mergeThreeValuesUncacheable(firstClassValue, secondClassValue, thirdClassValue);
+  };
+
+  const insertManyValuesOnMiss = (
+    classValues: ClassValue[],
+    firstClassName: string,
+    firstClassNameIndex: number,
+    anchorClassName: string,
+    anchorClassNameIndex: number,
+    restLengthWanted: number,
+    bucket: ArgumentCacheBucket | undefined,
+  ): string => {
+    const classValueCount = classValues.length;
+    let classList = firstClassName;
+    for (let index = firstClassNameIndex + 1; index < classValueCount; index++) {
+      const classValue = classValues[index];
+      if (classValue) classList += SPACE_CHARACTER + (classValue as string);
+    }
+
+    let mergedClassName = twMerge.peekString(classList);
+    if (mergedClassName === undefined)
+      mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
+
+    if (shouldCacheArguments(classList)) {
+      const cacheBucket = getWritableArgumentCacheBucket(anchorClassName, bucket);
+      const entryPosition = cacheBucket.length;
+      cacheBucket.push(restLengthWanted);
+      for (let index = firstClassNameIndex; index < anchorClassNameIndex; index++) {
+        const classValue = classValues[index];
+        if (classValue) cacheBucket.push(classValue as string);
+      }
+      cacheBucket.push(
+        mergedClassName,
+        createArgumentCacheEntryId(anchorClassName, cacheBucket, entryPosition),
+      );
+      cacheBucket[0] = cacheBucket[0] + 1;
+      addArgumentCacheSlots(restLengthWanted + 2);
+    }
+
+    return mergedClassName;
   };
 
   const getMergedClassNameForManyValues = (classValues: ClassValue[]): string => {
@@ -327,24 +409,29 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
       const restLengthWanted = truthyStringCount - 1;
 
-      const predictedId = successorIds[lastHitId]!;
-      if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
-        const predictedBucket = predictedBuckets[predictedId]!;
-        const predictedPosition = predictedPositions[predictedId]!;
-        if (predictedBucket[predictedPosition] === restLengthWanted) {
-          let restIndex = predictedPosition + restLengthWanted;
-          let isMatch = true;
-          for (let index = anchorClassNameIndex - 1; index >= firstClassNameIndex; index--) {
-            const classValue = classValues[index];
-            if (!classValue) continue;
-            if (classValue !== predictedBucket[restIndex--]) {
-              isMatch = false;
-              break;
+      // The entry-level probe only covers truthy final arguments; re-probe
+      // here so rows whose anchor precedes trailing falsy values still take
+      // the prediction hit instead of a bucket scan.
+      if (anchorClassNameIndex !== classValueCount - 1) {
+        const predictedId = successorIds[lastHitId]!;
+        if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
+          const predictedBucket = predictedBuckets[predictedId]!;
+          const predictedPosition = predictedPositions[predictedId]!;
+          if (predictedBucket[predictedPosition] === restLengthWanted) {
+            let restIndex = predictedPosition + restLengthWanted;
+            let isMatch = true;
+            for (let index = anchorClassNameIndex - 1; index >= firstClassNameIndex; index--) {
+              const classValue = classValues[index];
+              if (!classValue) continue;
+              if (classValue !== predictedBucket[restIndex--]) {
+                isMatch = false;
+                break;
+              }
             }
-          }
-          if (isMatch) {
-            lastHitId = predictedId;
-            return predictedBucket[predictedPosition + restLengthWanted + 1] as string;
+            if (isMatch) {
+              lastHitId = predictedId;
+              return predictedBucket[predictedPosition + restLengthWanted + 1] as string;
+            }
           }
         }
       }
@@ -378,33 +465,15 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
         }
       }
 
-      let classList = firstClassName;
-      for (let index = firstClassNameIndex + 1; index < classValueCount; index++) {
-        const classValue = classValues[index];
-        if (classValue) classList += SPACE_CHARACTER + (classValue as string);
-      }
-
-      let mergedClassName = twMerge.peekString(classList);
-      if (mergedClassName === undefined)
-        mergedClassName = mergePartsOnMiss(classList, classValues, firstClassNameIndex);
-
-      if (shouldCacheArguments(classList)) {
-        const cacheBucket = getWritableArgumentCacheBucket(anchorClassName, bucket);
-        const entryPosition = cacheBucket.length;
-        cacheBucket.push(restLengthWanted);
-        for (let index = firstClassNameIndex; index < anchorClassNameIndex; index++) {
-          const classValue = classValues[index];
-          if (classValue) cacheBucket.push(classValue as string);
-        }
-        cacheBucket.push(
-          mergedClassName,
-          createArgumentCacheEntryId(anchorClassName, cacheBucket, entryPosition),
-        );
-        cacheBucket[0] = cacheBucket[0] + 1;
-        addArgumentCacheSlots(restLengthWanted + 2);
-      }
-
-      return mergedClassName;
+      return insertManyValuesOnMiss(
+        classValues,
+        firstClassName,
+        firstClassNameIndex,
+        anchorClassName,
+        anchorClassNameIndex,
+        restLengthWanted,
+        bucket,
+      );
     }
 
     return mergeUncachedClassValues(classValues);
@@ -423,6 +492,36 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (classValueCount === 2) return getMergedClassNameForTwoValues(firstClassValue, arguments[1]);
     if (classValueCount === 3)
       return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
+
+    // A truthy final argument is by definition the LAST-truthy anchor, so
+    // matching it against the predicted anchor (always a truthy interned
+    // string) doubles as the type/truthiness guard; probing here lets a
+    // prediction hit skip the new Array copy, the dominant steady-state
+    // allocation. Any falsy or non-string value fails the identity checks
+    // and falls through to the full path.
+    const predictedId = successorIds[lastHitId]!;
+    if (predictedId !== -1 && predictedAnchors[predictedId] === arguments[classValueCount - 1]) {
+      const predictedBucket = predictedBuckets[predictedId]!;
+      const predictedPosition = predictedPositions[predictedId]!;
+      const predictedRestLength = predictedBucket[predictedPosition] as number;
+      if (predictedRestLength < classValueCount) {
+        let restIndex = predictedPosition + predictedRestLength;
+        let isMatch = true;
+        for (let index = classValueCount - 2; index >= 0; index--) {
+          const classValue = arguments[index];
+          if (!classValue) continue;
+          if (restIndex === predictedPosition || classValue !== predictedBucket[restIndex]) {
+            isMatch = false;
+            break;
+          }
+          restIndex--;
+        }
+        if (isMatch && restIndex === predictedPosition) {
+          lastHitId = predictedId;
+          return predictedBucket[predictedPosition + predictedRestLength + 1] as string;
+        }
+      }
+    }
 
     const classValues: ClassValue[] = new Array(classValueCount);
     for (let index = 0; index < classValueCount; index++) classValues[index] = arguments[index];
