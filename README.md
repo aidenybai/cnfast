@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs [**3x faster**](https://cn.aidenybai.com/) than `tailwind-merge`, with byte-identical output. Same API, no code changes.
+cnfast runs [**95x faster uncached and 4x faster cached**](https://cn.aidenybai.com/) than `tailwind-merge`, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
@@ -55,10 +55,6 @@ ni
 nr build
 nr test
 ```
-
-## Credits
-
-cnfast adapts MIT-licensed code from [clsx](https://github.com/lukeed/clsx) (Luke Edwards) and [tailwind-merge](https://github.com/dcastil/tailwind-merge) (Dany Castillo). See [LICENSE](./LICENSE).
 
 ## License
 
