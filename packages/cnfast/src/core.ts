@@ -196,27 +196,32 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
   ): string => {
-    // predictedAnchors only holds truthy strings, so the anchor compare is a
-    // sound guard for secondClassValue — but predictedPosition can be stale
-    // after trimBucket, letting the slot compares land on numeric bookkeeping
-    // slots (restLength/entryId) that a truthy NUMBER argument can strict-
-    // equal. A matched slot therefore only proves a hit once the argument is
-    // verified to be a truthy string: then either the window is a genuine
-    // same-restLength entry of this anchor (byte-identical result) or a
-    // string-vs-number compare has already failed. The typeof checks sit
-    // after the identity compares so probe misses pay nothing.
-    const predictedId = successorIds[lastHitId]!;
-    if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
-      const predictedBucket = predictedBuckets[predictedId]!;
-      const predictedPosition = predictedPositions[predictedId]!;
-      if (
-        predictedBucket[predictedPosition] === 1 &&
-        predictedBucket[predictedPosition + 1] === firstClassValue &&
-        typeof firstClassValue === "string" &&
-        firstClassValue !== ""
-      ) {
-        lastHitId = predictedId;
-        return predictedBucket[predictedPosition + 2] as string;
+    // A falsy anchor can never match predictedAnchors (truthy strings only),
+    // so falsy-tail rows skip the probe's loads instead of paying them every
+    // call for nothing (toggle-heavy callers hit this constantly).
+    if (secondClassValue) {
+      // predictedAnchors only holds truthy strings, so the anchor compare is a
+      // sound guard for secondClassValue — but predictedPosition can be stale
+      // after trimBucket, letting the slot compares land on numeric bookkeeping
+      // slots (restLength/entryId) that a truthy NUMBER argument can strict-
+      // equal. A matched slot therefore only proves a hit once the argument is
+      // verified to be a truthy string: then either the window is a genuine
+      // same-restLength entry of this anchor (byte-identical result) or a
+      // string-vs-number compare has already failed. The typeof checks sit
+      // after the identity compares so probe misses pay nothing.
+      const predictedId = successorIds[lastHitId]!;
+      if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
+        const predictedBucket = predictedBuckets[predictedId]!;
+        const predictedPosition = predictedPositions[predictedId]!;
+        if (
+          predictedBucket[predictedPosition] === 1 &&
+          predictedBucket[predictedPosition + 1] === firstClassValue &&
+          typeof firstClassValue === "string" &&
+          firstClassValue !== ""
+        ) {
+          lastHitId = predictedId;
+          return predictedBucket[predictedPosition + 2] as string;
+        }
       }
     }
     if (
@@ -310,21 +315,25 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     secondClassValue: ClassValue,
     thirdClassValue: ClassValue,
   ): string => {
-    const predictedId = successorIds[lastHitId]!;
-    if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
-      const predictedBucket = predictedBuckets[predictedId]!;
-      const predictedPosition = predictedPositions[predictedId]!;
-      if (
-        predictedBucket[predictedPosition] === 2 &&
-        predictedBucket[predictedPosition + 2] === secondClassValue &&
-        predictedBucket[predictedPosition + 1] === firstClassValue &&
-        typeof firstClassValue === "string" &&
-        firstClassValue !== "" &&
-        typeof secondClassValue === "string" &&
-        secondClassValue !== ""
-      ) {
-        lastHitId = predictedId;
-        return predictedBucket[predictedPosition + 3] as string;
+    // Falsy anchors skip the probe's loads — same reasoning as the two-value
+    // path, and falsy tails are the majority of real arity-3 traffic.
+    if (thirdClassValue) {
+      const predictedId = successorIds[lastHitId]!;
+      if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
+        const predictedBucket = predictedBuckets[predictedId]!;
+        const predictedPosition = predictedPositions[predictedId]!;
+        if (
+          predictedBucket[predictedPosition] === 2 &&
+          predictedBucket[predictedPosition + 2] === secondClassValue &&
+          predictedBucket[predictedPosition + 1] === firstClassValue &&
+          typeof firstClassValue === "string" &&
+          firstClassValue !== "" &&
+          typeof secondClassValue === "string" &&
+          secondClassValue !== ""
+        ) {
+          lastHitId = predictedId;
+          return predictedBucket[predictedPosition + 3] as string;
+        }
       }
     }
     if (
