@@ -7,6 +7,7 @@ export interface BenchChartRow {
   cnfast: number;
   reference: number;
   speedup: number;
+  cacheState?: "cached" | "uncached";
   emphasis?: boolean;
 }
 

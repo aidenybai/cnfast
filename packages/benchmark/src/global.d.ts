@@ -4,6 +4,7 @@ interface BenchmarkReportRow {
   cnfast: number;
   reference: number;
   speedup: number;
+  cacheState?: "cached" | "uncached";
   emphasis: boolean;
 }
 
@@ -91,7 +92,6 @@ interface BenchmarkSourceUrlMap {
 }
 
 interface BenchmarkSectionTableProps {
-  hideHeading?: boolean;
   section: BenchmarkSection;
   sortState: BenchmarkSortState;
 }

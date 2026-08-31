@@ -29,11 +29,12 @@ const getRepeatedCases = (classListCases: ClassListArgs[], callCount: number): C
 };
 
 const getWorkload = (
+  group: string,
   name: string,
   classListCases: ClassListArgs[],
   uniqueCaseCount: number,
 ): Workload => ({
-  group: "cache",
+  group,
   name,
   meta: `(${classListCases.length} calls, ${uniqueCaseCount} unique)`,
   classListCases,
@@ -63,33 +64,39 @@ export const getCacheWorkloads = (): Workload[] => {
 
   return [
     getWorkload(
+      "cached",
       "single hot key",
       getRepeatedCases(singleCase, CACHE_HOT_CALL_COUNT),
       singleCase.length,
     ),
     getWorkload(
+      "cached",
       "small working set",
       getRepeatedCases(smallWorkingSet, CACHE_HOT_CALL_COUNT),
       smallWorkingSet.length,
     ),
     getWorkload(
+      "cached",
       "medium working set",
       getRepeatedCases(mediumWorkingSet, CACHE_HOT_CALL_COUNT),
       mediumWorkingSet.length,
     ),
     getWorkload(
+      "cache boundary",
       "large working set",
       getRepeatedCases(largeWorkingSet, CACHE_HOT_CALL_COUNT),
       largeWorkingSet.length,
     ),
-    getWorkload("2048-key working set", maxWorkingSet, maxWorkingSet.length),
-    getWorkload("cache thrash", thrashWorkingSet, thrashWorkingSet.length),
+    getWorkload("cache boundary", "2048-key working set", maxWorkingSet, maxWorkingSet.length),
+    getWorkload("uncached", "cache thrash", thrashWorkingSet, thrashWorkingSet.length),
     getWorkload(
+      "cache boundary",
       "generation reuse",
       generationReuseCases,
       firstGeneration.length + secondGeneration.length,
     ),
     getWorkload(
+      "cache boundary",
       "75% hot mixed traffic",
       skewedCases,
       skewedHotCases.length + skewedColdCases.length,

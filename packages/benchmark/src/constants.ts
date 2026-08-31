@@ -19,11 +19,11 @@ const WORKLOAD_SOURCE_URL = `${BENCHMARK_SOURCE_BASE_URL}/packages/cnfast/bench/
 const WORKLOAD_DIRECTORY_URL = `${BENCHMARK_SOURCE_BASE_URL}/packages/cnfast/bench/workloads`;
 
 export const BENCHMARK_SOURCE_URL_BY_LABEL: BenchmarkSourceUrlMap = {
-  "Cached re-render": WORKLOAD_SOURCE_URL,
-  "Merge engine (cold)": WORKLOAD_SOURCE_URL,
+  "Cached workloads": WORKLOAD_SOURCE_URL,
+  "Uncached workloads": WORKLOAD_SOURCE_URL,
   "Input shapes": `${WORKLOAD_DIRECTORY_URL}/input-shape-workloads.ts`,
   "Tailwind syntax": `${WORKLOAD_DIRECTORY_URL}/merge-syntax-workloads.ts`,
-  "Cache regimes": `${WORKLOAD_DIRECTORY_URL}/cache-workloads.ts`,
+  "Cache boundaries": `${WORKLOAD_DIRECTORY_URL}/cache-workloads.ts`,
   "Conditional renders": `${WORKLOAD_DIRECTORY_URL}/toggle-workloads.ts`,
   "Result reuse": `${WORKLOAD_DIRECTORY_URL}/result-reuse-workloads.ts`,
   "Component corpus": WORKLOAD_SOURCE_URL,

@@ -19,7 +19,6 @@ const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps)
 
   return (
     <BenchmarkSectionTable
-      hideHeading
       section={performanceSection}
       sortState={getBenchmarkSortState(performanceSection.id, resolvedSearchParams)}
     />
@@ -69,7 +68,8 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                 <p>
                   Overall speedup is balanced across {benchmarkReport.workloadGroupCount} workload
                   groups containing {benchmarkReport.workloadCount} workloads. Bundle size is
-                  reported separately because smaller is better.
+                  reported separately because smaller is better. Cached and uncached results use
+                  separate tables.
                 </p>
               </div>
 

@@ -69,6 +69,7 @@ const createChartRow = (
   result: WorkloadResult,
   label: string,
   detail: string,
+  cacheState?: "cached" | "uncached",
   emphasis = false,
 ): BenchChartRow => ({
   label,
@@ -76,6 +77,7 @@ const createChartRow = (
   cnfast: result.cnfast,
   reference: result.reference,
   speedup: result.speedup,
+  cacheState,
   emphasis,
 });
 
@@ -149,39 +151,45 @@ const groupBalancedReference = getGeometricMean(
 
 const chartRows: BenchChartRow[] = [
   createChartRow(
-    getWorkloadResult(workloadResults, "micro", "cached"),
-    "Cached re-render",
-    "repeated class strings, cache hits",
+    aggregateWorkloadGroup(workloadResults, "cached"),
+    "Cached workloads",
+    "re-render and working sets shared by both caches",
+    "cached",
   ),
   createChartRow(
-    getWorkloadResult(workloadResults, "micro", "merge engine"),
-    "Merge engine (cold)",
-    "unique strings, every call misses",
+    aggregateWorkloadGroup(workloadResults, "uncached"),
+    "Uncached workloads",
+    "working sets larger than both caches",
+    "uncached",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "input shape"),
     "Input shapes",
     "strings, arrays, objects, conditionals, geomean",
+    "cached",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "merge syntax"),
     "Tailwind syntax",
     "conflicts, modifiers, arbitrary forms, geomean",
+    "uncached",
   ),
   createChartRow(
-    aggregateWorkloadGroup(workloadResults, "cache"),
-    "Cache regimes",
-    "hot keys through full churn, geomean",
+    aggregateWorkloadGroup(workloadResults, "cache boundary"),
+    "Cache boundaries",
+    "working sets that fit only one cache or rotate generations",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "toggle"),
     "Conditional renders",
     "2, 3, and 5 argument state changes, geomean",
+    "cached",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "result reuse"),
     "Result reuse",
     "nested calls and keyed consumers, geomean",
+    "uncached",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "corpus"),
@@ -197,6 +205,7 @@ const chartRows: BenchChartRow[] = [
     getWorkloadResult(workloadResults, "grid", "dynamic"),
     "Live data grid",
     "12K cells, live arbitrary values",
+    "uncached",
   ),
   createChartRow(
     {
@@ -208,6 +217,7 @@ const chartRows: BenchChartRow[] = [
     },
     "Overall",
     `group-balanced mean of ${workloadGroups.length} groups and ${workloadResults.length} workloads`,
+    undefined,
     true,
   ),
 ];

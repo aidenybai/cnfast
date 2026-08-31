@@ -2,7 +2,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type FrozenNode } from "../../scripts/capture-pages";
 import { loadCorpora } from "../../scripts/lib/load-corpus";
-import { DEFAULT_GRID_COLUMN_COUNT, DEFAULT_GRID_ROW_COUNT } from "../constants";
+import {
+  DEFAULT_GRID_COLUMN_COUNT,
+  DEFAULT_GRID_ROW_COUNT,
+  UNCACHED_BENCHMARK_CASE_COUNT,
+} from "../constants";
 import { type ClassListArgs, type ClassNameImplementation, type Workload } from "./harness";
 import { createClassListReplay } from "../utils/create-class-list-replay";
 
@@ -26,27 +30,31 @@ export const microWorkloads = (): Workload[] => {
     "../../tests/tailwind-merge/tw-merge-benchmark-data.json",
   );
   const testCases = readJson<string[]>("../cases.json");
+  const uncachedTestCases: string[] = [];
+  for (let index = 0; index < UNCACHED_BENCHMARK_CASE_COUNT; index++) {
+    uncachedTestCases.push(`${testCases[index % testCases.length]} benchmark-miss-${index}`);
+  }
   const uniqueDatasetCallCount = new Set(
     dataset.map((row) => row.filter((value) => typeof value === "string").join(" ")),
   ).size;
 
   return [
     {
-      group: "micro",
+      group: "cached",
       name: "cached / re-render",
       meta: `(${dataset.length} calls, ${uniqueDatasetCallCount} unique)`,
       classListCases: dataset,
       run: createClassListReplay(dataset),
     },
     {
-      group: "micro",
+      group: "uncached",
       name: "uncached / merge engine",
-      meta: `(${testCases.length} unique)`,
-      classListCases: testCases.map((classList) => [classList]),
+      meta: `(${uncachedTestCases.length} unique)`,
+      classListCases: uncachedTestCases.map((classList) => [classList]),
       run: (implementation) => {
         let resultLengthSum = 0;
-        for (let index = 0; index < testCases.length; index++) {
-          resultLengthSum += implementation(testCases[index]!).length;
+        for (let index = 0; index < uncachedTestCases.length; index++) {
+          resultLengthSum += implementation(uncachedTestCases[index]!).length;
         }
         return resultLengthSum;
       },

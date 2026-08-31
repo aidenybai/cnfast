@@ -1,4 +1,4 @@
-import { MERGE_SYNTAX_CASE_COUNT } from "../constants";
+import { UNCACHED_BENCHMARK_CASE_COUNT } from "../constants";
 import { type ClassListArgs, type Workload } from "../lib/harness";
 import { createClassListReplay } from "../utils/create-class-list-replay";
 
@@ -9,7 +9,7 @@ const states = ["hover", "focus", "focus-visible", "active", "disabled"];
 
 const getClassListCases = (getClassList: (index: number) => string): ClassListArgs[] => {
   const classListCases: ClassListArgs[] = [];
-  for (let index = 0; index < MERGE_SYNTAX_CASE_COUNT; index++) {
+  for (let index = 0; index < UNCACHED_BENCHMARK_CASE_COUNT; index++) {
     classListCases.push([getClassList(index)]);
   }
   return classListCases;
@@ -18,7 +18,7 @@ const getClassListCases = (getClassList: (index: number) => string): ClassListAr
 const getWorkload = (name: string, classListCases: ClassListArgs[]): Workload => ({
   group: "merge syntax",
   name,
-  meta: `(${MERGE_SYNTAX_CASE_COUNT} unique misses)`,
+  meta: `(${UNCACHED_BENCHMARK_CASE_COUNT} unique misses)`,
   classListCases,
   run: createClassListReplay(classListCases),
 });

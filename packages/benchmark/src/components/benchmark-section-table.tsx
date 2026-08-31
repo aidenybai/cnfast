@@ -12,11 +12,7 @@ import { cn } from "@/lib/utils";
 import { getBenchmarkCellClassName } from "@/utils/get-benchmark-cell-class-name";
 import { sortBenchmarkRows } from "@/utils/sort-benchmark-rows";
 
-export const BenchmarkSectionTable = ({
-  hideHeading = false,
-  section,
-  sortState,
-}: BenchmarkSectionTableProps) => {
+export const BenchmarkSectionTable = ({ section, sortState }: BenchmarkSectionTableProps) => {
   const sortedRows = sortBenchmarkRows(section.rows, sortState);
   const libraryColumns = section.isCnfastFirst
     ? BENCHMARK_LIBRARY_COLUMNS
@@ -24,18 +20,9 @@ export const BenchmarkSectionTable = ({
 
   return (
     <section>
-      {hideHeading ? null : (
-        <>
-          <h2 className="text-lg font-semibold tracking-tight">{section.label}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
-        </>
-      )}
-      <div
-        className={cn(
-          "overflow-hidden rounded-lg border bg-background",
-          hideHeading ? "mt-0" : "mt-3",
-        )}
-      >
+      <h2 className="text-lg font-semibold tracking-tight">{section.label}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
+      <div className="mt-3 overflow-hidden rounded-lg border bg-background">
         <Table className="min-w-3xl">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
