@@ -1,8 +1,8 @@
 // Byte parity with class-variance-authority 0.7.1 holds for configs treated as frozen
 // after the first call and for plain-object props: own enumerable properties only.
 // Configs mutated between calls, inherited enumerable prop keys, and non-enumerable own
-// props can diverge from upstream (the memo reads props by key, so it cannot tell an
-// inherited value from an own one). None of these shapes occur in real usage; the
+// props can diverge from upstream (the cached paths read props by key, so they cannot
+// tell an inherited value from an own one). None of these shapes occur in real usage; the
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
 import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS, CVA_TABLE_MAX_SLOTS } from "./lib/constants.js";
