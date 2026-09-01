@@ -5,7 +5,7 @@
 // inherited value from an own one). None of these shapes occur in real usage; the
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
+import { CVA_FAST_MEMO_ROWS, CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -80,11 +80,16 @@ interface CompiledVariantConfig {
   memoKey0: string;
   memoKey1: string;
   memoWidth: number;
+  memoRows: number;
+  memoMinRows: number;
   scratchValues: unknown[];
   rowValues: unknown[];
   rowResults: string[];
-  filledRows: number;
+  ringRows: number;
+  writtenRows: number;
+  scanRows: number;
   victimRow: number;
+  didHitThisPass: boolean;
 }
 
 const normalizeVariantKey = (value: unknown): unknown =>
@@ -172,6 +177,12 @@ const compileVariantConfig = (
   const isMemoizable = naturalWidth <= CVA_MEMO_MAX_VALUE_SLOTS;
   const isFastLane = isMemoizable && relevantKeyCount <= 2;
   const width = isFastLane ? 4 : naturalWidth;
+  // Real sites cycle more prop shapes than eight rows hold (the 48-site replay
+  // has a median of 11 distinct shapes per site, and 38 of its 48 sites exceed
+  // eight), so the fast lane carries twice the rows and lets the ring shrink
+  // back to eight for sites that never hit. The wide lane stays at eight,
+  // where one row is up to four times as many slots.
+  const rowCount = isFastLane ? CVA_FAST_MEMO_ROWS : CVA_MEMO_ROWS;
   return {
     baseFragment,
     variantNames,
@@ -186,11 +197,16 @@ const compileVariantConfig = (
     memoKey0: relevantKeys[0] ?? "class",
     memoKey1: relevantKeys[1] ?? relevantKeys[0] ?? "class",
     memoWidth: isMemoizable ? width : 0,
+    memoRows: isMemoizable ? rowCount : 0,
+    memoMinRows: isMemoizable ? CVA_MEMO_ROWS : 0,
     scratchValues: isMemoizable ? createFilledArray<unknown>(width, undefined) : [],
-    rowValues: isMemoizable ? createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined) : [],
-    rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
-    filledRows: 0,
+    rowValues: isMemoizable ? createFilledArray<unknown>(rowCount * width, undefined) : [],
+    rowResults: isMemoizable ? createFilledArray(rowCount, "") : [],
+    ringRows: rowCount,
+    writtenRows: 0,
+    scanRows: 0,
     victimRow: 0,
+    didHitThisPass: true,
   };
 };
 
@@ -278,7 +294,7 @@ const resolveVariantClassName = (
 // value is vetted for primitiveness BEFORE the first row write, so a row moves
 // atomically from its old entry to the new one (the store loop itself runs no
 // user code) and a half-written row can never be served. That atomicity is
-// what lets filledRows bound the scan in place of per-row validity flags:
+// what lets a row count bound the scan in place of per-row validity flags:
 // every row below it holds a complete entry. The key is the resolved
 // relevant-prop vector (declared variants plus compound selector keys) plus
 // the class/className slots, so a memo hit returns the SAME string instance
@@ -302,8 +318,28 @@ const resolveMemoMiss = (
     const storeBase = victim * memoWidth;
     for (slot = 0; slot < memoWidth; slot++) rowValues[storeBase + slot] = scratchValues[slot];
     compiled.rowResults[victim] = resolvedClassName;
-    if (victim === compiled.filledRows) compiled.filledRows = victim + 1;
-    compiled.victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
+    let nextVictim = victim + 1;
+    if (victim === compiled.writtenRows) {
+      compiled.writtenRows = nextVictim;
+      compiled.scanRows = nextVictim;
+    }
+    if (nextVictim === compiled.ringRows) {
+      // The ring keeps its full width only while it is paying off. A whole pass
+      // that served no hit means the site cycles more shapes than the memo can
+      // hold, so the ring falls back to the narrow width and stops paying a
+      // full-width scan per doomed lookup; one hit restores it. The flag starts
+      // set so the fill-up pass, which cannot hit yet, never counts as a failed
+      // one. Rows outside the ring stay valid (a row is an immutable
+      // value-vector to result fact), so widening again serves them straight
+      // away.
+      const ringRows = compiled.didHitThisPass ? compiled.memoRows : compiled.memoMinRows;
+      const writtenRows = compiled.writtenRows;
+      compiled.ringRows = ringRows;
+      compiled.scanRows = writtenRows < ringRows ? writtenRows : ringRows;
+      compiled.didHitThisPass = false;
+      nextVictim = 0;
+    }
+    compiled.victimRow = nextVictim;
   }
   return resolvedClassName;
 };
@@ -321,7 +357,7 @@ const resolveThroughFastMemo = (
   const adhocClass = propRecord.class;
   const adhocClassName = propRecord.className;
   const rowValues = compiled.rowValues;
-  const rowLimit = compiled.filledRows;
+  const rowLimit = compiled.scanRows;
   for (let row = 0; row < rowLimit; row++) {
     const rowBase = row * 4;
     if (
@@ -330,6 +366,7 @@ const resolveThroughFastMemo = (
       adhocClass === rowValues[rowBase + 2] &&
       adhocClassName === rowValues[rowBase + 3]
     ) {
+      compiled.didHitThisPass = true;
       return compiled.rowResults[row]!;
     }
   }
@@ -356,12 +393,15 @@ const resolveThroughMemo = (
   scratchValues[relevantKeyCount + 1] = propRecord.className;
 
   const rowValues = compiled.rowValues;
-  const rowLimit = compiled.filledRows;
+  const rowLimit = compiled.scanRows;
   for (let row = 0; row < rowLimit; row++) {
     const rowBase = row * memoWidth;
     let slot = 0;
     while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
-    if (slot === memoWidth) return compiled.rowResults[row]!;
+    if (slot === memoWidth) {
+      compiled.didHitThisPass = true;
+      return compiled.rowResults[row]!;
+    }
   }
 
   return resolveMemoMiss(compiled, propRecord);

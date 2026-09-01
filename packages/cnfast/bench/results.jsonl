@@ -3320,3 +3320,4 @@
 {"timestamp":"2026-09-01T03:40:42.730Z","label":"chart","gitSha":"f840a13","group":"page","corpus":"unkey (452 calls)","cnfast":32427.358857575942,"reference":9136.951858344835,"speedup":3.5490346627972906}
 {"timestamp":"2026-09-01T03:40:42.730Z","label":"chart","gitSha":"f840a13","group":"grid","corpus":"200x60 stable (warm cache)","cnfast":2745.3792256741285,"reference":615.5106233532247,"speedup":4.460327931819677}
 {"timestamp":"2026-09-01T03:40:42.730Z","label":"chart","gitSha":"f840a13","group":"grid","corpus":"200x60 dynamic (live arbitrary -> misses)","cnfast":109.00237375834344,"reference":23.366356482662006,"speedup":4.664928134569202}
+{"timestamp":"2026-09-01T04:24:05.724Z","label":"all","gitSha":"9ea46a4","group":"grid","corpus":"200x60 dynamic (live arbitrary -> misses)","cnfast":111.50715184276166,"reference":23.096010154665336,"speedup":4.827983322489036}
