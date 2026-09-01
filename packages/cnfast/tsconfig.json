@@ -11,6 +11,6 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "include": ["src", "bench", "scripts", "vite.config.ts"],
+  "include": ["src", "bench", "scripts", "tests/cva", "vite.config.ts"],
   "exclude": ["**/node_modules/**", "dist", "**/*.test.ts"]
 }

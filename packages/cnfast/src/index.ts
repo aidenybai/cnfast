@@ -1,7 +1,20 @@
 export { cn, createCn, type ClassNameFunction } from "./core.js";
 export { createCallSiteCn } from "./call-site-cn.js";
 export { default } from "./core.js";
-export { clsx, type ClassValue, type ClassDictionary } from "./clsx.js";
+export { clsx, clsx as cx, type ClassValue, type ClassDictionary } from "./clsx.js";
+export {
+  cva,
+  type ClassProp,
+  type ClassPropKey,
+  type CvaConfig,
+  type CvaProps,
+  type CxOptions,
+  type CxReturn,
+  type OmitUndefined,
+  type StringToBoolean,
+  type VariantProps,
+  type VariantSchema,
+} from "./cva.js";
 export { twJoin, type ClassNameValue } from "./lib/tw-join.js";
 export { twMerge } from "./lib/tw-merge.js";
 export { createTailwindMerge, type TailwindMerge } from "./lib/create-tailwind-merge.js";
