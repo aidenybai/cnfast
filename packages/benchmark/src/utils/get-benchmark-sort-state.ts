@@ -1,7 +1,5 @@
 import { BENCHMARK_SORT_COLUMNS, DEFAULT_SORT_COLUMN, DEFAULT_SORT_DIRECTION } from "@/constants";
-
-const getFirstSearchParameter = (value: string | string[] | undefined): string | undefined =>
-  Array.isArray(value) ? value[0] : value;
+import { getFirstSearchParameter } from "@/utils/get-first-search-parameter";
 
 export const getBenchmarkSortState = (
   sectionId: string,

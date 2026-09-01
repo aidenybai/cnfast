@@ -7,10 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BENCHMARK_LIBRARY_COLUMNS } from "@/constants";
+import { BENCHMARK_LIBRARY_COLUMNS, BENCHMARK_ROWS_PER_PAGE } from "@/constants";
 import { cn } from "@/lib/utils";
 
 export const BenchmarkSectionTableSkeleton = ({ section }: BenchmarkSectionTableSkeletonProps) => {
+  const summaryRows = section.rows.filter((row) => row.isSummary);
+  const visibleRows = section.rows
+    .filter((row) => !row.isSummary)
+    .slice(0, BENCHMARK_ROWS_PER_PAGE);
+  visibleRows.push(...summaryRows);
+  const hasPagination = section.rows.length - summaryRows.length > BENCHMARK_ROWS_PER_PAGE;
   const libraryColumns = section.isCnfastFirst
     ? BENCHMARK_LIBRARY_COLUMNS
     : [...BENCHMARK_LIBRARY_COLUMNS].reverse();
@@ -49,7 +55,7 @@ export const BenchmarkSectionTableSkeleton = ({ section }: BenchmarkSectionTable
             </TableRow>
           </TableHeader>
           <TableBody>
-            {section.rows.map((row) => (
+            {visibleRows.map((row) => (
               <TableRow className={cn(row.isSummary && "bg-muted/40")} key={row.id}>
                 <TableCell className="border-r bg-background px-2 py-2.5">
                   <div className="flex flex-col gap-0.5">
@@ -75,6 +81,18 @@ export const BenchmarkSectionTableSkeleton = ({ section }: BenchmarkSectionTable
           </TableBody>
         </Table>
       </div>
+      {hasPagination ? (
+        <div
+          aria-hidden
+          className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <Skeleton className="h-5 w-40" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-16" />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 };

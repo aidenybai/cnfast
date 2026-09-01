@@ -8,6 +8,7 @@ import { BENCHMARK_COMMIT_BASE_URL } from "@/constants";
 import generatedBenchmarkData from "@/generated/benchmark-data.json";
 import { createPerformanceSection } from "@/utils/create-performance-section";
 import { formatBenchmarkDate } from "@/utils/format-benchmark-date";
+import { getBenchmarkPage } from "@/utils/get-benchmark-page";
 import { getBenchmarkSortState } from "@/utils/get-benchmark-sort-state";
 
 const benchmarkReport: BenchmarkReport = latestBenchmarkReport;
@@ -19,6 +20,7 @@ const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps)
 
   return (
     <BenchmarkSectionTable
+      page={getBenchmarkPage(performanceSection.id, resolvedSearchParams)}
       section={performanceSection}
       sortState={getBenchmarkSortState(performanceSection.id, resolvedSearchParams)}
     />
@@ -31,6 +33,7 @@ const RelatedBenchmarkTables = async ({ searchParams }: BenchmarkTablesProps) =>
   return performanceSection.relatedSections?.map((relatedSection) => (
     <BenchmarkSectionTable
       key={relatedSection.id}
+      page={getBenchmarkPage(relatedSection.id, resolvedSearchParams)}
       section={relatedSection}
       sortState={getBenchmarkSortState(relatedSection.id, resolvedSearchParams)}
     />
