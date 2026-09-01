@@ -7,24 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BENCHMARK_LIBRARY_COLUMNS, BENCHMARK_ROWS_PER_PAGE } from "@/constants";
+import { BENCHMARK_LIBRARY_COLUMNS } from "@/constants";
 import { cn } from "@/lib/utils";
-import { createBenchmarkPageUrl } from "@/utils/create-benchmark-page-url";
 import { getBenchmarkCellClassName } from "@/utils/get-benchmark-cell-class-name";
 import { sortBenchmarkRows } from "@/utils/sort-benchmark-rows";
 
-const PAGINATION_LINK_CLASS_NAME =
-  "rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
-
-export const BenchmarkSectionTable = ({ page, section, sortState }: BenchmarkSectionTableProps) => {
+export const BenchmarkSectionTable = ({ section, sortState }: BenchmarkSectionTableProps) => {
   const sortedRows = sortBenchmarkRows(section.rows, sortState);
-  const summaryRows = sortedRows.filter((row) => row.isSummary);
-  const paginatedRows = sortedRows.filter((row) => !row.isSummary);
-  const pageCount = Math.max(1, Math.ceil(paginatedRows.length / BENCHMARK_ROWS_PER_PAGE));
-  const currentPage = Math.min(page, pageCount);
-  const pageStartIndex = (currentPage - 1) * BENCHMARK_ROWS_PER_PAGE;
-  const visibleRows = paginatedRows.slice(pageStartIndex, pageStartIndex + BENCHMARK_ROWS_PER_PAGE);
-  visibleRows.push(...summaryRows);
   const libraryColumns = section.isCnfastFirst
     ? BENCHMARK_LIBRARY_COLUMNS
     : [...BENCHMARK_LIBRARY_COLUMNS].reverse();
@@ -98,7 +87,7 @@ export const BenchmarkSectionTable = ({ page, section, sortState }: BenchmarkSec
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visibleRows.map((row) => (
+            {sortedRows.map((row) => (
               <TableRow className={cn(row.isSummary && "bg-muted/40 font-medium")} key={row.id}>
                 <TableCell className="border-r bg-background px-2 py-2.5">
                   <div className="flex flex-col gap-0.5">
@@ -157,42 +146,6 @@ export const BenchmarkSectionTable = ({ page, section, sortState }: BenchmarkSec
           </TableBody>
         </Table>
       </div>
-      {pageCount > 1 ? (
-        <nav
-          aria-label={`${section.label} pagination`}
-          className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {pageCount} · {BENCHMARK_ROWS_PER_PAGE} rows per page
-          </span>
-          <div className="flex items-center gap-2">
-            {currentPage > 1 ? (
-              <a
-                className={PAGINATION_LINK_CLASS_NAME}
-                href={createBenchmarkPageUrl(section.id, currentPage - 1, sortState)}
-              >
-                Previous
-              </a>
-            ) : (
-              <span aria-disabled className={cn(PAGINATION_LINK_CLASS_NAME, "opacity-50")}>
-                Previous
-              </span>
-            )}
-            {currentPage < pageCount ? (
-              <a
-                className={PAGINATION_LINK_CLASS_NAME}
-                href={createBenchmarkPageUrl(section.id, currentPage + 1, sortState)}
-              >
-                Next
-              </a>
-            ) : (
-              <span aria-disabled className={cn(PAGINATION_LINK_CLASS_NAME, "opacity-50")}>
-                Next
-              </span>
-            )}
-          </div>
-        </nav>
-      ) : null}
     </section>
   );
 };

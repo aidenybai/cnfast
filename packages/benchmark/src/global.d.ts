@@ -92,7 +92,6 @@ interface BenchmarkSourceUrlMap {
 }
 
 interface BenchmarkSectionTableProps {
-  page: number;
   section: BenchmarkSection;
   sortState: BenchmarkSortState;
 }
@@ -113,7 +112,6 @@ interface BenchmarkSearchParams {
   section?: string | string[];
   column?: string | string[];
   direction?: string | string[];
-  page?: string | string[];
 }
 
 interface BenchmarkPageProps {
