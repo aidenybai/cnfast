@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs [**25× faster**](https://cn.aidenybai.com/) than `clsx + tailwind-merge` across 58 real-world component repositories, with byte-identical output. Same API, no code changes.
+cnfast runs [**25× faster**](https://cn.aidenybai.com/) than `clsx + tailwind-merge` across 58 real-world repositories, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
