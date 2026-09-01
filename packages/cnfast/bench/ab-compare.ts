@@ -161,9 +161,7 @@ const loadImplementation = async (bundlePath: string): Promise<ClassNameImplemen
   return implementation as ClassNameImplementation;
 };
 
-// Two textually identical timers so each `implementation(...)` call site keeps
-// its own inline cache: a single shared timer hands the first-seen instance the
-// IC fast slot and biases an A/A comparison by ~1% under JSC.
+// Separate call sites prevent JSC inline-cache bias.
 const timeBaseBlock = (
   implementation: ClassNameImplementation,
   rows: ClassValue[][],
@@ -213,8 +211,7 @@ const measureLane = (
   const runCandidateBlock = (): TimedBlock =>
     timeCandidateBlock(candidateImplementation, rows, orders, blockReplayCount);
 
-  // Warmup alternates the first runner exactly like the measured quads do:
-  // JSC hands a consistent edge to whichever instance runs first overall.
+  // Alternate the first runner to neutralize JSC first-run bias.
   for (let warmupIndex = 0; warmupIndex < WARMUP_QUAD_COUNT; warmupIndex++) {
     const warmupOuter = warmupIndex % 2 === 0 ? runBaseBlock : runCandidateBlock;
     const warmupInner = warmupIndex % 2 === 0 ? runCandidateBlock : runBaseBlock;
@@ -270,9 +267,7 @@ const invertMeasurement = (measurement: LaneMeasurement): LaneMeasurement => ({
 
 const runChild = async (argv: string[]): Promise<void> => {
   const options = parseChildOptions(argv);
-  // Mirrored children run the whole experiment with the modules' roles
-  // swapped and report inverted ratios, so structural in-process asymmetries
-  // (first-executed advantage, IC ordering) cancel in the pooled median.
+  // Mirroring roles cancels in-process execution-order bias.
   const firstRoleBundlePath = options.mirrorRoles
     ? options.candidateBundlePath
     : options.baseBundlePath;
@@ -345,9 +340,7 @@ const summarizeLane = (
   lane: BenchmarkLane,
   measurements: LaneMeasurement[],
 ): LaneComparison => {
-  // A fresh process is the sampling unit: the two loaded instances get
-  // process-wide JIT/heap-layout luck (~±1-2%), so quads within a process are
-  // correlated and pooling them would understate the CI.
+  // Quads within one process share JIT and heap-layout bias.
   const processRatios: number[] = [];
   const baseNsPerCallSamples: number[] = [];
   const candidateNsPerCallSamples: number[] = [];

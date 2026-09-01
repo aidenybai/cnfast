@@ -46,7 +46,6 @@ const VALUE_KEY_POOL = [
   "destructive",
 ];
 
-// Distribution thresholds mirror the 58-repository corpus.
 const generateSite = (siteIndex: number): CvaSiteDefinition => {
   const base = random.getNext() < 0.9 ? pickToken(random) : [pickToken(random), pickToken(random)];
   const shapeRoll = random.getNext();
@@ -120,7 +119,6 @@ for (let siteIndex = 0; siteIndex < CVA_DATASET_SITE_COUNT; siteIndex++) {
   siteDefinitions.push(generateSite(siteIndex));
 }
 
-// Call-shape thresholds mirror the 58-repository corpus.
 const generateCallRow = (siteIndex: number): CvaCallRow => {
   const siteDefinition = siteDefinitions[siteIndex]!;
   if (random.getNext() < 0.08) return [siteIndex];

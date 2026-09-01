@@ -53,9 +53,7 @@ export const getDefaultConfig = () => {
   const themeEase = createThemeReference("ease");
   const themeAnimate = createThemeReference("animate");
 
-  /**
-   * Each scale returns a new array so mutating one class group does not change another.
-   */
+  // Return fresh arrays so mutations cannot leak across class groups.
   const scaleBreak = () =>
     ["auto", "avoid", "all", "avoid-page", "page", "left", "right", "column"] as const;
   const scalePosition = () =>

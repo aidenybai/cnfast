@@ -50,63 +50,6 @@ export interface MergeClassListEngine {
   ): string;
 }
 
-/**
- * `mergeClassList` resolves conflicts in a space-separated class string, keeping the last
- * (rightmost) class per conflict group. Output is byte-identical to tailwind-merge for every
- * input.
- *
- * High-level overview of the algorithm:
- *
- * 1. Split and hash in one scan.
- *
- * One charCodeAt pass over the input records each token's start offset, end offset, and FNV-1a
- * hash into reused scratch arrays. No token is sliced out of the input.
- *
- *     input:   "p-2 text-sm hover:p-3 p-4"
- *     starts:  [0,   4,      12,       22]
- *     ends:    [3,   11,     21,       25]
- *     hashes:  [h0,  h1,     h2,       h3]
- *
- * 2. Resolve and claim, right to left.
- *
- * The rightmost class per conflict group wins, so the scan runs backwards: each token claims
- * its own conflict key plus every key it overrides, and an earlier token whose own key was
- * already claimed is dropped. A modifier prefixes every key, so `hover:p-3` and `p-4` never
- * collide.
- *
- *     K: keep flags, one per token; . = undecided
- *
- *     "p-4"        claims p and its overrides px, py, ps, pe, pt, pr, pb, pl
- *                                                                 K: [. . . 1]
- *     "hover:p-3"  claims hover:p, hover:px, hover:py, ...        K: [. . 1 1]
- *     "text-sm"    claims font-size, leading                      K: [. 1 1 1]
- *     "p-2"        its key p is already claimed -> drop           K: [0 1 1 1]
- *
- * Conflict keys are interned to integer ids once, and claims are generation stamps in an
- * Int32Array indexed by those ids (`claimedGeneration[classId] = generation`). Starting a new
- * merge bumps the generation counter, which unclaims every key at once: no allocation, no
- * clearing.
- *
- * Each token resolves to its (classId, conflict range) through the token intern table. The
- * table is open-addressed and probed with the hash from step 1; a candidate slot is verified by
- * comparing char codes directly against the input range, so a hit slices nothing and hashes no
- * string. This matters because the engine caches a string's hash on the string object itself:
- * a fresh `classList.slice(...)` would be re-hashed on every single merge, and that re-hashing
- * was the largest measured cost of the whole miss path. Only a token found in neither table
- * generation is sliced and fully computed.
- *
- * 3. Rebuild, left to right.
- *
- * When nothing was dropped and the separators were already single spaces, the input string
- * itself is returned. Otherwise every contiguous run of kept tokens becomes one
- * `classList.slice` call:
- *
- *     K:      [0 1 1 1]
- *     result: classList.slice(4, 25)   // "text-sm hover:p-3 p-4"
- *
- * One flat slice per run, instead of a cons-string chain built token by token, is also cheaper
- * for the whole-string cache to hash downstream.
- */
 export const createMergeClassList = (config: AnyConfig): MergeClassListEngine => {
   const sortModifiers = createSortModifiers(config);
   const postfixLookupClassGroupIds = createPostfixLookupClassGroupIds(config);

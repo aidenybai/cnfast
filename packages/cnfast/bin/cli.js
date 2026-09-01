@@ -5,7 +5,7 @@ if (module.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
   try {
     module.enableCompileCache();
   } catch {
-    // Compile caching is optional, so startup can continue when it fails.
+    // Compile caching is optional.
   }
 }
 

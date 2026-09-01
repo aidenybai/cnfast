@@ -22,8 +22,7 @@ const rewriteImportClause = (rawClause: string, source: string): string | null =
     .replace(/,\s*$/, "")
     .trim();
 
-  // `import type { ... }` is a named type-only import, not a default import
-  // called "type" - only the module source needs rewriting.
+  // Treat `import type { ... }` as a named type-only import.
   if (bracesMatch && defaultPart === "type") return null;
 
   if (defaultPart === "" || /\s/.test(defaultPart)) return null;

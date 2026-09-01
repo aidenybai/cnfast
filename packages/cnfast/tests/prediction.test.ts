@@ -11,14 +11,6 @@ const CACHE_TRIM_INPUT_COUNT = 120;
 const CACHE_ROTATION_INPUT_COUNT = 2_500;
 const CHURN_INPUT_COUNT = 60;
 
-// After trimBucket relocates entries, a prediction's stored position can point
-// at a numeric bookkeeping slot (a restLength header or an entryId) rather than
-// the entry it was armed on. A truthy NUMBER argument (clsx accepts numbers)
-// can strict-equal that numeric slot, so a probe that treated its identity
-// compares as type guards would return another entry's bytes. This layout
-// drives that exact misalignment: G's entryId slot lands where the prediction
-// reads its restLength, and the overlay entry's restLength slot (sized to
-// `tailRestLength`) lands where a numeric argument is compared.
 const STALE_TRIM_ANCHOR = "stale-anchor";
 const STALE_TRIM_FILLER_ENTRY_COUNT = 44;
 type StaleTrimCn = (...args: unknown[]) => string;
@@ -120,9 +112,6 @@ describe("cn: successor prediction staleness", () => {
   });
 
   it("rejects numeric args that alias a stale prediction's numeric slots", () => {
-    // Ported PoCs: a stale prediction after trimBucket + a truthy NUMBER arg
-    // would return another entry's bytes at each probe site (arity 2, 3, >=4)
-    // if the identity compares were trusted as type guards.
     const entryProbeCn = createCn((config) => config) as StaleTrimCn;
     driveStaleTrimLayout(entryProbeCn, 2, 1);
     expect(entryProbeCn(1, "h1", 0, STALE_TRIM_ANCHOR)).toBe("1 h1 stale-anchor");
@@ -137,9 +126,6 @@ describe("cn: successor prediction staleness", () => {
   });
 
   it("stays byte-correct across seeded numeric-arg stale-probe attacks", () => {
-    // The overlay entry's restLength slot is sized to the numeric attack value,
-    // so an unfixed two-arg probe would return the overlay's rest string. Fixed
-    // src must reject the numeric first arg and merge it as a class token.
     const random = createSeededRandom(0xf00dfeed);
     for (let round = 0; round < 40; round++) {
       const numericValue = 1 + Math.floor(random.getNext() * 8);

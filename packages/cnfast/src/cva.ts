@@ -1,6 +1,3 @@
-// Parity assumes configs are immutable after the first call and props are plain objects.
-// Mutated configs and inherited or non-enumerable props can differ from upstream; none
-// appeared in the 58-repository corpus.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
 import {
   CVA_MEMO_FAST_LANE_MAX_PROP_NAMES,
@@ -108,8 +105,6 @@ interface CompiledCvaConfig {
   memoScanRowCount: number;
   nextMemoRowIndex: number;
   didMemoHitThisPass: boolean;
-  // The combination table is held flat rather than behind a nested object: the extra
-  // pointer chase per call measured 1.5% on V8.
   combinationSlotCount: number;
   combinationStatesByKey: Record<string, number>[];
   combinationStateCounts: number[];
@@ -145,9 +140,6 @@ const compileCompoundVariant = (compoundVariant: RuntimeCvaProps): CompiledCompo
   };
 };
 
-// Without compound variants, class-less output depends only on resolved variant keys.
-// A mixed-radix slot covers each declared key, the default, and null suppression; results
-// are interned lazily so component creation stays allocation-light.
 const compileCombinationTable = (
   variantNames: string[],
   variantClassNamesByKey: Record<string, string | undefined>[],
@@ -159,9 +151,7 @@ const compileCombinationTable = (
   let combinationSlotCount = 1;
   for (let variantIndex = 0; variantIndex < variantNames.length; variantIndex++) {
     const defaultVariantKey = defaultVariantKeys[variantIndex];
-    // Coercing a default that carries user code (an object or function with a custom
-    // toString, or a symbol, which is not a string key at all) to its lookup key here would
-    // move an observable step off the call that actually falls back to it.
+    // Preserve user-defined coercion at call time.
     if (
       defaultVariantKey !== null &&
       (typeof defaultVariantKey === "object" ||
@@ -193,8 +183,6 @@ const compileCombinationTable = (
   };
 };
 
-// Upstream re-reads configs per call, but the corpus had no post-creation mutation.
-// Flattening static class values once keeps the call path allocation-free.
 const compileCvaConfig = (
   base: ClassValue,
   config: RuntimeCvaConfig | null | undefined,
@@ -217,7 +205,6 @@ const compileCvaConfig = (
     defaultVariantKeys.push(normalizeVariantKey(defaultVariants?.[variantName]));
   }
 
-  // Upstream ignores compound variants when the variants field is absent.
   const compiledCompoundVariants: CompiledCompoundVariant[] = [];
   if (variants != null && config?.compoundVariants) {
     for (const compoundVariant of config.compoundVariants) {
@@ -225,9 +212,7 @@ const compileCvaConfig = (
     }
   }
 
-  // A spread object (not Object.create(null)) on purpose: upstream matches
-  // compounds against `{...defaultVariants, ...props}[key]`, so a selector key
-  // like "toString" must resolve through Object.prototype, not to undefined.
+  // Object.prototype keys must remain visible to compound selectors.
   const compoundDefaultValues: Record<string, unknown> = { ...defaultVariants };
 
   const memoPropNames: string[] = [];
@@ -244,9 +229,6 @@ const compileCvaConfig = (
     }
   }
 
-  // The fast lane pads up to two prop names into [name0, name1, class, className].
-  // Repeating a missing name lets one unrolled comparison hold every value in locals.
-  // Both lanes start wide; the memo ring narrows itself when the extra rows do not pay off.
   const memoPropCount = memoPropNames.length;
   const naturalMemoValueCountPerRow = memoPropCount + 2;
   const isMemoizable = naturalMemoValueCountPerRow <= CVA_MEMO_VALUE_SLOTS_PER_ROW;
@@ -254,8 +236,6 @@ const compileCvaConfig = (
   const memoValueCountPerRow = isFastLane
     ? CVA_MEMO_FAST_LANE_SLOTS_PER_ROW
     : naturalMemoValueCountPerRow;
-  // A compound variant matches on raw values rather than lookup keys, so its answer space
-  // is not enumerable; the table also leans on the memo for its fallbacks.
   const combinationTable =
     compiledCompoundVariants.length === 0 && isMemoizable
       ? compileCombinationTable(variantNames, variantClassNamesByKey, defaultVariantKeys)
@@ -315,14 +295,8 @@ const resolveVariantClassName = (
     const propValue = props === undefined ? undefined : props[variantNames[variantIndex]!];
     if (propValue === null) continue;
     const normalizedVariantKey = normalizeVariantKey(propValue);
-    // `|| default` mirrors upstream falsyToString fall-through: "" and NaN
-    // fall back to the default key, while "false"/"0" (already normalized
-    // from false/0) stay and select their own keys.
     const variantKey = normalizedVariantKey || compiledConfig.defaultVariantKeys[variantIndex];
-    // Own keys were pre-flattened into the table (resolveClassValue never
-    // yields undefined, so undefined always means "not an own key"); the miss
-    // falls back to a raw property read on the original variant object,
-    // preserving upstream's prototype-chain and ToPropertyKey semantics.
+    // Preserve prototype-chain and ToPropertyKey behavior on uncommon keys.
     let variantClassName =
       compiledConfig.variantClassNamesByKey[variantIndex]![variantKey as string];
     if (variantClassName === undefined) {
@@ -343,8 +317,6 @@ const resolveVariantClassName = (
     let doesCompoundVariantMatch = true;
     for (let selectorIndex = 0; selectorIndex < selectorKeys.length; selectorIndex++) {
       const selectorKey = selectorKeys[selectorIndex]!;
-      // An own prop with a non-undefined value (null included) overrides the
-      // default, exactly like upstream's {...defaults, ...propsWithoutUndefined}.
       const selectedValue =
         props !== undefined &&
         hasOwnPropertyCheck.call(props, selectorKey) &&
@@ -383,10 +355,6 @@ const resolveVariantClassName = (
   return className;
 };
 
-// Only primitive prop vectors are memoized because objects can mutate without changing
-// identity. Candidates are vetted before the first write, so written-row count alone bounds
-// the scan and no partially overwritten row can be served. Stable output also preserves
-// wrapping cn() cache hits.
 const resolveMemoMiss = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
@@ -415,9 +383,6 @@ const resolveMemoMiss = (
       compiledConfig.memoScanRowCount = followingMemoRowIndex;
     }
     if (followingMemoRowIndex === compiledConfig.memoRingRowCount) {
-      // A hitless pass narrows the ring to avoid doomed full-width scans; one hit widens it.
-      // The flag starts set so initial fill is not mistaken for a failed pass. Rows outside
-      // the narrow ring remain valid and are immediately reusable after widening.
       const memoRingRowCount = compiledConfig.didMemoHitThisPass
         ? CVA_MEMO_ROW_COUNT
         : CVA_MEMO_NARROW_ROW_COUNT;
@@ -433,9 +398,6 @@ const resolveMemoMiss = (
   return resolvedClassName;
 };
 
-// Holding the four reads in locals keeps the hit path off the candidate vector entirely,
-// which roughly halves the hit cost on both engines. The vector is filled only once the
-// scan falls through to the outlined miss.
 const resolveThroughFastMemo = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
@@ -500,7 +462,6 @@ const resolveThroughWideMemo = (
   return resolveMemoMiss(compiledConfig, propRecord);
 };
 
-// Combination-table fallbacks dispatch here; table-less configs call each lane directly.
 const resolveThroughMemo = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
@@ -509,8 +470,6 @@ const resolveThroughMemo = (
     ? resolveThroughFastMemo(compiledConfig, propRecord)
     : resolveThroughWideMemo(compiledConfig, propRecord);
 
-// State reads use the same property-key coercion as upstream. Unknown, symbol, and inherited
-// keys have no table state and fall back to the raw lookup path.
 const resolveThroughCombinationTable = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
@@ -518,9 +477,6 @@ const resolveThroughCombinationTable = (
   const additionalClass = propRecord.class;
   const additionalClassName = propRecord.className;
   if (additionalClass !== undefined || additionalClassName !== undefined) {
-    // Class values are unbounded, so they are never tabled. A non-null object one cannot be
-    // memoized either: rows hold primitives only, so neither the row scan nor the store
-    // could succeed.
     if (
       (typeof additionalClass === "object" && additionalClass !== null) ||
       (typeof additionalClassName === "object" && additionalClassName !== null)
