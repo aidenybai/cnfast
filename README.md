@@ -1,4 +1,5 @@
-> Check out [`cn`](https://github.com/shadcn-ui/cn) by [shadcn](https://ui.shadcn.com/) for an even _**faster**_ `cn`
+> [!NOTE]
+> Check out [`cn`](https://github.com/shadcn-ui/cn) by [shadcn](https://ui.shadcn.com/) for an even _**faster**_ `cn` package. `cnfast` will no longer be maintained in favor of `cn`. I recommend you go use that package instead!
 
 # cnfast
 
