@@ -78,6 +78,8 @@
     "bench:setup": "bun scripts/extract-cases.ts && bun scripts/capture-pages.ts",
     "bench:parity": "bun scripts/verify-parity.ts",
     "bench:callsite": "bun bench/call-site-replay.bench.ts",
+    "bench:cva": "bun bench/cva-replay.bench.ts",
+    "bench:cva:data": "bun bench/generate-cva-datasets.ts",
     "bench:corpus": "bun bench/corpus.bench.ts",
     "bench:replay": "bun bench/page-replay.bench.ts",
     "bench:hard": "bun bench/hard-task.bench.ts",
