@@ -1,6 +1,7 @@
 import { runSuite } from "./lib/harness";
 import { corpusWorkloads, gridWorkloads, microWorkloads, pageWorkloads } from "./lib/workloads";
 import { getCacheWorkloads } from "./workloads/cache-workloads";
+import { getCvaWorkloads } from "./workloads/cva-workloads";
 import { getInputShapeWorkloads } from "./workloads/input-shape-workloads";
 import { getMergeSyntaxWorkloads } from "./workloads/merge-syntax-workloads";
 import { getResultReuseWorkloads } from "./workloads/result-reuse-workloads";
@@ -13,6 +14,7 @@ const workloads = [
   ...getCacheWorkloads(),
   ...getToggleWorkloads(),
   ...getResultReuseWorkloads(),
+  ...getCvaWorkloads(),
   ...corpusWorkloads(),
   ...pageWorkloads(),
   ...gridWorkloads(),

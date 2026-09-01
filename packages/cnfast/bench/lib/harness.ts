@@ -17,6 +17,11 @@ export interface ClassNameImplementation {
   (...classListArguments: ClassListArgs): string;
 }
 
+export interface WorkloadImplementationPair {
+  cnfast: ClassNameImplementation;
+  reference: ClassNameImplementation;
+}
+
 interface BenchmarkTask {
   result?: unknown;
 }
@@ -33,6 +38,8 @@ export interface ImplementationBenchmarkResult {
 }
 
 export const referenceCn: ClassNameImplementation = (...inputs) => twMerge(clsx(inputs));
+
+const defaultImplementations: WorkloadImplementationPair = { cnfast: cn, reference: referenceCn };
 
 export const BENCHMARK_ATTEMPT_COUNT = Number(
   process.env.BENCH_BEST_OF ?? DEFAULT_BENCHMARK_ATTEMPT_COUNT,
@@ -70,6 +77,8 @@ export interface Workload {
   name: string;
   meta?: string;
   classListCases?: ClassListArgs[];
+  /** Overrides the cn/referenceCn pair for workloads that bench another API (e.g. cva). */
+  implementations?: WorkloadImplementationPair;
   run: (implementation: ClassNameImplementation) => number;
 }
 
@@ -84,6 +93,7 @@ export interface WorkloadResult {
 
 export const runImplementationBenchmark = async (
   runWorkload: (implementation: ClassNameImplementation) => number,
+  implementations: WorkloadImplementationPair = defaultImplementations,
 ): Promise<ImplementationBenchmarkResult> => {
   let cnfast = 0;
   let reference = 0;
@@ -94,12 +104,12 @@ export const runImplementationBenchmark = async (
     });
     const addCnfast = (): void => {
       bench.add("cnfast", () => {
-        resultLengthSink += runWorkload(cn);
+        resultLengthSink += runWorkload(implementations.cnfast);
       });
     };
     const addReference = (): void => {
       bench.add("reference", () => {
-        resultLengthSink += runWorkload(referenceCn);
+        resultLengthSink += runWorkload(implementations.reference);
       });
     };
     if (attempt % 2 === 0) {
@@ -117,7 +127,10 @@ export const runImplementationBenchmark = async (
 };
 
 const runWorkloadBenchmark = async (workload: Workload): Promise<WorkloadResult> => {
-  const { cnfast, reference } = await runImplementationBenchmark(workload.run);
+  const { cnfast, reference } = await runImplementationBenchmark(
+    workload.run,
+    workload.implementations,
+  );
   return {
     group: workload.group,
     name: workload.name,
@@ -197,11 +210,12 @@ const verifyWorkloads = (workloads: Workload[]): void => {
   let knownDivergenceCount = 0;
   for (const workload of workloads) {
     let hasKnownDivergence = false;
+    const implementations = workload.implementations ?? defaultImplementations;
     if (workload.classListCases) {
       for (let index = 0; index < workload.classListCases.length; index++) {
         const classListArguments = workload.classListCases[index]!;
-        const cnfastResult = cn(...classListArguments);
-        const referenceResult = referenceCn(...classListArguments);
+        const cnfastResult = implementations.cnfast(...classListArguments);
+        const referenceResult = implementations.reference(...classListArguments);
         if (cnfastResult !== referenceResult) {
           if (knownDivergentInputs.has(JSON.stringify(classListArguments))) {
             knownDivergenceCount++;
@@ -220,8 +234,8 @@ const verifyWorkloads = (workloads: Workload[]): void => {
     // A divergent case makes the checksums differ by construction; every case in such a
     // workload was already compared per call above, which is the stronger check.
     if (hasKnownDivergence) continue;
-    const cnfastChecksum = workload.run(cn);
-    const referenceChecksum = workload.run(referenceCn);
+    const cnfastChecksum = workload.run(implementations.cnfast);
+    const referenceChecksum = workload.run(implementations.reference);
     if (cnfastChecksum !== referenceChecksum) {
       throw new Error(
         `${workload.group}/${workload.name} checksum differs: ` +
