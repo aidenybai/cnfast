@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { cva as referenceCva } from "class-variance-authority";
 import { cn, cva } from "../src/index.js";
-import { CVA_MEMO_ROWS } from "../src/lib/constants.js";
+import { CVA_MEMO_ROW_COUNT } from "../src/lib/constants.js";
 import {
   type CvaCallRow,
   type CvaComponent,
@@ -129,7 +129,7 @@ const memoMissChurnRows: CvaCallRow[] = (() => {
       comboRows.push([0, { variant, size }]);
     }
   }
-  if (comboRows.length <= CVA_MEMO_ROWS) throw new Error("churn working set fits the memo");
+  if (comboRows.length <= CVA_MEMO_ROW_COUNT) throw new Error("churn working set fits the memo");
   return buildRepeatedRows(comboRows, 10);
 })();
 

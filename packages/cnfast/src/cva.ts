@@ -2,7 +2,7 @@
 // Mutated configs and inherited or non-enumerable props can differ from upstream; none
 // appeared in the 58-repository corpus.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
+import { CVA_MEMO_ROW_COUNT, CVA_MEMO_VALUE_SLOTS_PER_ROW } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -79,7 +79,7 @@ interface CompiledCvaConfig {
   compoundDefaultValues: Record<string, unknown>;
   memoPropNames: string[];
   defaultClassName: string | null;
-  memoValueCount: number;
+  memoValueCountPerRow: number;
   memoCandidateValues: unknown[];
   memoizedValues: unknown[];
   memoRowValidity: boolean[];
@@ -166,8 +166,8 @@ const compileCvaConfig = (
     }
   }
 
-  const memoValueCount = memoPropNames.length + 2;
-  const isMemoizable = memoValueCount <= CVA_MEMO_MAX_VALUE_SLOTS;
+  const memoValueCountPerRow = memoPropNames.length + 2;
+  const isMemoizable = memoValueCountPerRow <= CVA_MEMO_VALUE_SLOTS_PER_ROW;
   return {
     baseFragment,
     variantNames,
@@ -178,13 +178,15 @@ const compileCvaConfig = (
     compoundDefaultValues,
     memoPropNames,
     defaultClassName: null,
-    memoValueCount: isMemoizable ? memoValueCount : 0,
-    memoCandidateValues: isMemoizable ? createFilledArray<unknown>(memoValueCount, undefined) : [],
-    memoizedValues: isMemoizable
-      ? createFilledArray<unknown>(CVA_MEMO_ROWS * memoValueCount, undefined)
+    memoValueCountPerRow: isMemoizable ? memoValueCountPerRow : 0,
+    memoCandidateValues: isMemoizable
+      ? createFilledArray<unknown>(memoValueCountPerRow, undefined)
       : [],
-    memoRowValidity: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
-    memoizedResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
+    memoizedValues: isMemoizable
+      ? createFilledArray<unknown>(CVA_MEMO_ROW_COUNT * memoValueCountPerRow, undefined)
+      : [],
+    memoRowValidity: isMemoizable ? createFilledArray(CVA_MEMO_ROW_COUNT, false) : [],
+    memoizedResults: isMemoizable ? createFilledArray(CVA_MEMO_ROW_COUNT, "") : [],
     nextMemoRowIndex: 0,
   };
 };
@@ -198,22 +200,23 @@ const resolveVariantClassName = (
   let className = compiledConfig.baseFragment;
 
   const variantNames = compiledConfig.variantNames;
-  for (let index = 0; index < variantNames.length; index++) {
-    const propValue = props === undefined ? undefined : props[variantNames[index]!];
+  for (let variantIndex = 0; variantIndex < variantNames.length; variantIndex++) {
+    const propValue = props === undefined ? undefined : props[variantNames[variantIndex]!];
     if (propValue === null) continue;
     const normalizedVariantKey = normalizeVariantKey(propValue);
     // `|| default` mirrors upstream falsyToString fall-through: "" and NaN
     // fall back to the default key, while "false"/"0" (already normalized
     // from false/0) stay and select their own keys.
-    const variantKey = normalizedVariantKey || compiledConfig.defaultVariantKeys[index];
+    const variantKey = normalizedVariantKey || compiledConfig.defaultVariantKeys[variantIndex];
     // Own keys were pre-flattened into the table (resolveClassValue never
     // yields undefined, so undefined always means "not an own key"); the miss
     // falls back to a raw property read on the original variant object,
     // preserving upstream's prototype-chain and ToPropertyKey semantics.
-    let variantClassName = compiledConfig.variantClassNamesByKey[index]![variantKey as string];
+    let variantClassName =
+      compiledConfig.variantClassNamesByKey[variantIndex]![variantKey as string];
     if (variantClassName === undefined) {
       variantClassName = resolveClassValue(
-        compiledConfig.variantDefinitions[index]![variantKey as string],
+        compiledConfig.variantDefinitions[variantIndex]![variantKey as string],
       );
     }
     if (variantClassName) {
@@ -276,44 +279,45 @@ const resolveThroughMemo = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
 ): string => {
-  const memoValueCount = compiledConfig.memoValueCount;
+  const memoValueCountPerRow = compiledConfig.memoValueCountPerRow;
   const memoPropNames = compiledConfig.memoPropNames;
   const memoPropCount = memoPropNames.length;
   const memoCandidateValues = compiledConfig.memoCandidateValues;
-  for (let index = 0; index < memoPropCount; index++) {
-    memoCandidateValues[index] = propRecord[memoPropNames[index]!];
+  for (let memoPropIndex = 0; memoPropIndex < memoPropCount; memoPropIndex++) {
+    memoCandidateValues[memoPropIndex] = propRecord[memoPropNames[memoPropIndex]!];
   }
   memoCandidateValues[memoPropCount] = propRecord.class;
   memoCandidateValues[memoPropCount + 1] = propRecord.className;
 
   const memoizedValues = compiledConfig.memoizedValues;
   const memoRowValidity = compiledConfig.memoRowValidity;
-  for (let rowIndex = 0; rowIndex < CVA_MEMO_ROWS; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < CVA_MEMO_ROW_COUNT; rowIndex++) {
     if (!memoRowValidity[rowIndex]) continue;
-    const rowStartIndex = rowIndex * memoValueCount;
-    let valueIndex = 0;
+    const rowStartIndex = rowIndex * memoValueCountPerRow;
+    let memoValueIndex = 0;
     while (
-      valueIndex < memoValueCount &&
-      memoCandidateValues[valueIndex] === memoizedValues[rowStartIndex + valueIndex]
+      memoValueIndex < memoValueCountPerRow &&
+      memoCandidateValues[memoValueIndex] === memoizedValues[rowStartIndex + memoValueIndex]
     ) {
-      valueIndex++;
+      memoValueIndex++;
     }
-    if (valueIndex === memoValueCount) return compiledConfig.memoizedResults[rowIndex]!;
+    if (memoValueIndex === memoValueCountPerRow) return compiledConfig.memoizedResults[rowIndex]!;
   }
 
   const resolvedClassName = resolveVariantClassName(compiledConfig, propRecord);
   const nextMemoRowIndex = compiledConfig.nextMemoRowIndex;
   memoRowValidity[nextMemoRowIndex] = false;
-  const rowStartIndex = nextMemoRowIndex * memoValueCount;
-  let valueIndex = 0;
-  for (; valueIndex < memoValueCount; valueIndex++) {
-    const value = memoCandidateValues[valueIndex];
-    if (value !== null && (typeof value === "object" || typeof value === "function")) break;
-    memoizedValues[rowStartIndex + valueIndex] = value;
+  const rowStartIndex = nextMemoRowIndex * memoValueCountPerRow;
+  let memoValueIndex = 0;
+  for (; memoValueIndex < memoValueCountPerRow; memoValueIndex++) {
+    const memoValue = memoCandidateValues[memoValueIndex];
+    if (memoValue !== null && (typeof memoValue === "object" || typeof memoValue === "function"))
+      break;
+    memoizedValues[rowStartIndex + memoValueIndex] = memoValue;
   }
-  if (valueIndex === memoValueCount) {
+  if (memoValueIndex === memoValueCountPerRow) {
     compiledConfig.nextMemoRowIndex =
-      nextMemoRowIndex + 1 === CVA_MEMO_ROWS ? 0 : nextMemoRowIndex + 1;
+      nextMemoRowIndex + 1 === CVA_MEMO_ROW_COUNT ? 0 : nextMemoRowIndex + 1;
     memoRowValidity[nextMemoRowIndex] = true;
     compiledConfig.memoizedResults[nextMemoRowIndex] = resolvedClassName;
   }
@@ -336,7 +340,7 @@ export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
       return defaultClassName;
     }
     const propRecord = props as RuntimeCvaProps;
-    if (compiledConfig.memoValueCount === 0) {
+    if (compiledConfig.memoValueCountPerRow === 0) {
       return resolveVariantClassName(compiledConfig, propRecord);
     }
     return resolveThroughMemo(compiledConfig, propRecord);

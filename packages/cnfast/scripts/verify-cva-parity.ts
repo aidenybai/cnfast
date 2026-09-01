@@ -1,6 +1,6 @@
 import { cva as referenceCva } from "class-variance-authority";
 import { cva } from "../src/index.js";
-import { CVA_MEMO_ROWS } from "../src/lib/constants.js";
+import { CVA_MEMO_ROW_COUNT } from "../src/lib/constants.js";
 import { createSeededRandom } from "../bench/utils/create-seeded-random";
 import { createShuffledIndices } from "../bench/utils/create-shuffled-indices";
 
@@ -26,7 +26,7 @@ interface OracleSite {
 const ORACLE_SEED = 0xc4a_5eed;
 const SCHEDULE_ROLL_COUNT = 4_000;
 const SHUFFLED_PASS_COUNT = 2;
-const MEMO_STORM_COMBO_COUNT = CVA_MEMO_ROWS * 3;
+const MEMO_STORM_COMBO_COUNT = CVA_MEMO_ROW_COUNT * 3;
 const MEMO_STORM_PASS_COUNT = 3;
 const MUTATION_INTERLEAVE_COUNT = 400;
 const MISMATCH_SAMPLE_LIMIT = 10;
@@ -235,7 +235,7 @@ for (let passIndex = 0; passIndex < SHUFFLED_PASS_COUNT; passIndex++) {
 
 logPhase(
   `phase C: memo storm, ${MEMO_STORM_COMBO_COUNT} live combos x${MEMO_STORM_PASS_COUNT} passes per site ` +
-    `(forces ${CVA_MEMO_ROWS}-row eviction and round-robin wrap)`,
+    `(forces ${CVA_MEMO_ROW_COUNT}-row eviction and round-robin wrap)`,
 );
 for (const oracleSite of oracleSites) {
   const stormProps: (CvaRuntimeProps | undefined)[] = [];

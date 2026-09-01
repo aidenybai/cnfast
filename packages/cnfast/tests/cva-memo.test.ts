@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cva as referenceCva } from "class-variance-authority";
 import { cva } from "./src/index.js";
-import { CVA_MEMO_ROWS } from "./src/lib/constants.js";
+import { CVA_MEMO_ROW_COUNT } from "./src/lib/constants.js";
 
 const buttonConfig = {
   variants: {
@@ -89,10 +89,10 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
 
   it("never serves stale output for a mutated array class", () => {
     const { cnfast, reference } = createInstancePair();
-    const nestedClass = ["px-2"];
-    const props = { size: "small", class: nestedClass };
+    const nestedClassNames = ["px-2"];
+    const props = { size: "small", class: nestedClassNames };
     expect(cnfast(props)).toBe(reference(props));
-    nestedClass[0] = "px-4";
+    nestedClassNames[0] = "px-4";
     expect(cnfast(props)).toBe(reference(props));
   });
 
@@ -109,11 +109,11 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
     const { cnfast, reference } = createInstancePair();
     const intents = ["primary", "secondary", "danger"];
     const sizes = ["small", "medium", null, undefined];
-    const disabledRolls = [true, false, null];
+    const disabledValues = [true, false, null];
     for (let passIndex = 0; passIndex < 3; passIndex++) {
       for (const intent of intents) {
         for (const size of sizes) {
-          for (const disabled of disabledRolls) {
+          for (const disabled of disabledValues) {
             const props = { intent, size, disabled };
             expect(cnfast(props)).toBe(reference(props));
           }
@@ -122,10 +122,14 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
     }
   });
 
-  it("wraps the victim row round-robin past capacity", () => {
+  it("wraps memo rows round-robin past capacity", () => {
     const { cnfast, reference } = createInstancePair();
     for (let passIndex = 0; passIndex < 4; passIndex++) {
-      for (let combinationIndex = 0; combinationIndex < CVA_MEMO_ROWS + 3; combinationIndex++) {
+      for (
+        let combinationIndex = 0;
+        combinationIndex < CVA_MEMO_ROW_COUNT + 3;
+        combinationIndex++
+      ) {
         const props = { intent: "primary", className: `adhoc-${combinationIndex}` };
         expect(cnfast(props)).toBe(reference(props));
       }
@@ -135,7 +139,7 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
   it("ignores extra undeclared props exactly like the reference", () => {
     const { cnfast, reference } = createInstancePair();
     const plainProps = { intent: "secondary" };
-    const extraProps = { intent: "secondary", aCheekyExtraProp: "lol" };
+    const extraProps = { intent: "secondary", undeclaredProp: "ignored" };
     expect(cnfast(plainProps)).toBe(reference(plainProps));
     expect(cnfast(extraProps)).toBe(reference(extraProps));
     expect(cnfast(plainProps)).toBe(reference(plainProps));

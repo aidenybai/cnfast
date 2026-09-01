@@ -25,8 +25,8 @@ export const CALL_SITE_MEMO_ROW_COUNT = 4;
 export const CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW = 12;
 export const EMPTY_CALL_SITE_MEMO_ARGUMENT_COUNT = -1;
 
-export const CVA_MEMO_ROWS = 8;
-export const CVA_MEMO_MAX_VALUE_SLOTS = 16;
+export const CVA_MEMO_ROW_COUNT = 8;
+export const CVA_MEMO_VALUE_SLOTS_PER_ROW = 16;
 
 export const SPACE_CHARACTER = " ";
 export const OPEN_BRACKET_CHARACTER = "[";
