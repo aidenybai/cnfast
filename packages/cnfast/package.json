@@ -95,6 +95,7 @@
     "@types/prompts": "^2.4.9",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
     "commander": "^14.0.3",
     "esbuild": "^0.28.1",
