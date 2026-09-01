@@ -69,6 +69,13 @@ interface CompiledVariantConfig {
   compoundRows: CompiledCompoundRow[];
   defaultsForCompounds: Record<string, unknown>;
   relevantKeys: string[];
+  defaultClassName: string | null;
+  memoWidth: number;
+  scratchValues: unknown[];
+  rowValues: unknown[];
+  rowValidFlags: boolean[];
+  rowResults: string[];
+  victimRow: number;
 }
 
 const normalizeVariantKey = (value: unknown): unknown =>
@@ -146,6 +153,8 @@ const compileVariantConfig = (
     }
   }
 
+  const width = relevantKeys.length + 2;
+  const isMemoizable = width <= CVA_MEMO_MAX_VALUE_SLOTS;
   return {
     baseFragment,
     variantNames,
@@ -155,6 +164,13 @@ const compileVariantConfig = (
     compoundRows,
     defaultsForCompounds,
     relevantKeys,
+    defaultClassName: null,
+    memoWidth: isMemoizable ? width : 0,
+    scratchValues: isMemoizable ? createFilledArray<unknown>(width, undefined) : [],
+    rowValues: isMemoizable ? createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined) : [],
+    rowValidFlags: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
+    rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
+    victimRow: 0,
   };
 };
 
@@ -245,69 +261,65 @@ const resolveVariantClassName = (
 // relevant-prop vector (declared variants plus compound selector keys) plus the
 // class/className slots, so a memo hit returns the SAME string instance per
 // combination — which keeps a wrapping cn() on its whole-string cache hits.
+const resolveThroughMemo = (
+  compiled: CompiledVariantConfig,
+  propRecord: Record<string, unknown>,
+): string => {
+  const memoWidth = compiled.memoWidth;
+  const relevantKeys = compiled.relevantKeys;
+  const relevantKeyCount = relevantKeys.length;
+  const scratchValues = compiled.scratchValues;
+  for (let index = 0; index < relevantKeyCount; index++) {
+    scratchValues[index] = propRecord[relevantKeys[index]!];
+  }
+  scratchValues[relevantKeyCount] = propRecord.class;
+  scratchValues[relevantKeyCount + 1] = propRecord.className;
+
+  const rowValues = compiled.rowValues;
+  const rowValidFlags = compiled.rowValidFlags;
+  for (let row = 0; row < CVA_MEMO_ROWS; row++) {
+    if (!rowValidFlags[row]) continue;
+    const rowBase = row * memoWidth;
+    let slot = 0;
+    while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
+    if (slot === memoWidth) return compiled.rowResults[row]!;
+  }
+
+  const resolvedClassName = resolveVariantClassName(compiled, propRecord);
+  const victim = compiled.victimRow;
+  rowValidFlags[victim] = false;
+  const storeBase = victim * memoWidth;
+  let slot = 0;
+  for (; slot < memoWidth; slot++) {
+    const value = scratchValues[slot];
+    if (value !== null && (typeof value === "object" || typeof value === "function")) break;
+    rowValues[storeBase + slot] = value;
+  }
+  if (slot === memoWidth) {
+    compiled.victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
+    rowValidFlags[victim] = true;
+    compiled.rowResults[victim] = resolvedClassName;
+  }
+  return resolvedClassName;
+};
+
 export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
   let compiled: CompiledVariantConfig | null = null;
-  let defaultClassName: string | null = null;
-  let memoWidth = 0;
-  let scratchValues: unknown[] = [];
-  let rowValues: unknown[] = [];
-  let rowValidFlags: boolean[] = [];
-  let rowResults: string[] = [];
-  let victimRow = 0;
 
   return (props?: CvaProps<T>): string => {
     if (compiled === null) {
       compiled = compileVariantConfig(base, config as RawVariantConfig | null | undefined);
-      const width = compiled.relevantKeys.length + 2;
-      if (width <= CVA_MEMO_MAX_VALUE_SLOTS) {
-        memoWidth = width;
-        scratchValues = createFilledArray<unknown>(width, undefined);
-        rowValues = createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined);
-        rowValidFlags = createFilledArray(CVA_MEMO_ROWS, false);
-        rowResults = createFilledArray(CVA_MEMO_ROWS, "");
-      }
     }
-
     if (props == null) {
-      if (defaultClassName === null)
+      let defaultClassName = compiled.defaultClassName;
+      if (defaultClassName === null) {
         defaultClassName = resolveVariantClassName(compiled, undefined);
+        compiled.defaultClassName = defaultClassName;
+      }
       return defaultClassName;
     }
-
     const propRecord = props as Record<string, unknown>;
-    if (memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
-
-    const relevantKeys = compiled.relevantKeys;
-    const relevantKeyCount = relevantKeys.length;
-    for (let index = 0; index < relevantKeyCount; index++) {
-      scratchValues[index] = propRecord[relevantKeys[index]!];
-    }
-    scratchValues[relevantKeyCount] = propRecord.class;
-    scratchValues[relevantKeyCount + 1] = propRecord.className;
-
-    for (let row = 0; row < CVA_MEMO_ROWS; row++) {
-      if (!rowValidFlags[row]) continue;
-      const rowBase = row * memoWidth;
-      let slot = 0;
-      while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
-      if (slot === memoWidth) return rowResults[row]!;
-    }
-
-    const resolvedClassName = resolveVariantClassName(compiled, propRecord);
-    const victim = victimRow;
-    rowValidFlags[victim] = false;
-    const storeBase = victim * memoWidth;
-    let slot = 0;
-    for (; slot < memoWidth; slot++) {
-      const value = scratchValues[slot];
-      if (value !== null && (typeof value === "object" || typeof value === "function")) break;
-      rowValues[storeBase + slot] = value;
-    }
-    if (slot === memoWidth) {
-      victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
-      rowValidFlags[victim] = true;
-      rowResults[victim] = resolvedClassName;
-    }
-    return resolvedClassName;
+    if (compiled.memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
+    return resolveThroughMemo(compiled, propRecord);
   };
 };
