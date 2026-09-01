@@ -67,6 +67,7 @@
     "bench": "bun bench/cn.bench.ts",
     "bench:ab": "bun bench/ab-compare.ts",
     "bench:parity:sequence": "bun scripts/verify-parity-sequence.ts",
+    "bench:parity:cva": "bun scripts/verify-cva-parity.ts",
     "bench:all": "bun bench/index.ts",
     "bench:coverage": "bun bench/coverage.bench.ts",
     "bench:chart": "bun scripts/generate-bench-chart.ts",
