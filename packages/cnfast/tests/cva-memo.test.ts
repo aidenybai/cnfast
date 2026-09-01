@@ -26,91 +26,96 @@ const buttonConfig = {
   defaultVariants: { intent: "primary", size: "medium", disabled: false },
 };
 
-interface AnyPropsCva {
+interface CvaRuntimeComponent {
   (props?: Record<string, unknown>): string;
 }
 
-const createPair = (): { ported: AnyPropsCva; reference: AnyPropsCva } => ({
-  ported: cva("button", buttonConfig as never) as AnyPropsCva,
-  reference: referenceCva("button", buttonConfig as never) as AnyPropsCva,
+interface CvaInstancePair {
+  cnfast: CvaRuntimeComponent;
+  reference: CvaRuntimeComponent;
+}
+
+const createInstancePair = (): CvaInstancePair => ({
+  cnfast: cva("button", buttonConfig as never) as CvaRuntimeComponent,
+  reference: referenceCva("button", buttonConfig as never) as CvaRuntimeComponent,
 });
 
 describe("cva memo: matches the reference byte-for-byte across cache states", () => {
   it("returns identical output on repeated identical calls", () => {
-    const { ported, reference } = createPair();
+    const { cnfast, reference } = createInstancePair();
     const props = { intent: "secondary", size: "small" };
     const expected = reference(props);
-    expect(ported(props)).toBe(expected);
-    expect(ported(props)).toBe(expected);
-    expect(ported({ intent: "secondary", size: "small" })).toBe(expected);
+    expect(cnfast(props)).toBe(expected);
+    expect(cnfast(props)).toBe(expected);
+    expect(cnfast({ intent: "secondary", size: "small" })).toBe(expected);
   });
 
   it("interns the zero-props result", () => {
-    const { ported, reference } = createPair();
+    const { cnfast, reference } = createInstancePair();
     const expected = reference();
-    expect(ported()).toBe(expected);
-    expect(ported(undefined)).toBe(expected);
-    expect(ported({})).toBe(expected);
+    expect(cnfast()).toBe(expected);
+    expect(cnfast(undefined)).toBe(expected);
+    expect(cnfast({})).toBe(expected);
   });
 
   it("distinguishes null from undefined variant props", () => {
-    const { ported, reference } = createPair();
-    for (let round = 0; round < 3; round++) {
-      expect(ported({ size: null })).toBe(reference({ size: null }));
-      expect(ported({ size: undefined })).toBe(reference({ size: undefined }));
-      expect(ported({ disabled: null })).toBe(reference({ disabled: null }));
-      expect(ported({ disabled: undefined })).toBe(reference({ disabled: undefined }));
+    const { cnfast, reference } = createInstancePair();
+    for (let passIndex = 0; passIndex < 3; passIndex++) {
+      expect(cnfast({ size: null })).toBe(reference({ size: null }));
+      expect(cnfast({ size: undefined })).toBe(reference({ size: undefined }));
+      expect(cnfast({ disabled: null })).toBe(reference({ disabled: null }));
+      expect(cnfast({ disabled: undefined })).toBe(reference({ disabled: undefined }));
     }
   });
 
   it("distinguishes falsy prop kinds at the same slot", () => {
-    const { ported, reference } = createPair();
-    const falsyRolls = [false, 0, "", null, undefined, Number.NaN];
-    for (let round = 0; round < 2; round++) {
-      for (const roll of falsyRolls) {
-        expect(ported({ disabled: roll })).toBe(reference({ disabled: roll }));
+    const { cnfast, reference } = createInstancePair();
+    const falsyValues = [false, 0, "", null, undefined, Number.NaN];
+    for (let passIndex = 0; passIndex < 2; passIndex++) {
+      for (const falsyValue of falsyValues) {
+        expect(cnfast({ disabled: falsyValue })).toBe(reference({ disabled: falsyValue }));
       }
     }
   });
 
   it("never serves stale output for a mutated object className", () => {
-    const { ported, reference } = createPair();
-    const toggles: Record<string, boolean> = { underline: true };
-    const props = { intent: "secondary", className: toggles };
-    expect(ported(props)).toBe(reference(props));
-    toggles.underline = false;
-    expect(ported(props)).toBe(reference(props));
+    const { cnfast, reference } = createInstancePair();
+    const classNameToggles: Record<string, boolean> = { underline: true };
+    const props = { intent: "secondary", className: classNameToggles };
+    expect(cnfast(props)).toBe(reference(props));
+    classNameToggles.underline = false;
+    expect(cnfast(props)).toBe(reference(props));
   });
 
   it("never serves stale output for a mutated array class", () => {
-    const { ported, reference } = createPair();
-    const nested = ["px-2"];
-    const props = { size: "small", class: nested };
-    expect(ported(props)).toBe(reference(props));
-    nested[0] = "px-4";
-    expect(ported(props)).toBe(reference(props));
+    const { cnfast, reference } = createInstancePair();
+    const nestedClass = ["px-2"];
+    const props = { size: "small", class: nestedClass };
+    expect(cnfast(props)).toBe(reference(props));
+    nestedClass[0] = "px-4";
+    expect(cnfast(props)).toBe(reference(props));
   });
 
   it("keeps rows intact when a mid-store object value aborts caching", () => {
-    const { ported, reference } = createPair();
+    const { cnfast, reference } = createInstancePair();
     const primitiveProps = { intent: "danger", size: "small" };
-    expect(ported(primitiveProps)).toBe(reference(primitiveProps));
+    expect(cnfast(primitiveProps)).toBe(reference(primitiveProps));
     const objectProps = { intent: "danger", size: "small", className: { hidden: true } };
-    expect(ported(objectProps)).toBe(reference(objectProps));
-    expect(ported(primitiveProps)).toBe(reference(primitiveProps));
+    expect(cnfast(objectProps)).toBe(reference(objectProps));
+    expect(cnfast(primitiveProps)).toBe(reference(primitiveProps));
   });
 
   it("survives more combinations than its row capacity", () => {
-    const { ported, reference } = createPair();
+    const { cnfast, reference } = createInstancePair();
     const intents = ["primary", "secondary", "danger"];
     const sizes = ["small", "medium", null, undefined];
     const disabledRolls = [true, false, null];
-    for (let round = 0; round < 3; round++) {
+    for (let passIndex = 0; passIndex < 3; passIndex++) {
       for (const intent of intents) {
         for (const size of sizes) {
           for (const disabled of disabledRolls) {
             const props = { intent, size, disabled };
-            expect(ported(props)).toBe(reference(props));
+            expect(cnfast(props)).toBe(reference(props));
           }
         }
       }
@@ -118,22 +123,22 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
   });
 
   it("wraps the victim row round-robin past capacity", () => {
-    const { ported, reference } = createPair();
-    for (let round = 0; round < 4; round++) {
-      for (let combo = 0; combo < CVA_MEMO_ROWS + 3; combo++) {
-        const props = { intent: "primary", className: `adhoc-${combo}` };
-        expect(ported(props)).toBe(reference(props));
+    const { cnfast, reference } = createInstancePair();
+    for (let passIndex = 0; passIndex < 4; passIndex++) {
+      for (let combinationIndex = 0; combinationIndex < CVA_MEMO_ROWS + 3; combinationIndex++) {
+        const props = { intent: "primary", className: `adhoc-${combinationIndex}` };
+        expect(cnfast(props)).toBe(reference(props));
       }
     }
   });
 
   it("ignores extra undeclared props exactly like the reference", () => {
-    const { ported, reference } = createPair();
+    const { cnfast, reference } = createInstancePair();
     const plainProps = { intent: "secondary" };
     const extraProps = { intent: "secondary", aCheekyExtraProp: "lol" };
-    expect(ported(plainProps)).toBe(reference(plainProps));
-    expect(ported(extraProps)).toBe(reference(extraProps));
-    expect(ported(plainProps)).toBe(reference(plainProps));
+    expect(cnfast(plainProps)).toBe(reference(plainProps));
+    expect(cnfast(extraProps)).toBe(reference(extraProps));
+    expect(cnfast(plainProps)).toBe(reference(plainProps));
   });
 
   it("stays correct on configs too wide for the memo", () => {
@@ -142,19 +147,19 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
       variants[`variant${index}`] = { on: `variant-${index}-on`, off: `variant-${index}-off` };
     }
     const wideConfig = { variants };
-    const ported = cva("wide", wideConfig as never) as AnyPropsCva;
-    const reference = referenceCva("wide", wideConfig as never) as AnyPropsCva;
+    const cnfast = cva("wide", wideConfig as never) as CvaRuntimeComponent;
+    const reference = referenceCva("wide", wideConfig as never) as CvaRuntimeComponent;
     const props = { variant0: "on", variant7: "off", variant19: "on" };
-    expect(ported(props)).toBe(reference(props));
-    expect(ported(props)).toBe(reference(props));
-    expect(ported({})).toBe(reference({}));
+    expect(cnfast(props)).toBe(reference(props));
+    expect(cnfast(props)).toBe(reference(props));
+    expect(cnfast({})).toBe(reference({}));
   });
 
   it("keeps independent state per instance", () => {
-    const firstPair = createPair();
-    const secondPair = createPair();
-    expect(firstPair.ported({ intent: "danger" })).toBe(firstPair.reference({ intent: "danger" }));
-    expect(secondPair.ported({ size: "small" })).toBe(secondPair.reference({ size: "small" }));
-    expect(firstPair.ported({ intent: "danger" })).toBe(firstPair.reference({ intent: "danger" }));
+    const firstPair = createInstancePair();
+    const secondPair = createInstancePair();
+    expect(firstPair.cnfast({ intent: "danger" })).toBe(firstPair.reference({ intent: "danger" }));
+    expect(secondPair.cnfast({ size: "small" })).toBe(secondPair.reference({ size: "small" }));
+    expect(firstPair.cnfast({ intent: "danger" })).toBe(firstPair.reference({ intent: "danger" }));
   });
 });

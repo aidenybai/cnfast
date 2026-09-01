@@ -1,28 +1,22 @@
 import { cn as cnfastCn, cva } from "../../src/index.js";
+import {
+  type CvaDataRecord,
+  type CvaComponent,
+  type CvaSiteDefinition,
+} from "../cva/cva-benchmark-types";
 import cvaSites from "../cva/cva-sites.json";
 
-type AnyProps = Record<string, unknown>;
-
-interface CvaComponent {
-  (props?: AnyProps): string;
-}
-
-interface CvaSiteDefinition {
-  base: unknown;
-  config: AnyProps | null;
-}
-
-const instances: CvaComponent[] = (cvaSites as CvaSiteDefinition[]).map(
-  (site) => cva(site.base as never, (site.config ?? undefined) as never) as CvaComponent,
+const cvaInstances: CvaComponent[] = (cvaSites as CvaSiteDefinition[]).map(
+  (siteDefinition) =>
+    cva(
+      siteDefinition.base as never,
+      (siteDefinition.config ?? undefined) as never,
+    ) as CvaComponent,
 );
 
-// Rows in bench/cva/cva-calls.json are [siteIndex, props?]; CVA_AB_COMPOSITE=1
-// additionally routes the result through cnfast's cn on BOTH shims so the
-// composite lane isolates the cva difference.
-const isComposite = process.env.CVA_AB_COMPOSITE === "1";
+const shouldComposeWithCn = process.env.CVA_AB_COMPOSITE === "1";
 
-export const cn = (isComposite
-  ? (siteIndex: number, props?: AnyProps): string => cnfastCn(instances[siteIndex]!(props))
-  : (siteIndex: number, props?: AnyProps): string => instances[siteIndex]!(props)) as unknown as (
-  ...classValues: unknown[]
-) => string;
+export const cn = (shouldComposeWithCn
+  ? (siteIndex: number, props?: CvaDataRecord): string => cnfastCn(cvaInstances[siteIndex]!(props))
+  : (siteIndex: number, props?: CvaDataRecord): string =>
+      cvaInstances[siteIndex]!(props)) as unknown as (...classValues: unknown[]) => string;

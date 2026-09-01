@@ -3,20 +3,13 @@ import { fileURLToPath } from "node:url";
 import { cva as referenceCva } from "class-variance-authority";
 import { cn, cva } from "../src/index.js";
 import { CVA_MEMO_ROWS } from "../src/lib/constants.js";
+import {
+  type CvaCallRow,
+  type CvaComponent,
+  type CvaSiteDefinition,
+} from "./cva/cva-benchmark-types";
 import { createSeededRandom } from "./utils/create-seeded-random";
 import { createShuffledIndices } from "./utils/create-shuffled-indices";
-
-type AnyProps = Record<string, unknown>;
-type CvaCallRow = [number] | [number, AnyProps];
-
-interface CvaSiteDefinition {
-  base: unknown;
-  config: AnyProps | null;
-}
-
-interface CvaComponent {
-  (props?: AnyProps): string;
-}
 
 interface BoundCaller {
   (): string;
@@ -27,7 +20,7 @@ interface Scenario {
   siteDefinitions: CvaSiteDefinition[];
   callRows: CvaCallRow[];
   lanes: ("fixed" | "shuffled")[];
-  composeWithCn?: boolean;
+  shouldComposeWithCn?: boolean;
 }
 
 const REPLAY_SEED = 0xc4a_be4c;
@@ -37,12 +30,14 @@ const ITERATIONS_PER_SAMPLE = 40;
 const SAMPLE_ATTEMPTS = 15;
 const CREATION_INSTANCES_PER_SAMPLE = 20_000;
 
-const sitesPath = fileURLToPath(new URL("./cva/cva-sites.json", import.meta.url));
-const callsPath = fileURLToPath(new URL("./cva/cva-calls.json", import.meta.url));
-const datasetSites: CvaSiteDefinition[] = JSON.parse(readFileSync(sitesPath, "utf8"));
-const datasetCallRows: CvaCallRow[] = JSON.parse(readFileSync(callsPath, "utf8"));
+const siteDefinitionsPath = fileURLToPath(new URL("./cva/cva-sites.json", import.meta.url));
+const callDatasetPath = fileURLToPath(new URL("./cva/cva-calls.json", import.meta.url));
+const datasetSiteDefinitions: CvaSiteDefinition[] = JSON.parse(
+  readFileSync(siteDefinitionsPath, "utf8"),
+);
+const datasetCallRows: CvaCallRow[] = JSON.parse(readFileSync(callDatasetPath, "utf8"));
 
-const buildPortedInstance = (definition: CvaSiteDefinition): CvaComponent =>
+const buildCnfastInstance = (definition: CvaSiteDefinition): CvaComponent =>
   cva(definition.base as never, (definition.config ?? undefined) as never) as CvaComponent;
 const buildReferenceInstance = (definition: CvaSiteDefinition): CvaComponent =>
   referenceCva(definition.base as never, (definition.config ?? undefined) as never) as CvaComponent;
@@ -119,7 +114,7 @@ const shadcnSteadyStateRows: CvaCallRow[] = buildRepeatedRows(
 );
 
 const allDefaultRows: CvaCallRow[] = buildRepeatedRows(
-  datasetSites.map((_, siteIndex): CvaCallRow => [siteIndex]),
+  datasetSiteDefinitions.map((_, siteIndex): CvaCallRow => [siteIndex]),
   5,
 );
 
@@ -168,13 +163,13 @@ const uncacheableRows: CvaCallRow[] = (() => {
 const scenarios: Scenario[] = [
   {
     name: "realistic mix (48 sites)",
-    siteDefinitions: datasetSites,
+    siteDefinitions: datasetSiteDefinitions,
     callRows: datasetCallRows,
     lanes: ["fixed", "shuffled"],
   },
   {
     name: "all-defaults / zero-arg",
-    siteDefinitions: datasetSites,
+    siteDefinitions: datasetSiteDefinitions,
     callRows: allDefaultRows,
     lanes: ["fixed"],
   },
@@ -204,40 +199,40 @@ const scenarios: Scenario[] = [
   },
   {
     name: "composite cn(cva(props))",
-    siteDefinitions: datasetSites,
+    siteDefinitions: datasetSiteDefinitions,
     callRows: datasetCallRows,
     lanes: ["fixed"],
-    composeWithCn: true,
+    shouldComposeWithCn: true,
   },
 ];
 
 const createBoundCallers = (
-  instances: CvaComponent[],
+  cvaInstances: CvaComponent[],
   callRows: CvaCallRow[],
-  composeWithCn: boolean,
+  shouldComposeWithCn: boolean,
 ): BoundCaller[] =>
-  callRows.map((row) => {
-    const instance = instances[row[0]]!;
-    const props = row.length === 2 ? row[1] : undefined;
-    if (composeWithCn) {
-      return props === undefined ? () => cn(instance()) : () => cn(instance(props));
+  callRows.map((callRow) => {
+    const cvaInstance = cvaInstances[callRow[0]]!;
+    const props = callRow.length === 2 ? callRow[1] : undefined;
+    if (shouldComposeWithCn) {
+      return props === undefined ? () => cn(cvaInstance()) : () => cn(cvaInstance(props));
     }
-    return props === undefined ? () => instance() : () => instance(props);
+    return props === undefined ? () => cvaInstance() : () => cvaInstance(props);
   });
 
 const verifyScenarioParity = (scenario: Scenario): void => {
-  const portedInstances = scenario.siteDefinitions.map(buildPortedInstance);
+  const cnfastInstances = scenario.siteDefinitions.map(buildCnfastInstance);
   const referenceInstances = scenario.siteDefinitions.map(buildReferenceInstance);
   for (let pass = 0; pass < 3; pass++) {
     for (let callIndex = 0; callIndex < scenario.callRows.length; callIndex++) {
-      const row = scenario.callRows[callIndex]!;
-      const props = row.length === 2 ? row[1] : undefined;
-      const ported = portedInstances[row[0]]!(props);
-      const reference = referenceInstances[row[0]]!(props);
-      if (ported !== reference) {
+      const callRow = scenario.callRows[callIndex]!;
+      const props = callRow.length === 2 ? callRow[1] : undefined;
+      const cnfastResult = cnfastInstances[callRow[0]]!(props);
+      const referenceResult = referenceInstances[callRow[0]]!(props);
+      if (cnfastResult !== referenceResult) {
         throw new Error(
           `parity mismatch in "${scenario.name}" at call ${callIndex} pass ${pass}:\n` +
-            ` ported:    ${ported}\n reference: ${reference}`,
+            ` cnfast:    ${cnfastResult}\n reference: ${referenceResult}`,
         );
       }
     }
@@ -254,16 +249,16 @@ const timeReplay = (callers: BoundCaller[], orders: number[][]): number => {
   };
   for (let warmup = 0; warmup < WARMUP_ITERATIONS; warmup++)
     runIteration(orders[warmup % orders.length]!);
-  let bestNsPerCall = Infinity;
+  let bestNanosecondsPerCall = Infinity;
   for (let attempt = 0; attempt < SAMPLE_ATTEMPTS; attempt++) {
     const startedAt = process.hrtime.bigint();
     for (let iteration = 0; iteration < ITERATIONS_PER_SAMPLE; iteration++)
       runIteration(orders[iteration % orders.length]!);
-    const elapsedNs = Number(process.hrtime.bigint() - startedAt);
-    const nsPerCall = elapsedNs / (ITERATIONS_PER_SAMPLE * callCount);
-    if (nsPerCall < bestNsPerCall) bestNsPerCall = nsPerCall;
+    const elapsedNanoseconds = Number(process.hrtime.bigint() - startedAt);
+    const nanosecondsPerCall = elapsedNanoseconds / (ITERATIONS_PER_SAMPLE * callCount);
+    if (nanosecondsPerCall < bestNanosecondsPerCall) bestNanosecondsPerCall = nanosecondsPerCall;
   }
-  return bestNsPerCall;
+  return bestNanosecondsPerCall;
 };
 
 const buildOrders = (lane: "fixed" | "shuffled", rowCount: number): number[][] => {
@@ -278,26 +273,29 @@ const buildOrders = (lane: "fixed" | "shuffled", rowCount: number): number[][] =
 };
 
 const timeCreation = (): void => {
-  const definitions = datasetSites;
+  const siteDefinitions = datasetSiteDefinitions;
   const runCreation = (build: (definition: CvaSiteDefinition) => CvaComponent): number => {
-    let bestNsPerCreation = Infinity;
+    let bestNanosecondsPerCreation = Infinity;
     for (let attempt = 0; attempt < SAMPLE_ATTEMPTS; attempt++) {
       const startedAt = process.hrtime.bigint();
       for (let index = 0; index < CREATION_INSTANCES_PER_SAMPLE; index++) {
-        const instance = build(definitions[index % definitions.length]!);
-        resultLengthSink += instance.length;
+        const cvaInstance = build(siteDefinitions[index % siteDefinitions.length]!);
+        resultLengthSink += cvaInstance.length;
       }
-      const elapsedNs = Number(process.hrtime.bigint() - startedAt);
-      const nsPerCreation = elapsedNs / CREATION_INSTANCES_PER_SAMPLE;
-      if (nsPerCreation < bestNsPerCreation) bestNsPerCreation = nsPerCreation;
+      const elapsedNanoseconds = Number(process.hrtime.bigint() - startedAt);
+      const nanosecondsPerCreation = elapsedNanoseconds / CREATION_INSTANCES_PER_SAMPLE;
+      if (nanosecondsPerCreation < bestNanosecondsPerCreation) {
+        bestNanosecondsPerCreation = nanosecondsPerCreation;
+      }
     }
-    return bestNsPerCreation;
+    return bestNanosecondsPerCreation;
   };
-  const portedNs = runCreation(buildPortedInstance);
-  const referenceNs = runCreation(buildReferenceInstance);
+  const cnfastNanoseconds = runCreation(buildCnfastInstance);
+  const referenceNanoseconds = runCreation(buildReferenceInstance);
   console.log(
-    `creation${" ".repeat(24)} fixed     ported ${portedNs.toFixed(1).padStart(7)} ns/create | ` +
-      `reference ${referenceNs.toFixed(1).padStart(7)} ns/create | ${(referenceNs / portedNs).toFixed(2)}x`,
+    `creation${" ".repeat(24)} fixed     cnfast ${cnfastNanoseconds.toFixed(1).padStart(7)} ns/create | ` +
+      `reference ${referenceNanoseconds.toFixed(1).padStart(7)} ns/create | ` +
+      `${(referenceNanoseconds / cnfastNanoseconds).toFixed(2)}x`,
   );
 };
 
@@ -309,25 +307,25 @@ console.log(
 timeCreation();
 
 for (const scenario of scenarios) {
-  const portedCallers = createBoundCallers(
-    scenario.siteDefinitions.map(buildPortedInstance),
+  const cnfastCallers = createBoundCallers(
+    scenario.siteDefinitions.map(buildCnfastInstance),
     scenario.callRows,
-    scenario.composeWithCn === true,
+    scenario.shouldComposeWithCn === true,
   );
   const referenceCallers = createBoundCallers(
     scenario.siteDefinitions.map(buildReferenceInstance),
     scenario.callRows,
-    scenario.composeWithCn === true,
+    scenario.shouldComposeWithCn === true,
   );
   for (const lane of scenario.lanes) {
     const orders = buildOrders(lane, scenario.callRows.length);
-    const portedNsPerCall = timeReplay(portedCallers, orders);
-    const referenceNsPerCall = timeReplay(referenceCallers, orders);
+    const cnfastNanosecondsPerCall = timeReplay(cnfastCallers, orders);
+    const referenceNanosecondsPerCall = timeReplay(referenceCallers, orders);
     console.log(
       `${scenario.name.padEnd(32)} ${lane.padEnd(9)} ` +
-        `ported ${portedNsPerCall.toFixed(1).padStart(7)} ns/call | ` +
-        `reference ${referenceNsPerCall.toFixed(1).padStart(7)} ns/call | ` +
-        `${(referenceNsPerCall / portedNsPerCall).toFixed(2)}x`,
+        `cnfast ${cnfastNanosecondsPerCall.toFixed(1).padStart(7)} ns/call | ` +
+        `reference ${referenceNanosecondsPerCall.toFixed(1).padStart(7)} ns/call | ` +
+        `${(referenceNanosecondsPerCall / cnfastNanosecondsPerCall).toFixed(2)}x`,
     );
   }
 }

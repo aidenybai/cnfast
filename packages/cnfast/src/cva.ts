@@ -1,9 +1,6 @@
-// Byte parity with class-variance-authority 0.7.1 holds for configs treated as frozen
-// after the first call and for plain-object props: own enumerable properties only.
-// Configs mutated between calls, inherited enumerable prop keys, and non-enumerable own
-// props can diverge from upstream (the memo reads props by key, so it cannot tell an
-// inherited value from an own one). None of these shapes occur in real usage; the
-// 58-repo corpus study found zero.
+// Parity assumes configs are immutable after the first call and props are plain objects.
+// Mutated configs and inherited or non-enumerable props can differ from upstream; none
+// appeared in the 58-repository corpus.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
 import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
@@ -53,279 +50,295 @@ export type CvaConfig<T> = T extends VariantSchema
 
 export type CvaProps<T> = T extends VariantSchema ? SchemaVariants<T> & ClassProp : ClassProp;
 
-interface RawVariantConfig {
-  variants?: Record<string, Record<string, ClassValue>>;
-  defaultVariants?: Record<string, unknown>;
-  compoundVariants?: Record<string, unknown>[];
+interface RuntimeCvaProps {
+  [propName: string]: unknown;
+  class?: ClassValue;
+  className?: ClassValue;
 }
 
-interface CompiledCompoundRow {
+interface RuntimeCvaConfig {
+  variants?: Record<string, Record<string, ClassValue>>;
+  defaultVariants?: Record<string, unknown>;
+  compoundVariants?: RuntimeCvaProps[];
+}
+
+interface CompiledCompoundVariant {
   selectorKeys: string[];
   selectorValues: unknown[];
   selectorArrays: (unknown[] | null)[];
-  fragment: string;
+  classNameFragment: string;
 }
 
-interface CompiledVariantConfig {
+interface CompiledCvaConfig {
   baseFragment: string;
   variantNames: string[];
-  fragmentTables: Record<string, string | undefined>[];
-  rawVariantObjects: Record<string, ClassValue>[];
-  defaultKeys: unknown[];
-  compoundRows: CompiledCompoundRow[];
-  defaultsForCompounds: Record<string, unknown>;
-  relevantKeys: string[];
+  variantClassNamesByKey: Record<string, string | undefined>[];
+  variantDefinitions: Record<string, ClassValue>[];
+  defaultVariantKeys: unknown[];
+  compiledCompoundVariants: CompiledCompoundVariant[];
+  compoundDefaultValues: Record<string, unknown>;
+  memoPropNames: string[];
   defaultClassName: string | null;
-  memoWidth: number;
-  scratchValues: unknown[];
-  rowValues: unknown[];
-  rowValidFlags: boolean[];
-  rowResults: string[];
-  victimRow: number;
+  memoValueCount: number;
+  memoCandidateValues: unknown[];
+  memoizedValues: unknown[];
+  memoRowValidity: boolean[];
+  memoizedResults: string[];
+  nextMemoRowIndex: number;
 }
 
 const normalizeVariantKey = (value: unknown): unknown =>
   typeof value === "boolean" ? (value ? "true" : "false") : value === 0 ? "0" : value;
 
-const compileCompoundRow = (entry: Record<string, unknown>): CompiledCompoundRow => {
+const compileCompoundVariant = (compoundVariant: RuntimeCvaProps): CompiledCompoundVariant => {
   const selectorKeys: string[] = [];
   const selectorValues: unknown[] = [];
   const selectorArrays: (unknown[] | null)[] = [];
-  for (const entryKey of Object.keys(entry)) {
-    if (entryKey === "class" || entryKey === "className") continue;
-    const selectorValue = entry[entryKey];
-    selectorKeys.push(entryKey);
+  for (const selectorKey of Object.keys(compoundVariant)) {
+    if (selectorKey === "class" || selectorKey === "className") continue;
+    const selectorValue = compoundVariant[selectorKey];
+    selectorKeys.push(selectorKey);
     selectorValues.push(selectorValue);
     selectorArrays.push(Array.isArray(selectorValue) ? selectorValue : null);
   }
-  const classFragment = resolveClassValue(entry.class as ClassValue);
-  const classNameFragment = resolveClassValue(entry.className as ClassValue);
-  const fragment =
+  const classFragment = resolveClassValue(compoundVariant.class);
+  const classNameFragment = resolveClassValue(compoundVariant.className);
+  const combinedClassNameFragment =
     classFragment && classNameFragment
       ? classFragment + " " + classNameFragment
       : classFragment || classNameFragment;
-  return { selectorKeys, selectorValues, selectorArrays, fragment };
+  return {
+    selectorKeys,
+    selectorValues,
+    selectorArrays,
+    classNameFragment: combinedClassNameFragment,
+  };
 };
 
-// The config is treated as frozen from the first call onward: upstream re-reads
-// it live per call, but the 58-repo corpus showed zero post-creation mutation,
-// so every static piece (base, variant values, compound classes, defaults) is
-// flattened to its final string fragment here, once.
-const compileVariantConfig = (
+// Upstream re-reads configs per call, but the corpus had no post-creation mutation.
+// Flattening static class values once keeps the call path allocation-free.
+const compileCvaConfig = (
   base: ClassValue,
-  config: RawVariantConfig | null | undefined,
-): CompiledVariantConfig => {
+  config: RuntimeCvaConfig | null | undefined,
+): CompiledCvaConfig => {
   const baseFragment = resolveClassValue(base);
   const variants = config?.variants;
   const variantNames = variants == null ? [] : Object.keys(variants);
-  const fragmentTables: Record<string, string | undefined>[] = [];
-  const rawVariantObjects: Record<string, ClassValue>[] = [];
-  const defaultKeys: unknown[] = [];
+  const variantClassNamesByKey: Record<string, string | undefined>[] = [];
+  const variantDefinitions: Record<string, ClassValue>[] = [];
+  const defaultVariantKeys: unknown[] = [];
   const defaultVariants = config?.defaultVariants;
   for (const variantName of variantNames) {
-    const variantObject = variants![variantName]!;
-    const fragmentTable: Record<string, string | undefined> = Object.create(null);
-    for (const valueKey of Object.keys(variantObject)) {
-      fragmentTable[valueKey] = resolveClassValue(variantObject[valueKey]);
+    const variantDefinition = variants![variantName]!;
+    const classNamesByKey: Record<string, string | undefined> = Object.create(null);
+    for (const valueKey of Object.keys(variantDefinition)) {
+      classNamesByKey[valueKey] = resolveClassValue(variantDefinition[valueKey]);
     }
-    fragmentTables.push(fragmentTable);
-    rawVariantObjects.push(variantObject);
-    defaultKeys.push(normalizeVariantKey(defaultVariants?.[variantName]));
+    variantClassNamesByKey.push(classNamesByKey);
+    variantDefinitions.push(variantDefinition);
+    defaultVariantKeys.push(normalizeVariantKey(defaultVariants?.[variantName]));
   }
 
-  // The no-variants config ignores compoundVariants entirely (upstream
-  // early-exits to cx(base, class, className) before reading them).
-  const compoundRows: CompiledCompoundRow[] = [];
+  // Upstream ignores compound variants when the variants field is absent.
+  const compiledCompoundVariants: CompiledCompoundVariant[] = [];
   if (variants != null && config?.compoundVariants) {
-    for (const entry of config.compoundVariants) compoundRows.push(compileCompoundRow(entry));
+    for (const compoundVariant of config.compoundVariants) {
+      compiledCompoundVariants.push(compileCompoundVariant(compoundVariant));
+    }
   }
 
   // A spread object (not Object.create(null)) on purpose: upstream matches
   // compounds against `{...defaultVariants, ...props}[key]`, so a selector key
   // like "toString" must resolve through Object.prototype, not to undefined.
-  const defaultsForCompounds: Record<string, unknown> = { ...defaultVariants };
+  const compoundDefaultValues: Record<string, unknown> = { ...defaultVariants };
 
-  const relevantKeys: string[] = [];
-  const seenRelevantKeys: Record<string, boolean> = Object.create(null);
+  const memoPropNames: string[] = [];
+  const seenMemoPropNames: Record<string, boolean> = Object.create(null);
   for (const variantName of variantNames) {
-    seenRelevantKeys[variantName] = true;
-    relevantKeys.push(variantName);
+    seenMemoPropNames[variantName] = true;
+    memoPropNames.push(variantName);
   }
-  for (const compoundRow of compoundRows) {
-    for (const selectorKey of compoundRow.selectorKeys) {
-      if (seenRelevantKeys[selectorKey]) continue;
-      seenRelevantKeys[selectorKey] = true;
-      relevantKeys.push(selectorKey);
+  for (const compiledCompoundVariant of compiledCompoundVariants) {
+    for (const selectorKey of compiledCompoundVariant.selectorKeys) {
+      if (seenMemoPropNames[selectorKey]) continue;
+      seenMemoPropNames[selectorKey] = true;
+      memoPropNames.push(selectorKey);
     }
   }
 
-  const width = relevantKeys.length + 2;
-  const isMemoizable = width <= CVA_MEMO_MAX_VALUE_SLOTS;
+  const memoValueCount = memoPropNames.length + 2;
+  const isMemoizable = memoValueCount <= CVA_MEMO_MAX_VALUE_SLOTS;
   return {
     baseFragment,
     variantNames,
-    fragmentTables,
-    rawVariantObjects,
-    defaultKeys,
-    compoundRows,
-    defaultsForCompounds,
-    relevantKeys,
+    variantClassNamesByKey,
+    variantDefinitions,
+    defaultVariantKeys,
+    compiledCompoundVariants,
+    compoundDefaultValues,
+    memoPropNames,
     defaultClassName: null,
-    memoWidth: isMemoizable ? width : 0,
-    scratchValues: isMemoizable ? createFilledArray<unknown>(width, undefined) : [],
-    rowValues: isMemoizable ? createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined) : [],
-    rowValidFlags: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
-    rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
-    victimRow: 0,
+    memoValueCount: isMemoizable ? memoValueCount : 0,
+    memoCandidateValues: isMemoizable ? createFilledArray<unknown>(memoValueCount, undefined) : [],
+    memoizedValues: isMemoizable
+      ? createFilledArray<unknown>(CVA_MEMO_ROWS * memoValueCount, undefined)
+      : [],
+    memoRowValidity: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
+    memoizedResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
+    nextMemoRowIndex: 0,
   };
 };
 
 const hasOwnPropertyCheck = Object.prototype.hasOwnProperty;
 
 const resolveVariantClassName = (
-  compiled: CompiledVariantConfig,
-  props: Record<string, unknown> | undefined,
+  compiledConfig: CompiledCvaConfig,
+  props: RuntimeCvaProps | undefined,
 ): string => {
-  let result = compiled.baseFragment;
+  let className = compiledConfig.baseFragment;
 
-  const variantNames = compiled.variantNames;
+  const variantNames = compiledConfig.variantNames;
   for (let index = 0; index < variantNames.length; index++) {
     const propValue = props === undefined ? undefined : props[variantNames[index]!];
     if (propValue === null) continue;
-    const normalized = normalizeVariantKey(propValue);
+    const normalizedVariantKey = normalizeVariantKey(propValue);
     // `|| default` mirrors upstream falsyToString fall-through: "" and NaN
     // fall back to the default key, while "false"/"0" (already normalized
     // from false/0) stay and select their own keys.
-    const variantKey = normalized || compiled.defaultKeys[index];
+    const variantKey = normalizedVariantKey || compiledConfig.defaultVariantKeys[index];
     // Own keys were pre-flattened into the table (resolveClassValue never
     // yields undefined, so undefined always means "not an own key"); the miss
     // falls back to a raw property read on the original variant object,
     // preserving upstream's prototype-chain and ToPropertyKey semantics.
-    let fragment = compiled.fragmentTables[index]![variantKey as string];
-    if (fragment === undefined) {
-      fragment = resolveClassValue(compiled.rawVariantObjects[index]![variantKey as string]);
+    let variantClassName = compiledConfig.variantClassNamesByKey[index]![variantKey as string];
+    if (variantClassName === undefined) {
+      variantClassName = resolveClassValue(
+        compiledConfig.variantDefinitions[index]![variantKey as string],
+      );
     }
-    if (fragment) {
-      if (result) result += " ";
-      result += fragment;
+    if (variantClassName) {
+      if (className) className += " ";
+      className += variantClassName;
     }
   }
 
-  const compoundRows = compiled.compoundRows;
-  for (let rowIndex = 0; rowIndex < compoundRows.length; rowIndex++) {
-    const compoundRow = compoundRows[rowIndex]!;
-    const selectorKeys = compoundRow.selectorKeys;
-    let isMatch = true;
-    for (let keyIndex = 0; keyIndex < selectorKeys.length; keyIndex++) {
-      const selectorKey = selectorKeys[keyIndex]!;
+  const compiledCompoundVariants = compiledConfig.compiledCompoundVariants;
+  for (let compoundIndex = 0; compoundIndex < compiledCompoundVariants.length; compoundIndex++) {
+    const compiledCompoundVariant = compiledCompoundVariants[compoundIndex]!;
+    const selectorKeys = compiledCompoundVariant.selectorKeys;
+    let doesCompoundVariantMatch = true;
+    for (let selectorIndex = 0; selectorIndex < selectorKeys.length; selectorIndex++) {
+      const selectorKey = selectorKeys[selectorIndex]!;
       // An own prop with a non-undefined value (null included) overrides the
       // default, exactly like upstream's {...defaults, ...propsWithoutUndefined}.
-      const effectiveValue =
+      const selectedValue =
         props !== undefined &&
         hasOwnPropertyCheck.call(props, selectorKey) &&
         props[selectorKey] !== undefined
           ? props[selectorKey]
-          : compiled.defaultsForCompounds[selectorKey];
-      const selectorArray = compoundRow.selectorArrays[keyIndex];
-      const didKeyMatch =
+          : compiledConfig.compoundDefaultValues[selectorKey];
+      const selectorArray = compiledCompoundVariant.selectorArrays[selectorIndex];
+      const doesSelectorMatch =
         selectorArray !== null
-          ? selectorArray.includes(effectiveValue)
-          : effectiveValue === compoundRow.selectorValues[keyIndex];
-      if (!didKeyMatch) {
-        isMatch = false;
+          ? selectorArray.includes(selectedValue)
+          : selectedValue === compiledCompoundVariant.selectorValues[selectorIndex];
+      if (!doesSelectorMatch) {
+        doesCompoundVariantMatch = false;
         break;
       }
     }
-    if (isMatch && compoundRow.fragment) {
-      if (result) result += " ";
-      result += compoundRow.fragment;
+    if (doesCompoundVariantMatch && compiledCompoundVariant.classNameFragment) {
+      if (className) className += " ";
+      className += compiledCompoundVariant.classNameFragment;
     }
   }
 
   if (props !== undefined) {
-    const adhocClass = resolveClassValue(props.class as ClassValue);
-    if (adhocClass) {
-      if (result) result += " ";
-      result += adhocClass;
+    const additionalClass = resolveClassValue(props.class);
+    if (additionalClass) {
+      if (className) className += " ";
+      className += additionalClass;
     }
-    const adhocClassName = resolveClassValue(props.className as ClassValue);
-    if (adhocClassName) {
-      if (result) result += " ";
-      result += adhocClassName;
+    const additionalClassName = resolveClassValue(props.className);
+    if (additionalClassName) {
+      if (className) className += " ";
+      className += additionalClassName;
     }
   }
 
-  return result;
+  return className;
 };
 
-// Per-instance memo in the createCallSiteCn mold: only primitives are stored
-// (=== on primitives guarantees a byte-identical result, while a truthy
-// object/array can mutate between calls without changing identity), the victim
-// row is invalidated before the store loop so a mid-store bailout on an object
-// value can never leave a half-written row serveable, and validity lives in
-// rowValidFlags rather than in-band sentinel values. The key is the resolved
-// relevant-prop vector (declared variants plus compound selector keys) plus the
-// class/className slots, so a memo hit returns the SAME string instance per
-// combination — which keeps a wrapping cn() on its whole-string cache hits.
+// Memoize only primitive prop vectors because object and array class values can mutate.
+// Invalidate a row before filling it so an aborted store cannot expose partial data.
+// Stable string identity also preserves wrapping cn() cache hits.
 const resolveThroughMemo = (
-  compiled: CompiledVariantConfig,
-  propRecord: Record<string, unknown>,
+  compiledConfig: CompiledCvaConfig,
+  propRecord: RuntimeCvaProps,
 ): string => {
-  const memoWidth = compiled.memoWidth;
-  const relevantKeys = compiled.relevantKeys;
-  const relevantKeyCount = relevantKeys.length;
-  const scratchValues = compiled.scratchValues;
-  for (let index = 0; index < relevantKeyCount; index++) {
-    scratchValues[index] = propRecord[relevantKeys[index]!];
+  const memoValueCount = compiledConfig.memoValueCount;
+  const memoPropNames = compiledConfig.memoPropNames;
+  const memoPropCount = memoPropNames.length;
+  const memoCandidateValues = compiledConfig.memoCandidateValues;
+  for (let index = 0; index < memoPropCount; index++) {
+    memoCandidateValues[index] = propRecord[memoPropNames[index]!];
   }
-  scratchValues[relevantKeyCount] = propRecord.class;
-  scratchValues[relevantKeyCount + 1] = propRecord.className;
+  memoCandidateValues[memoPropCount] = propRecord.class;
+  memoCandidateValues[memoPropCount + 1] = propRecord.className;
 
-  const rowValues = compiled.rowValues;
-  const rowValidFlags = compiled.rowValidFlags;
-  for (let row = 0; row < CVA_MEMO_ROWS; row++) {
-    if (!rowValidFlags[row]) continue;
-    const rowBase = row * memoWidth;
-    let slot = 0;
-    while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
-    if (slot === memoWidth) return compiled.rowResults[row]!;
+  const memoizedValues = compiledConfig.memoizedValues;
+  const memoRowValidity = compiledConfig.memoRowValidity;
+  for (let rowIndex = 0; rowIndex < CVA_MEMO_ROWS; rowIndex++) {
+    if (!memoRowValidity[rowIndex]) continue;
+    const rowStartIndex = rowIndex * memoValueCount;
+    let valueIndex = 0;
+    while (
+      valueIndex < memoValueCount &&
+      memoCandidateValues[valueIndex] === memoizedValues[rowStartIndex + valueIndex]
+    ) {
+      valueIndex++;
+    }
+    if (valueIndex === memoValueCount) return compiledConfig.memoizedResults[rowIndex]!;
   }
 
-  const resolvedClassName = resolveVariantClassName(compiled, propRecord);
-  const victim = compiled.victimRow;
-  rowValidFlags[victim] = false;
-  const storeBase = victim * memoWidth;
-  let slot = 0;
-  for (; slot < memoWidth; slot++) {
-    const value = scratchValues[slot];
+  const resolvedClassName = resolveVariantClassName(compiledConfig, propRecord);
+  const nextMemoRowIndex = compiledConfig.nextMemoRowIndex;
+  memoRowValidity[nextMemoRowIndex] = false;
+  const rowStartIndex = nextMemoRowIndex * memoValueCount;
+  let valueIndex = 0;
+  for (; valueIndex < memoValueCount; valueIndex++) {
+    const value = memoCandidateValues[valueIndex];
     if (value !== null && (typeof value === "object" || typeof value === "function")) break;
-    rowValues[storeBase + slot] = value;
+    memoizedValues[rowStartIndex + valueIndex] = value;
   }
-  if (slot === memoWidth) {
-    compiled.victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
-    rowValidFlags[victim] = true;
-    compiled.rowResults[victim] = resolvedClassName;
+  if (valueIndex === memoValueCount) {
+    compiledConfig.nextMemoRowIndex =
+      nextMemoRowIndex + 1 === CVA_MEMO_ROWS ? 0 : nextMemoRowIndex + 1;
+    memoRowValidity[nextMemoRowIndex] = true;
+    compiledConfig.memoizedResults[nextMemoRowIndex] = resolvedClassName;
   }
   return resolvedClassName;
 };
 
 export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
-  let compiled: CompiledVariantConfig | null = null;
+  let compiledConfig: CompiledCvaConfig | null = null;
 
   return (props?: CvaProps<T>): string => {
-    if (compiled === null) {
-      compiled = compileVariantConfig(base, config as RawVariantConfig | null | undefined);
+    if (compiledConfig === null) {
+      compiledConfig = compileCvaConfig(base, config as RuntimeCvaConfig | null | undefined);
     }
     if (props == null) {
-      let defaultClassName = compiled.defaultClassName;
+      let defaultClassName = compiledConfig.defaultClassName;
       if (defaultClassName === null) {
-        defaultClassName = resolveVariantClassName(compiled, undefined);
-        compiled.defaultClassName = defaultClassName;
+        defaultClassName = resolveVariantClassName(compiledConfig, undefined);
+        compiledConfig.defaultClassName = defaultClassName;
       }
       return defaultClassName;
     }
-    const propRecord = props as Record<string, unknown>;
-    if (compiled.memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
-    return resolveThroughMemo(compiled, propRecord);
+    const propRecord = props as RuntimeCvaProps;
+    if (compiledConfig.memoValueCount === 0) {
+      return resolveVariantClassName(compiledConfig, propRecord);
+    }
+    return resolveThroughMemo(compiledConfig, propRecord);
   };
 };

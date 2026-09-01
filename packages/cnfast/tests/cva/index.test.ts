@@ -1,6 +1,5 @@
-// Ported verbatim from class-variance-authority@0.7.1 src/index.test.ts
-// (Copyright 2022 Joe Bell, Apache-2.0) so every upstream byte-parity pin
-// runs against the cnfast port.
+// Ported from class-variance-authority@0.7.1 src/index.test.ts
+// (Copyright 2022 Joe Bell, Apache-2.0) for upstream parity coverage.
 /* eslint-disable no-constant-binary-expression, @typescript-eslint/ban-ts-comment -- upstream fixtures use `1 && "..."` and bare @ts-expect-error on purpose */
 import { describe, expect, test } from "vitest";
 
@@ -388,7 +387,6 @@ describe("cva", () => {
           { intent: "primary", m: 1 },
           "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1",
         ],
-        // !@TODO Add type "extractor" including class prop
         [
           {
             intent: "primary",
@@ -405,7 +403,6 @@ describe("cva", () => {
           } as ButtonWithoutDefaultsWithoutBaseProps,
           "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-classname",
         ],
-        // typings needed
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(expected);
@@ -788,7 +785,6 @@ describe("cva", () => {
           { intent: "primary", m: 1 },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase",
         ],
-        // !@TODO Add type "extractor" including class prop
         [
           {
             intent: "primary",
@@ -1141,7 +1137,6 @@ describe("cva", () => {
           { intent: "warning", size: "large", disabled: false },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
-        // !@TODO Add type "extractor" including class prop
         [
           {
             intent: "primary",
@@ -1527,7 +1522,6 @@ describe("cva", () => {
           { intent: "warning", size: "large", disabled: false },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
-        // !@TODO Add type "extractor" including class prop
         [
           {
             intent: "primary",

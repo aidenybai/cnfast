@@ -77,7 +77,6 @@ export interface Workload {
   name: string;
   meta?: string;
   classListCases?: ClassListArgs[];
-  /** Overrides the cn/referenceCn pair for workloads that bench another API (e.g. cva). */
   implementations?: WorkloadImplementationPair;
   run: (implementation: ClassNameImplementation) => number;
 }

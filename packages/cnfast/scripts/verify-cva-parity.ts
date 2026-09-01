@@ -4,13 +4,21 @@ import { CVA_MEMO_ROWS } from "../src/lib/constants.js";
 import { createSeededRandom } from "../bench/utils/create-seeded-random";
 import { createShuffledIndices } from "../bench/utils/create-shuffled-indices";
 
-type AnyProps = Record<string, unknown>;
+interface CvaRuntimeProps {
+  [propName: string]: unknown;
+}
+
+interface OracleSiteDefinition {
+  name: string;
+  base: unknown;
+  config: CvaRuntimeProps | undefined;
+}
 
 interface OracleSite {
   name: string;
   base: unknown;
-  config: AnyProps | undefined;
-  ported: (props?: AnyProps) => string;
+  config: CvaRuntimeProps | undefined;
+  cnfast: (props?: CvaRuntimeProps) => string;
   variantNames: string[];
   valueKeys: string[];
 }
@@ -25,7 +33,7 @@ const MISMATCH_SAMPLE_LIMIT = 10;
 
 const random = createSeededRandom(ORACLE_SEED);
 
-const SITE_DEFINITIONS: { name: string; base: unknown; config: AnyProps | undefined }[] = [
+const SITE_DEFINITIONS: OracleSiteDefinition[] = [
   {
     name: "shadcn-button",
     base: "inline-flex items-center justify-center rounded-md text-sm font-medium",
@@ -115,9 +123,9 @@ const SITE_DEFINITIONS: { name: string; base: unknown; config: AnyProps | undefi
   },
 ];
 
-const buildSites = (): OracleSite[] =>
+const buildOracleSites = (): OracleSite[] =>
   SITE_DEFINITIONS.map((definition) => {
-    const variants = (definition.config?.variants ?? {}) as Record<string, AnyProps>;
+    const variants = (definition.config?.variants ?? {}) as Record<string, CvaRuntimeProps>;
     const variantNames = Object.keys(variants);
     const valueKeys: string[] = [];
     for (const variantName of variantNames) {
@@ -128,30 +136,32 @@ const buildSites = (): OracleSite[] =>
     if (valueKeys.length === 0) valueKeys.push("primary");
     return {
       ...definition,
-      ported: cva(definition.base as never, definition.config as never) as (
-        props?: AnyProps,
+      cnfast: cva(definition.base as never, definition.config as never) as (
+        props?: CvaRuntimeProps,
       ) => string,
       variantNames,
       valueKeys,
     };
   });
 
-const sites = buildSites();
+const oracleSites = buildOracleSites();
 
 let totalCallCount = 0;
 let mismatchCount = 0;
 
-const verifyCall = (site: OracleSite, props: AnyProps | undefined): void => {
+const verifyCall = (oracleSite: OracleSite, props: CvaRuntimeProps | undefined): void => {
   totalCallCount++;
-  const actualOutput = site.ported(props);
+  const actualOutput = oracleSite.cnfast(props);
   const expectedOutput = (
-    referenceCva(site.base as never, site.config as never) as (props?: AnyProps) => string
+    referenceCva(oracleSite.base as never, oracleSite.config as never) as (
+      props?: CvaRuntimeProps,
+    ) => string
   )(props);
   if (actualOutput === expectedOutput) return;
   mismatchCount++;
   if (mismatchCount <= MISMATCH_SAMPLE_LIMIT) {
     console.error(
-      `MISMATCH at call ${totalCallCount} site=${site.name}\n` +
+      `MISMATCH at call ${totalCallCount} site=${oracleSite.name}\n` +
         `  props:    ${JSON.stringify(props, (_key, value) => (value === undefined ? "«undefined»" : value))}\n` +
         `  expected: ${expectedOutput}\n` +
         `  actual:   ${actualOutput}`,
@@ -160,27 +170,29 @@ const verifyCall = (site: OracleSite, props: AnyProps | undefined): void => {
 };
 
 const rollPropValue = (valueKeys: string[]): unknown => {
-  const roll = random.getNext();
-  if (roll < 0.4) return valueKeys[Math.floor(random.getNext() * valueKeys.length)];
-  if (roll < 0.48) return null;
-  if (roll < 0.56) return undefined;
-  if (roll < 0.62) return random.getNext() < 0.5;
-  if (roll < 0.68) return 0;
-  if (roll < 0.72) return "";
-  if (roll < 0.76) return Number.NaN;
-  if (roll < 0.84) return Math.floor(random.getNext() * 4) - 1;
-  if (roll < 0.92) return "bogus";
+  const randomValue = random.getNext();
+  if (randomValue < 0.4) return valueKeys[Math.floor(random.getNext() * valueKeys.length)];
+  if (randomValue < 0.48) return null;
+  if (randomValue < 0.56) return undefined;
+  if (randomValue < 0.62) return random.getNext() < 0.5;
+  if (randomValue < 0.68) return 0;
+  if (randomValue < 0.72) return "";
+  if (randomValue < 0.76) return Number.NaN;
+  if (randomValue < 0.84) return Math.floor(random.getNext() * 4) - 1;
+  if (randomValue < 0.92) return "bogus";
   return "toString";
 };
 
-const rollScheduleProps = (site: OracleSite): AnyProps | undefined => {
+const rollScheduleProps = (oracleSite: OracleSite): CvaRuntimeProps | undefined => {
   if (random.getNext() < 0.08) return undefined;
-  const props: AnyProps = {};
-  for (const variantName of site.variantNames) {
+  const props: CvaRuntimeProps = {};
+  for (const variantName of oracleSite.variantNames) {
     if (random.getNext() < 0.4) continue;
-    props[variantName] = rollPropValue(site.valueKeys);
+    props[variantName] = rollPropValue(oracleSite.valueKeys);
   }
-  if (random.getNext() < 0.1) props["undeclaredKey"] = rollPropValue(site.valueKeys);
+  if (random.getNext() < 0.1) {
+    props["undeclaredKey"] = rollPropValue(oracleSite.valueKeys);
+  }
   const classRoll = random.getNext();
   if (classRoll < 0.2) props.className = `adhoc-${Math.floor(random.getNext() * 12)}`;
   else if (classRoll < 0.3) props.class = `adhoc-class-${Math.floor(random.getNext() * 12)}`;
@@ -197,27 +209,27 @@ const logPhase = (phaseName: string): void => {
 
 interface ScheduledCall {
   siteIndex: number;
-  props: AnyProps | undefined;
+  props: CvaRuntimeProps | undefined;
 }
 
 logPhase(
-  `phase A: ordered replay of ${SCHEDULE_ROLL_COUNT} seeded rolls across ${sites.length} sites`,
+  `phase A: ordered replay of ${SCHEDULE_ROLL_COUNT} seeded rolls across ${oracleSites.length} sites`,
 );
-const schedule: ScheduledCall[] = [];
+const scheduledCalls: ScheduledCall[] = [];
 for (let rollIndex = 0; rollIndex < SCHEDULE_ROLL_COUNT; rollIndex++) {
-  const siteIndex = Math.floor(random.getNext() * sites.length);
-  schedule.push({ siteIndex, props: rollScheduleProps(sites[siteIndex]!) });
+  const siteIndex = Math.floor(random.getNext() * oracleSites.length);
+  scheduledCalls.push({ siteIndex, props: rollScheduleProps(oracleSites[siteIndex]!) });
 }
-for (const scheduledCall of schedule) {
-  verifyCall(sites[scheduledCall.siteIndex]!, scheduledCall.props);
+for (const scheduledCall of scheduledCalls) {
+  verifyCall(oracleSites[scheduledCall.siteIndex]!, scheduledCall.props);
 }
 
 logPhase(`phase B: ${SHUFFLED_PASS_COUNT} shuffled replays of the same schedule`);
 for (let passIndex = 0; passIndex < SHUFFLED_PASS_COUNT; passIndex++) {
-  const order = createShuffledIndices(schedule.length, random);
-  for (let orderIndex = 0; orderIndex < order.length; orderIndex++) {
-    const scheduledCall = schedule[order[orderIndex]!]!;
-    verifyCall(sites[scheduledCall.siteIndex]!, scheduledCall.props);
+  const shuffledCallIndices = createShuffledIndices(scheduledCalls.length, random);
+  for (let orderIndex = 0; orderIndex < shuffledCallIndices.length; orderIndex++) {
+    const scheduledCall = scheduledCalls[shuffledCallIndices[orderIndex]!]!;
+    verifyCall(oracleSites[scheduledCall.siteIndex]!, scheduledCall.props);
   }
 }
 
@@ -225,17 +237,17 @@ logPhase(
   `phase C: memo storm, ${MEMO_STORM_COMBO_COUNT} live combos x${MEMO_STORM_PASS_COUNT} passes per site ` +
     `(forces ${CVA_MEMO_ROWS}-row eviction and round-robin wrap)`,
 );
-for (const site of sites) {
-  const stormRolls: (AnyProps | undefined)[] = [];
+for (const oracleSite of oracleSites) {
+  const stormProps: (CvaRuntimeProps | undefined)[] = [];
   for (let comboIndex = 0; comboIndex < MEMO_STORM_COMBO_COUNT; comboIndex++) {
-    const props = rollScheduleProps(site) ?? {};
+    const props = rollScheduleProps(oracleSite) ?? {};
     props.className = `storm-${comboIndex}`;
-    stormRolls.push(props);
+    stormProps.push(props);
   }
   for (let passIndex = 0; passIndex < MEMO_STORM_PASS_COUNT; passIndex++) {
-    for (const props of stormRolls) verifyCall(site, props);
-    verifyCall(site, undefined);
-    verifyCall(site, {});
+    for (const props of stormProps) verifyCall(oracleSite, props);
+    verifyCall(oracleSite, undefined);
+    verifyCall(oracleSite, {});
   }
 }
 
@@ -243,27 +255,27 @@ logPhase(
   `phase D: ${MUTATION_INTERLEAVE_COUNT} mutated-object class props interleaved with cached combos`,
 );
 for (let index = 0; index < MUTATION_INTERLEAVE_COUNT; index++) {
-  const site = sites[index % sites.length]!;
-  const toggles: Record<string, boolean> = { underline: index % 2 === 0 };
-  const nested: unknown[] = [`px-${index % 6}`];
+  const oracleSite = oracleSites[index % oracleSites.length]!;
+  const classNameToggles: Record<string, boolean> = { underline: index % 2 === 0 };
+  const nestedClass: unknown[] = [`px-${index % 6}`];
   const cachedProps = { className: "stable-adhoc" };
-  verifyCall(site, cachedProps);
-  verifyCall(site, { className: toggles });
-  toggles.underline = !toggles.underline;
-  verifyCall(site, { className: toggles });
-  verifyCall(site, { class: nested });
-  nested[0] = `px-${(index + 1) % 6}`;
-  verifyCall(site, { class: nested });
-  verifyCall(site, cachedProps);
+  verifyCall(oracleSite, cachedProps);
+  verifyCall(oracleSite, { className: classNameToggles });
+  classNameToggles.underline = !classNameToggles.underline;
+  verifyCall(oracleSite, { className: classNameToggles });
+  verifyCall(oracleSite, { class: nestedClass });
+  nestedClass[0] = `px-${(index + 1) % 6}`;
+  verifyCall(oracleSite, { class: nestedClass });
+  verifyCall(oracleSite, cachedProps);
 }
 
 logPhase("phase E: post-storm re-replay of the phase A schedule (stale-after-eviction check)");
-for (const scheduledCall of schedule) {
-  verifyCall(sites[scheduledCall.siteIndex]!, scheduledCall.props);
+for (const scheduledCall of scheduledCalls) {
+  verifyCall(oracleSites[scheduledCall.siteIndex]!, scheduledCall.props);
 }
 
 console.log(
-  `\nVerified ${totalCallCount} sequential calls through ${sites.length} stateful cva instances ` +
+  `\nVerified ${totalCallCount} sequential calls through ${oracleSites.length} stateful cva instances ` +
     "against fresh class-variance-authority output.",
 );
 if (mismatchCount > 0) {

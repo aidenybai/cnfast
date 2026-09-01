@@ -3,24 +3,18 @@ import { fileURLToPath } from "node:url";
 import { cva as referenceCva } from "class-variance-authority";
 import { cn, cva } from "../../src/index.js";
 import {
+  type CvaDataRecord,
+  type CvaCallRow,
+  type CvaComponent,
+  type CvaSiteDefinition,
+} from "../cva/cva-benchmark-types";
+import {
   referenceCn,
   type ClassListArgs,
   type ClassNameImplementation,
   type Workload,
   type WorkloadImplementationPair,
 } from "../lib/harness";
-
-type AnyProps = Record<string, unknown>;
-type CvaCallRow = [number] | [number, AnyProps];
-
-interface CvaSiteDefinition {
-  base: unknown;
-  config: AnyProps | null;
-}
-
-interface CvaComponent {
-  (props?: AnyProps): string;
-}
 
 const readJson = <T>(relativePath: string): T =>
   JSON.parse(readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8")) as T;
@@ -33,28 +27,27 @@ const buildInstances = (
     buildInstance(definition.base as never, (definition.config ?? undefined) as never),
   );
 
-// The workload rows encode `[siteIndex, props?]`; the implementation pair
-// decodes them onto prebuilt cva instances so the harness can A/B and
-// byte-verify the cva port against the real class-variance-authority.
-const createCvaImplementation = (instances: CvaComponent[]): ClassNameImplementation =>
-  ((siteIndex: number, props?: AnyProps) =>
-    instances[siteIndex]!(props)) as unknown as ClassNameImplementation;
+const createCvaImplementation = (cvaInstances: CvaComponent[]): ClassNameImplementation =>
+  ((siteIndex: number, props?: CvaDataRecord) =>
+    cvaInstances[siteIndex]!(props)) as unknown as ClassNameImplementation;
 
 const createComposedImplementation = (
-  instances: CvaComponent[],
+  cvaInstances: CvaComponent[],
   composeClassName: ClassNameImplementation,
 ): ClassNameImplementation =>
-  ((siteIndex: number, props?: AnyProps) =>
-    composeClassName(instances[siteIndex]!(props))) as unknown as ClassNameImplementation;
+  ((siteIndex: number, props?: CvaDataRecord) =>
+    composeClassName(cvaInstances[siteIndex]!(props))) as unknown as ClassNameImplementation;
 
 const createReplayRun =
   (callRows: CvaCallRow[]): ((implementation: ClassNameImplementation) => number) =>
   (implementation) => {
     let resultLengthSum = 0;
     for (let index = 0; index < callRows.length; index++) {
-      const row = callRows[index]!;
+      const callRow = callRows[index]!;
       resultLengthSum +=
-        row.length === 2 ? implementation(row[0], row[1]).length : implementation(row[0]).length;
+        callRow.length === 2
+          ? implementation(callRow[0], callRow[1]).length
+          : implementation(callRow[0]).length;
     }
     return resultLengthSum;
   };
@@ -97,24 +90,27 @@ const compoundHeavyRows: CvaCallRow[] = [
 ];
 
 export const getCvaWorkloads = (): Workload[] => {
-  const datasetSites = readJson<CvaSiteDefinition[]>("../cva/cva-sites.json");
+  const datasetSiteDefinitions = readJson<CvaSiteDefinition[]>("../cva/cva-sites.json");
   const datasetCallRows = readJson<CvaCallRow[]>("../cva/cva-calls.json");
-  const buildPorted = (): CvaComponent[] =>
-    buildInstances(datasetSites, cva as (base: never, config: never) => CvaComponent);
+  const buildCnfast = (): CvaComponent[] =>
+    buildInstances(datasetSiteDefinitions, cva as (base: never, config: never) => CvaComponent);
   const buildReference = (): CvaComponent[] =>
-    buildInstances(datasetSites, referenceCva as (base: never, config: never) => CvaComponent);
+    buildInstances(
+      datasetSiteDefinitions,
+      referenceCva as (base: never, config: never) => CvaComponent,
+    );
 
-  const zeroArgRows = datasetSites.map((_, siteIndex): CvaCallRow => [siteIndex]);
+  const zeroArgRows = datasetSiteDefinitions.map((_, siteIndex): CvaCallRow => [siteIndex]);
 
-  const replayPair: WorkloadImplementationPair = {
-    cnfast: createCvaImplementation(buildPorted()),
+  const replayImplementations: WorkloadImplementationPair = {
+    cnfast: createCvaImplementation(buildCnfast()),
     reference: createCvaImplementation(buildReference()),
   };
-  const zeroArgPair: WorkloadImplementationPair = {
-    cnfast: createCvaImplementation(buildPorted()),
+  const zeroArgImplementations: WorkloadImplementationPair = {
+    cnfast: createCvaImplementation(buildCnfast()),
     reference: createCvaImplementation(buildReference()),
   };
-  const compoundPair: WorkloadImplementationPair = {
+  const compoundImplementations: WorkloadImplementationPair = {
     cnfast: createCvaImplementation(
       buildInstances([compoundHeavySite], cva as (base: never, config: never) => CvaComponent),
     ),
@@ -125,11 +121,8 @@ export const getCvaWorkloads = (): Workload[] => {
       ),
     ),
   };
-  // The composite pair mirrors the shadcn wrapper on both sides: the cnfast
-  // side is cn(cva(props)) on the port, the reference side is the real
-  // class-variance-authority composed through clsx + twMerge.
-  const composedPair: WorkloadImplementationPair = {
-    cnfast: createComposedImplementation(buildPorted(), cn),
+  const composedImplementations: WorkloadImplementationPair = {
+    cnfast: createComposedImplementation(buildCnfast(), cn),
     reference: createComposedImplementation(buildReference(), referenceCn),
   };
 
@@ -137,9 +130,9 @@ export const getCvaWorkloads = (): Workload[] => {
     {
       group: "cva",
       name: "cva / variant replay",
-      meta: `(${datasetCallRows.length} calls, ${datasetSites.length} sites)`,
+      meta: `(${datasetCallRows.length} calls, ${datasetSiteDefinitions.length} sites)`,
       classListCases: datasetCallRows as ClassListArgs[],
-      implementations: replayPair,
+      implementations: replayImplementations,
       run: createReplayRun(datasetCallRows),
     },
     {
@@ -147,7 +140,7 @@ export const getCvaWorkloads = (): Workload[] => {
       name: "cva / all-defaults",
       meta: `(${zeroArgRows.length} zero-arg sites)`,
       classListCases: zeroArgRows as ClassListArgs[],
-      implementations: zeroArgPair,
+      implementations: zeroArgImplementations,
       run: createReplayRun(zeroArgRows),
     },
     {
@@ -155,7 +148,7 @@ export const getCvaWorkloads = (): Workload[] => {
       name: "cva / compound-heavy",
       meta: `(${compoundHeavyRows.length} calls, 9 compound entries)`,
       classListCases: compoundHeavyRows as ClassListArgs[],
-      implementations: compoundPair,
+      implementations: compoundImplementations,
       run: createReplayRun(compoundHeavyRows),
     },
     {
@@ -163,7 +156,7 @@ export const getCvaWorkloads = (): Workload[] => {
       name: "cva / composite cn(cva)",
       meta: `(${datasetCallRows.length} calls through cn)`,
       classListCases: datasetCallRows as ClassListArgs[],
-      implementations: composedPair,
+      implementations: composedImplementations,
       run: createReplayRun(datasetCallRows),
     },
   ];
