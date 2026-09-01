@@ -111,7 +111,12 @@ describe("cva combination table: interned results stay byte-identical to the ref
       variants: { size: { small: "size-small", large: "size-large" } },
       defaultVariants: { size: objectDefault },
     });
-    expectSameAcrossRounds(objectDefaultPair, [{}, { size: "" }, { size: "large" }, { size: null }]);
+    expectSameAcrossRounds(objectDefaultPair, [
+      {},
+      { size: "" },
+      { size: "large" },
+      { size: null },
+    ]);
 
     const symbolDefaultPair = createPair("chip", {
       variants: { size: { small: "size-small" } },
