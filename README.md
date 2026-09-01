@@ -5,7 +5,7 @@
 
 Fast drop-in replacement for `cn`.
 
-cnfast runs [**20× faster**](https://cn.aidenybai.com/) than `tailwind-merge`, with byte-identical output. Same API, no code changes.
+cnfast runs [**11× faster**](https://cn.aidenybai.com/) than `tailwind-merge` (group-balanced geomean, 115 workloads), with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";

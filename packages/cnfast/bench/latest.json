@@ -1,123 +1,123 @@
 {
-  "generatedAt": "2026-08-31T04:48:46.222Z",
-  "gitSha": "1a42318",
+  "generatedAt": "2026-09-01T02:55:07.129Z",
+  "gitSha": "7cc7da2",
   "runtime": "Bun 1.3.14",
   "bestOf": 3,
   "timeMs": 800,
   "workloadCount": 115,
   "workloadGroupCount": 10,
-  "overallSpeedup": 15.076258318656931,
-  "groupBalancedSpeedup": 11.559320419868346,
+  "overallSpeedup": 14.202399716401334,
+  "groupBalancedSpeedup": 10.949272933167085,
   "bundle": {
-    "cnfastGzip": 13887,
-    "referenceGzip": 8720
+    "cnfastGzip": 14155,
+    "referenceGzip": 8757
   },
   "rows": [
     {
       "label": "Cached workloads",
       "detail": "re-render and working sets shared by both caches",
-      "cnfast": 9401.481899379613,
-      "reference": 3198.5755633006634,
-      "speedup": 2.9392714704785834,
+      "cnfast": 9243.726220497221,
+      "reference": 3280.4464961893677,
+      "speedup": 2.8178256317348698,
       "cacheState": "cached",
       "emphasis": false
     },
     {
       "label": "Uncached workloads",
       "detail": "working sets larger than both caches",
-      "cnfast": 15591.244120914696,
-      "reference": 287.516584429063,
-      "speedup": 54.22728623420127,
+      "cnfast": 15478.715094245747,
+      "reference": 286.59785778707993,
+      "speedup": 54.00848147910884,
       "cacheState": "uncached",
       "emphasis": false
     },
     {
       "label": "Input shapes",
       "detail": "strings, arrays, objects, conditionals, geomean",
-      "cnfast": 4281.345884373435,
-      "reference": 1576.1146807107723,
-      "speedup": 2.7163923645725414,
+      "cnfast": 3946.705259474178,
+      "reference": 1530.4416544458445,
+      "speedup": 2.578801516548652,
       "cacheState": "cached",
       "emphasis": false
     },
     {
       "label": "Tailwind syntax",
       "detail": "conflicts, modifiers, arbitrary forms, geomean",
-      "cnfast": 13404.523786090273,
-      "reference": 157.98560659232228,
-      "speedup": 84.84648744413997,
+      "cnfast": 12405.518063806287,
+      "reference": 157.29705473514863,
+      "speedup": 78.8668172121485,
       "cacheState": "uncached",
       "emphasis": false
     },
     {
       "label": "Cache boundaries",
       "detail": "working sets that fit only one cache or rotate generations",
-      "cnfast": 8303.36566311262,
-      "reference": 433.7951500369374,
-      "speedup": 19.141213686703466,
+      "cnfast": 7569.323812224003,
+      "reference": 440.41412971633775,
+      "speedup": 17.186832350495337,
       "emphasis": false
     },
     {
       "label": "Conditional renders",
       "detail": "2, 3, and 5 argument state changes, geomean",
-      "cnfast": 3040.3337734926004,
-      "reference": 1164.813488044083,
-      "speedup": 2.6101464352012593,
+      "cnfast": 2598.3504443203533,
+      "reference": 1222.209762500039,
+      "speedup": 2.1259447633648483,
       "cacheState": "cached",
       "emphasis": false
     },
     {
       "label": "Result reuse",
       "detail": "nested calls and keyed consumers, geomean",
-      "cnfast": 7621.620855154424,
-      "reference": 160.3682543680674,
-      "speedup": 47.525745573445874,
+      "cnfast": 6701.918896261623,
+      "reference": 155.7646808487994,
+      "speedup": 43.025921279081025,
       "cacheState": "uncached",
       "emphasis": false
     },
     {
       "label": "Component corpus",
       "detail": "harvested app source, geomean",
-      "cnfast": 20949.679411700916,
-      "reference": 833.365314574752,
-      "speedup": 25.138650535739142,
+      "cnfast": 19457.195509230874,
+      "reference": 813.7779439500151,
+      "speedup": 23.909711062930985,
       "emphasis": false
     },
     {
       "label": "Page render",
       "detail": "real call sequence, geomean",
-      "cnfast": 12418.487062756038,
-      "reference": 2994.6193307268195,
-      "speedup": 4.146933446710231,
+      "cnfast": 12515.483691823454,
+      "reference": 2791.019251652048,
+      "speedup": 4.484198267143923,
       "emphasis": false
     },
     {
       "label": "Live data grid",
       "detail": "12K cells, live arbitrary values",
-      "cnfast": 133.1855873643133,
-      "reference": 24.32109052563219,
-      "speedup": 5.476135505681703,
+      "cnfast": 108.29089486565924,
+      "reference": 23.481172684281372,
+      "speedup": 4.611818000816914,
       "cacheState": "uncached",
       "emphasis": false
     },
     {
       "label": "Overall",
       "detail": "group-balanced mean of 10 groups and 115 workloads",
-      "cnfast": 6891.45796445406,
-      "reference": 596.1819306097713,
-      "speedup": 11.559320419868346,
+      "cnfast": 6434.424109265941,
+      "reference": 587.6576598775852,
+      "speedup": 10.949272933167085,
       "emphasis": true
     }
   ],
   "forms": [
     {
       "label": "cnfast",
-      "opsPerSec": 17092350.50082628,
-      "speedup": 7.477957721194532
+      "opsPerSec": 15466055.62027468,
+      "speedup": 6.890771698503648
     },
     {
       "label": "cn",
-      "opsPerSec": 2285697.6648025154,
+      "opsPerSec": 2244459.1544998046,
       "speedup": 1
     }
   ]
