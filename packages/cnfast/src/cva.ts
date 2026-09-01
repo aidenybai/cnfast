@@ -5,7 +5,7 @@
 // inherited value from an own one). None of these shapes occur in real usage; the
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
+import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS, CVA_TABLE_MAX_SLOTS } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -66,6 +66,13 @@ interface CompiledCompoundRow {
   fragment: string;
 }
 
+interface CombinationTable {
+  slotCount: number;
+  stateIndexes: Record<string, number>[];
+  stateCounts: number[];
+  defaultStates: number[];
+}
+
 interface CompiledVariantConfig {
   baseFragment: string;
   variantNames: string[];
@@ -82,6 +89,13 @@ interface CompiledVariantConfig {
   rowValidFlags: boolean[];
   rowResults: string[];
   victimRow: number;
+  // The table pieces are held flat rather than behind the CombinationTable
+  // object: the extra pointer chase per call measured 1.5% on V8.
+  tableSlotCount: number;
+  tableStateIndexes: Record<string, number>[];
+  tableStateCounts: number[];
+  tableDefaultStates: number[];
+  tableResults: (string | null)[];
 }
 
 const normalizeVariantKey = (value: unknown): unknown =>
@@ -105,6 +119,44 @@ const compileCompoundRow = (entry: Record<string, unknown>): CompiledCompoundRow
       ? classFragment + " " + classNameFragment
       : classFragment || classNameFragment;
   return { selectorKeys, selectorValues, selectorArrays, fragment };
+};
+
+// Without compounds (95% of real configs) the output of a class-less call is a
+// pure function of each variant's RESOLVED lookup key, so the whole answer space
+// is enumerable: per variant, one state per declared value key (already the
+// ToPropertyKey strings via Object.keys), one for the resolved default, and
+// state 0 for a null prop (which suppresses both the key and the default).
+// Combinations are addressed by the fused state slot and interned there
+// permanently, filled lazily so creation stays free.
+const compileCombinationTable = (
+  variantNames: string[],
+  fragmentTables: Record<string, string | undefined>[],
+  defaultKeys: unknown[],
+): CombinationTable | null => {
+  const stateIndexes: Record<string, number>[] = [];
+  const stateCounts: number[] = [];
+  const defaultStates: number[] = [];
+  let slotCount = 1;
+  for (let index = 0; index < variantNames.length; index++) {
+    const defaultKey = defaultKeys[index];
+    // Coercing an object or symbol default to its lookup key here would move an
+    // observable step (a custom toString, or a symbol that is not a string key
+    // at all) off the call that actually falls back to it.
+    if (defaultKey !== null && (typeof defaultKey === "object" || typeof defaultKey === "symbol")) {
+      return null;
+    }
+    const stateIndex: Record<string, number> = Object.create(null);
+    let stateCount = 1;
+    for (const valueKey of Object.keys(fragmentTables[index]!)) stateIndex[valueKey] = stateCount++;
+    const defaultKeyString = String(defaultKey);
+    if (stateIndex[defaultKeyString] === undefined) stateIndex[defaultKeyString] = stateCount++;
+    stateIndexes.push(stateIndex);
+    stateCounts.push(stateCount);
+    defaultStates.push(stateIndex[defaultKeyString]!);
+    slotCount *= stateCount;
+    if (slotCount > CVA_TABLE_MAX_SLOTS) return null;
+  }
+  return { slotCount, stateIndexes, stateCounts, defaultStates };
 };
 
 // The config is treated as frozen from the first call onward: upstream re-reads
@@ -161,6 +213,11 @@ const compileVariantConfig = (
 
   const width = relevantKeys.length + 2;
   const isMemoizable = width <= CVA_MEMO_MAX_VALUE_SLOTS;
+  const combinationTable =
+    compoundRows.length === 0 && isMemoizable
+      ? compileCombinationTable(variantNames, fragmentTables, defaultKeys)
+      : null;
+
   return {
     baseFragment,
     variantNames,
@@ -177,6 +234,14 @@ const compileVariantConfig = (
     rowValidFlags: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
     rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
     victimRow: 0,
+    tableSlotCount: combinationTable === null ? 0 : combinationTable.slotCount,
+    tableStateIndexes: combinationTable === null ? [] : combinationTable.stateIndexes,
+    tableStateCounts: combinationTable === null ? [] : combinationTable.stateCounts,
+    tableDefaultStates: combinationTable === null ? [] : combinationTable.defaultStates,
+    tableResults:
+      combinationTable === null
+        ? []
+        : createFilledArray<string | null>(combinationTable.slotCount, null),
   };
 };
 
@@ -309,6 +374,56 @@ const resolveThroughMemo = (
   return resolvedClassName;
 };
 
+// The keyed reads coerce exactly like upstream's `variants[v][variantKey]`
+// (ToPropertyKey on the normalized value), so two prop values share a slot
+// precisely when upstream would read the same fragment; a value whose key was
+// never enumerated (an unknown value, a symbol, or one reachable only through
+// the variant object's prototype chain) has no slot and falls back to the memo,
+// which keeps upstream's raw-lookup semantics.
+const resolveThroughTable = (
+  compiled: CompiledVariantConfig,
+  propRecord: Record<string, unknown>,
+): string => {
+  const adhocClass = propRecord.class;
+  const adhocClassName = propRecord.className;
+  if (adhocClass !== undefined || adhocClassName !== undefined) {
+    // Class values are unbounded, so they are never tabled. A non-null object
+    // one cannot be memoized either: rows hold primitives only, so neither the
+    // row scan nor the store could succeed.
+    if (
+      (typeof adhocClass === "object" && adhocClass !== null) ||
+      (typeof adhocClassName === "object" && adhocClassName !== null)
+    ) {
+      return resolveVariantClassName(compiled, propRecord);
+    }
+    return resolveThroughMemo(compiled, propRecord);
+  }
+
+  const variantNames = compiled.variantNames;
+  const stateIndexes = compiled.tableStateIndexes;
+  const stateCounts = compiled.tableStateCounts;
+  const defaultStates = compiled.tableDefaultStates;
+  let slot = 0;
+  for (let index = 0; index < variantNames.length; index++) {
+    const propValue = propRecord[variantNames[index]!];
+    let state = 0;
+    if (propValue !== null) {
+      const normalized = normalizeVariantKey(propValue);
+      const resolvedState = normalized
+        ? stateIndexes[index]![normalized as string]
+        : defaultStates[index]!;
+      if (resolvedState === undefined) return resolveThroughMemo(compiled, propRecord);
+      state = resolvedState;
+    }
+    slot = slot * stateCounts[index]! + state;
+  }
+  const tabled = compiled.tableResults[slot]!;
+  if (tabled !== null) return tabled;
+  const resolvedClassName = resolveVariantClassName(compiled, propRecord);
+  compiled.tableResults[slot] = resolvedClassName;
+  return resolvedClassName;
+};
+
 export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
   let compiled: CompiledVariantConfig | null = null;
 
@@ -325,6 +440,7 @@ export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
       return defaultClassName;
     }
     const propRecord = props as Record<string, unknown>;
+    if (compiled.tableSlotCount !== 0) return resolveThroughTable(compiled, propRecord);
     if (compiled.memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
     return resolveThroughMemo(compiled, propRecord);
   };
