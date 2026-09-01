@@ -2,7 +2,17 @@
 // Mutated configs and inherited or non-enumerable props can differ from upstream; none
 // appeared in the 58-repository corpus.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_MEMO_ROW_COUNT, CVA_MEMO_VALUE_SLOTS_PER_ROW } from "./lib/constants.js";
+import {
+  CVA_MEMO_FAST_LANE_MAX_PROP_NAMES,
+  CVA_MEMO_FAST_LANE_SLOTS_PER_ROW,
+  CVA_MEMO_LANE_FAST,
+  CVA_MEMO_LANE_NONE,
+  CVA_MEMO_LANE_WIDE,
+  CVA_MEMO_NARROW_ROW_COUNT,
+  CVA_MEMO_ROW_COUNT,
+  CVA_MEMO_VALUE_SLOTS_PER_ROW,
+  CVA_TABLE_MAX_SLOTS,
+} from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -69,6 +79,13 @@ interface CompiledCompoundVariant {
   classNameFragment: string;
 }
 
+interface CompiledCombinationTable {
+  slotCount: number;
+  statesByKey: Record<string, number>[];
+  stateCounts: number[];
+  defaultStates: number[];
+}
+
 interface CompiledCvaConfig {
   baseFragment: string;
   variantNames: string[];
@@ -79,12 +96,25 @@ interface CompiledCvaConfig {
   compoundDefaultValues: Record<string, unknown>;
   memoPropNames: string[];
   defaultClassName: string | null;
+  memoLane: number;
+  memoPropName0: string;
+  memoPropName1: string;
   memoValueCountPerRow: number;
   memoCandidateValues: unknown[];
   memoizedValues: unknown[];
-  memoRowValidity: boolean[];
   memoizedResults: string[];
+  memoRingRowCount: number;
+  memoWrittenRowCount: number;
+  memoScanRowCount: number;
   nextMemoRowIndex: number;
+  didMemoHitThisPass: boolean;
+  // The combination table is held flat rather than behind a nested object: the extra
+  // pointer chase per call measured 1.5% on V8.
+  combinationSlotCount: number;
+  combinationStatesByKey: Record<string, number>[];
+  combinationStateCounts: number[];
+  combinationDefaultStates: number[];
+  combinationClassNames: (string | null)[];
 }
 
 const normalizeVariantKey = (value: unknown): unknown =>
@@ -113,6 +143,52 @@ const compileCompoundVariant = (compoundVariant: RuntimeCvaProps): CompiledCompo
     selectorArrays,
     classNameFragment: combinedClassNameFragment,
   };
+};
+
+// Without compound variants (95% of real configs) the output of a class-less call is a pure
+// function of each variant's resolved lookup key, so the whole answer space is enumerable.
+// Each variant contributes one state per declared value key, one more for the resolved
+// default when it is not already a key, and state 0 for a null prop, which suppresses both
+// the key and the default. Combinations are addressed by the fused mixed-radix slot and
+// interned there permanently, filled lazily so creating a component stays free.
+const compileCombinationTable = (
+  variantNames: string[],
+  variantClassNamesByKey: Record<string, string | undefined>[],
+  defaultVariantKeys: unknown[],
+): CompiledCombinationTable | null => {
+  const statesByKey: Record<string, number>[] = [];
+  const stateCounts: number[] = [];
+  const defaultStates: number[] = [];
+  let slotCount = 1;
+  for (let variantIndex = 0; variantIndex < variantNames.length; variantIndex++) {
+    const defaultVariantKey = defaultVariantKeys[variantIndex];
+    // Coercing a default that carries user code (an object or function with a custom
+    // toString, or a symbol, which is not a string key at all) to its lookup key here would
+    // move an observable step off the call that actually falls back to it.
+    if (
+      defaultVariantKey !== null &&
+      (typeof defaultVariantKey === "object" ||
+        typeof defaultVariantKey === "symbol" ||
+        typeof defaultVariantKey === "function")
+    ) {
+      return null;
+    }
+    const stateByKey: Record<string, number> = Object.create(null);
+    let stateCount = 1;
+    for (const valueKey of Object.keys(variantClassNamesByKey[variantIndex]!)) {
+      stateByKey[valueKey] = stateCount++;
+    }
+    const defaultVariantKeyString = String(defaultVariantKey);
+    if (stateByKey[defaultVariantKeyString] === undefined) {
+      stateByKey[defaultVariantKeyString] = stateCount++;
+    }
+    statesByKey.push(stateByKey);
+    stateCounts.push(stateCount);
+    defaultStates.push(stateByKey[defaultVariantKeyString]!);
+    slotCount *= stateCount;
+    if (slotCount > CVA_TABLE_MAX_SLOTS) return null;
+  }
+  return { slotCount, statesByKey, stateCounts, defaultStates };
 };
 
 // Upstream re-reads configs per call, but the corpus had no post-creation mutation.
@@ -166,8 +242,28 @@ const compileCvaConfig = (
     }
   }
 
-  const memoValueCountPerRow = memoPropNames.length + 2;
-  const isMemoizable = memoValueCountPerRow <= CVA_MEMO_VALUE_SLOTS_PER_ROW;
+  // The fast lane pads a config of at most two memo prop names to the fixed four-slot row
+  // layout [name0, name1, class, className], where a missing name slot repeats its
+  // neighbour's read and so compares equal by construction. That covers the 85% of real
+  // configs declaring two names or fewer, and lets one unrolled compare hold every value in
+  // a local. Both lanes share the row count: real sites cycle more prop shapes than eight
+  // rows hold (the 48-site replay has a median of 11 distinct shapes per site, and 38 of
+  // its 48 sites exceed eight), and the ring below shrinks itself back for sites that never
+  // hit.
+  const memoPropCount = memoPropNames.length;
+  const naturalMemoValueCountPerRow = memoPropCount + 2;
+  const isMemoizable = naturalMemoValueCountPerRow <= CVA_MEMO_VALUE_SLOTS_PER_ROW;
+  const isFastLane = isMemoizable && memoPropCount <= CVA_MEMO_FAST_LANE_MAX_PROP_NAMES;
+  const memoValueCountPerRow = isFastLane
+    ? CVA_MEMO_FAST_LANE_SLOTS_PER_ROW
+    : naturalMemoValueCountPerRow;
+  // A compound variant matches on raw values rather than lookup keys, so its answer space
+  // is not enumerable; the table also leans on the memo for its fallbacks.
+  const combinationTable =
+    compiledCompoundVariants.length === 0 && isMemoizable
+      ? compileCombinationTable(variantNames, variantClassNamesByKey, defaultVariantKeys)
+      : null;
+
   return {
     baseFragment,
     variantNames,
@@ -178,6 +274,13 @@ const compileCvaConfig = (
     compoundDefaultValues,
     memoPropNames,
     defaultClassName: null,
+    memoLane: isFastLane
+      ? CVA_MEMO_LANE_FAST
+      : isMemoizable
+        ? CVA_MEMO_LANE_WIDE
+        : CVA_MEMO_LANE_NONE,
+    memoPropName0: memoPropNames[0] ?? "class",
+    memoPropName1: memoPropNames[1] ?? memoPropNames[0] ?? "class",
     memoValueCountPerRow: isMemoizable ? memoValueCountPerRow : 0,
     memoCandidateValues: isMemoizable
       ? createFilledArray<unknown>(memoValueCountPerRow, undefined)
@@ -185,9 +288,20 @@ const compileCvaConfig = (
     memoizedValues: isMemoizable
       ? createFilledArray<unknown>(CVA_MEMO_ROW_COUNT * memoValueCountPerRow, undefined)
       : [],
-    memoRowValidity: isMemoizable ? createFilledArray(CVA_MEMO_ROW_COUNT, false) : [],
     memoizedResults: isMemoizable ? createFilledArray(CVA_MEMO_ROW_COUNT, "") : [],
+    memoRingRowCount: CVA_MEMO_ROW_COUNT,
+    memoWrittenRowCount: 0,
+    memoScanRowCount: 0,
     nextMemoRowIndex: 0,
+    didMemoHitThisPass: true,
+    combinationSlotCount: combinationTable === null ? 0 : combinationTable.slotCount,
+    combinationStatesByKey: combinationTable === null ? [] : combinationTable.statesByKey,
+    combinationStateCounts: combinationTable === null ? [] : combinationTable.stateCounts,
+    combinationDefaultStates: combinationTable === null ? [] : combinationTable.defaultStates,
+    combinationClassNames:
+      combinationTable === null
+        ? []
+        : createFilledArray<string | null>(combinationTable.slotCount, null),
   };
 };
 
@@ -272,10 +386,96 @@ const resolveVariantClassName = (
   return className;
 };
 
-// Memoize only primitive prop vectors because object and array class values can mutate.
-// Invalidate a row before filling it so an aborted store cannot expose partial data.
-// Stable string identity also preserves wrapping cn() cache hits.
-const resolveThroughMemo = (
+// Memoize only primitive prop vectors because object and array class values can mutate
+// without changing identity. Every candidate is vetted for primitiveness before the first
+// row write, so a row moves atomically from its old entry to the new one and can never be
+// served half-written; that is what lets a written-row count bound the scan in place of
+// per-row validity flags, since every row below it holds a complete entry. Stable string
+// identity also preserves wrapping cn() cache hits.
+const resolveMemoMiss = (
+  compiledConfig: CompiledCvaConfig,
+  propRecord: RuntimeCvaProps,
+): string => {
+  const memoValueCountPerRow = compiledConfig.memoValueCountPerRow;
+  const memoCandidateValues = compiledConfig.memoCandidateValues;
+  const resolvedClassName = resolveVariantClassName(compiledConfig, propRecord);
+  let memoValueIndex = 0;
+  for (; memoValueIndex < memoValueCountPerRow; memoValueIndex++) {
+    const memoValue = memoCandidateValues[memoValueIndex];
+    if (memoValue !== null && (typeof memoValue === "object" || typeof memoValue === "function")) {
+      break;
+    }
+  }
+  if (memoValueIndex === memoValueCountPerRow) {
+    const memoizedValues = compiledConfig.memoizedValues;
+    const memoRowIndex = compiledConfig.nextMemoRowIndex;
+    const rowStartIndex = memoRowIndex * memoValueCountPerRow;
+    for (memoValueIndex = 0; memoValueIndex < memoValueCountPerRow; memoValueIndex++) {
+      memoizedValues[rowStartIndex + memoValueIndex] = memoCandidateValues[memoValueIndex];
+    }
+    compiledConfig.memoizedResults[memoRowIndex] = resolvedClassName;
+    let followingMemoRowIndex = memoRowIndex + 1;
+    if (memoRowIndex === compiledConfig.memoWrittenRowCount) {
+      compiledConfig.memoWrittenRowCount = followingMemoRowIndex;
+      compiledConfig.memoScanRowCount = followingMemoRowIndex;
+    }
+    if (followingMemoRowIndex === compiledConfig.memoRingRowCount) {
+      // The ring keeps its full width only while it is paying off. A whole pass that served
+      // no hit means the site cycles more shapes than the memo can hold, so the ring falls
+      // back to the narrow width and stops paying a full-width scan per doomed lookup; one
+      // hit restores it. The flag starts set so the fill-up pass, which cannot hit yet,
+      // never counts as a failed one. Rows outside the ring stay valid, because a row is an
+      // immutable value-vector to className fact, so widening again serves them straight
+      // away.
+      const memoRingRowCount = compiledConfig.didMemoHitThisPass
+        ? CVA_MEMO_ROW_COUNT
+        : CVA_MEMO_NARROW_ROW_COUNT;
+      const memoWrittenRowCount = compiledConfig.memoWrittenRowCount;
+      compiledConfig.memoRingRowCount = memoRingRowCount;
+      compiledConfig.memoScanRowCount =
+        memoWrittenRowCount < memoRingRowCount ? memoWrittenRowCount : memoRingRowCount;
+      compiledConfig.didMemoHitThisPass = false;
+      followingMemoRowIndex = 0;
+    }
+    compiledConfig.nextMemoRowIndex = followingMemoRowIndex;
+  }
+  return resolvedClassName;
+};
+
+// Holding the four reads in locals keeps the hit path off the candidate vector entirely,
+// which roughly halves the hit cost on both engines. The vector is filled only once the
+// scan falls through to the outlined miss.
+const resolveThroughFastMemo = (
+  compiledConfig: CompiledCvaConfig,
+  propRecord: RuntimeCvaProps,
+): string => {
+  const memoValue0 = propRecord[compiledConfig.memoPropName0];
+  const memoValue1 = propRecord[compiledConfig.memoPropName1];
+  const additionalClass = propRecord.class;
+  const additionalClassName = propRecord.className;
+  const memoizedValues = compiledConfig.memoizedValues;
+  const memoScanRowCount = compiledConfig.memoScanRowCount;
+  for (let rowIndex = 0; rowIndex < memoScanRowCount; rowIndex++) {
+    const rowStartIndex = rowIndex * CVA_MEMO_FAST_LANE_SLOTS_PER_ROW;
+    if (
+      memoValue0 === memoizedValues[rowStartIndex] &&
+      memoValue1 === memoizedValues[rowStartIndex + 1] &&
+      additionalClass === memoizedValues[rowStartIndex + 2] &&
+      additionalClassName === memoizedValues[rowStartIndex + 3]
+    ) {
+      compiledConfig.didMemoHitThisPass = true;
+      return compiledConfig.memoizedResults[rowIndex]!;
+    }
+  }
+  const memoCandidateValues = compiledConfig.memoCandidateValues;
+  memoCandidateValues[0] = memoValue0;
+  memoCandidateValues[1] = memoValue1;
+  memoCandidateValues[2] = additionalClass;
+  memoCandidateValues[3] = additionalClassName;
+  return resolveMemoMiss(compiledConfig, propRecord);
+};
+
+const resolveThroughWideMemo = (
   compiledConfig: CompiledCvaConfig,
   propRecord: RuntimeCvaProps,
 ): string => {
@@ -290,9 +490,8 @@ const resolveThroughMemo = (
   memoCandidateValues[memoPropCount + 1] = propRecord.className;
 
   const memoizedValues = compiledConfig.memoizedValues;
-  const memoRowValidity = compiledConfig.memoRowValidity;
-  for (let rowIndex = 0; rowIndex < CVA_MEMO_ROW_COUNT; rowIndex++) {
-    if (!memoRowValidity[rowIndex]) continue;
+  const memoScanRowCount = compiledConfig.memoScanRowCount;
+  for (let rowIndex = 0; rowIndex < memoScanRowCount; rowIndex++) {
     const rowStartIndex = rowIndex * memoValueCountPerRow;
     let memoValueIndex = 0;
     while (
@@ -301,26 +500,72 @@ const resolveThroughMemo = (
     ) {
       memoValueIndex++;
     }
-    if (memoValueIndex === memoValueCountPerRow) return compiledConfig.memoizedResults[rowIndex]!;
+    if (memoValueIndex === memoValueCountPerRow) {
+      compiledConfig.didMemoHitThisPass = true;
+      return compiledConfig.memoizedResults[rowIndex]!;
+    }
   }
 
+  return resolveMemoMiss(compiledConfig, propRecord);
+};
+
+// The lane pick for calls that reach the memo by falling out of the combination table. The
+// closure calls the two lanes directly, so a table-less config keeps its memo hit on a
+// single frame.
+const resolveThroughMemo = (
+  compiledConfig: CompiledCvaConfig,
+  propRecord: RuntimeCvaProps,
+): string =>
+  compiledConfig.memoLane === CVA_MEMO_LANE_FAST
+    ? resolveThroughFastMemo(compiledConfig, propRecord)
+    : resolveThroughWideMemo(compiledConfig, propRecord);
+
+// The keyed state reads coerce exactly like upstream's `variants[name][variantKey]`, so two
+// prop values share a slot precisely when upstream would read the same fragment. A value
+// whose key was never enumerated (an unknown value, a symbol, or one reachable only through
+// the variant object's prototype chain) has no state and falls back to the memo, which
+// keeps upstream's raw-lookup semantics.
+const resolveThroughCombinationTable = (
+  compiledConfig: CompiledCvaConfig,
+  propRecord: RuntimeCvaProps,
+): string => {
+  const additionalClass = propRecord.class;
+  const additionalClassName = propRecord.className;
+  if (additionalClass !== undefined || additionalClassName !== undefined) {
+    // Class values are unbounded, so they are never tabled. A non-null object one cannot be
+    // memoized either: rows hold primitives only, so neither the row scan nor the store
+    // could succeed.
+    if (
+      (typeof additionalClass === "object" && additionalClass !== null) ||
+      (typeof additionalClassName === "object" && additionalClassName !== null)
+    ) {
+      return resolveVariantClassName(compiledConfig, propRecord);
+    }
+    return resolveThroughMemo(compiledConfig, propRecord);
+  }
+
+  const variantNames = compiledConfig.variantNames;
+  const combinationStatesByKey = compiledConfig.combinationStatesByKey;
+  const combinationStateCounts = compiledConfig.combinationStateCounts;
+  const combinationDefaultStates = compiledConfig.combinationDefaultStates;
+  let combinationSlot = 0;
+  for (let variantIndex = 0; variantIndex < variantNames.length; variantIndex++) {
+    const propValue = propRecord[variantNames[variantIndex]!];
+    let variantState = 0;
+    if (propValue !== null) {
+      const normalizedVariantKey = normalizeVariantKey(propValue);
+      const resolvedState = normalizedVariantKey
+        ? combinationStatesByKey[variantIndex]![normalizedVariantKey as string]
+        : combinationDefaultStates[variantIndex]!;
+      if (resolvedState === undefined) return resolveThroughMemo(compiledConfig, propRecord);
+      variantState = resolvedState;
+    }
+    combinationSlot = combinationSlot * combinationStateCounts[variantIndex]! + variantState;
+  }
+  const internedClassName = compiledConfig.combinationClassNames[combinationSlot]!;
+  if (internedClassName !== null) return internedClassName;
   const resolvedClassName = resolveVariantClassName(compiledConfig, propRecord);
-  const nextMemoRowIndex = compiledConfig.nextMemoRowIndex;
-  memoRowValidity[nextMemoRowIndex] = false;
-  const rowStartIndex = nextMemoRowIndex * memoValueCountPerRow;
-  let memoValueIndex = 0;
-  for (; memoValueIndex < memoValueCountPerRow; memoValueIndex++) {
-    const memoValue = memoCandidateValues[memoValueIndex];
-    if (memoValue !== null && (typeof memoValue === "object" || typeof memoValue === "function"))
-      break;
-    memoizedValues[rowStartIndex + memoValueIndex] = memoValue;
-  }
-  if (memoValueIndex === memoValueCountPerRow) {
-    compiledConfig.nextMemoRowIndex =
-      nextMemoRowIndex + 1 === CVA_MEMO_ROW_COUNT ? 0 : nextMemoRowIndex + 1;
-    memoRowValidity[nextMemoRowIndex] = true;
-    compiledConfig.memoizedResults[nextMemoRowIndex] = resolvedClassName;
-  }
+  compiledConfig.combinationClassNames[combinationSlot] = resolvedClassName;
   return resolvedClassName;
 };
 
@@ -340,9 +585,12 @@ export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
       return defaultClassName;
     }
     const propRecord = props as RuntimeCvaProps;
-    if (compiledConfig.memoValueCountPerRow === 0) {
-      return resolveVariantClassName(compiledConfig, propRecord);
+    if (compiledConfig.combinationSlotCount !== 0) {
+      return resolveThroughCombinationTable(compiledConfig, propRecord);
     }
-    return resolveThroughMemo(compiledConfig, propRecord);
+    const memoLane = compiledConfig.memoLane;
+    if (memoLane === CVA_MEMO_LANE_FAST) return resolveThroughFastMemo(compiledConfig, propRecord);
+    if (memoLane === CVA_MEMO_LANE_WIDE) return resolveThroughWideMemo(compiledConfig, propRecord);
+    return resolveVariantClassName(compiledConfig, propRecord);
   };
 };
