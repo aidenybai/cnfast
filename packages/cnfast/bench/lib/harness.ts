@@ -192,7 +192,6 @@ const printSummary = (workloadResults: WorkloadResult[], suiteLabel: string): vo
   );
 };
 
-// The pinned reference has known conflicts with the released semantics.
 const knownDivergentInputs = new Set(
   (
     JSON.parse(
@@ -229,7 +228,6 @@ const verifyWorkloads = (workloads: Workload[]): void => {
         }
       }
     }
-    // Known divergences are already verified per call.
     if (hasKnownDivergence) continue;
     const cnfastChecksum = workload.run(implementations.cnfast);
     const referenceChecksum = workload.run(implementations.reference);

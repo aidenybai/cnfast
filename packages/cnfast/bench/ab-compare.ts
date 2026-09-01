@@ -161,7 +161,6 @@ const loadImplementation = async (bundlePath: string): Promise<ClassNameImplemen
   return implementation as ClassNameImplementation;
 };
 
-// Separate call sites prevent JSC inline-cache bias.
 const timeBaseBlock = (
   implementation: ClassNameImplementation,
   rows: ClassValue[][],
@@ -211,7 +210,6 @@ const measureLane = (
   const runCandidateBlock = (): TimedBlock =>
     timeCandidateBlock(candidateImplementation, rows, orders, blockReplayCount);
 
-  // Alternate the first runner to neutralize JSC first-run bias.
   for (let warmupIndex = 0; warmupIndex < WARMUP_QUAD_COUNT; warmupIndex++) {
     const warmupOuter = warmupIndex % 2 === 0 ? runBaseBlock : runCandidateBlock;
     const warmupInner = warmupIndex % 2 === 0 ? runCandidateBlock : runBaseBlock;
@@ -267,7 +265,6 @@ const invertMeasurement = (measurement: LaneMeasurement): LaneMeasurement => ({
 
 const runChild = async (argv: string[]): Promise<void> => {
   const options = parseChildOptions(argv);
-  // Mirroring roles cancels in-process execution-order bias.
   const firstRoleBundlePath = options.mirrorRoles
     ? options.candidateBundlePath
     : options.baseBundlePath;
@@ -340,7 +337,6 @@ const summarizeLane = (
   lane: BenchmarkLane,
   measurements: LaneMeasurement[],
 ): LaneComparison => {
-  // Quads within one process share JIT and heap-layout bias.
   const processRatios: number[] = [];
   const baseNsPerCallSamples: number[] = [];
   const candidateNsPerCallSamples: number[] = [];

@@ -53,7 +53,6 @@ export const getDefaultConfig = () => {
   const themeEase = createThemeReference("ease");
   const themeAnimate = createThemeReference("animate");
 
-  // Return fresh arrays so mutations cannot leak across class groups.
   const scaleBreak = () =>
     ["auto", "avoid", "all", "avoid-page", "page", "left", "right", "column"] as const;
   const scalePosition = () =>

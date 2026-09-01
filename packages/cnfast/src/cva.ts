@@ -151,7 +151,6 @@ const compileCombinationTable = (
   let combinationSlotCount = 1;
   for (let variantIndex = 0; variantIndex < variantNames.length; variantIndex++) {
     const defaultVariantKey = defaultVariantKeys[variantIndex];
-    // Preserve user-defined coercion at call time.
     if (
       defaultVariantKey !== null &&
       (typeof defaultVariantKey === "object" ||
@@ -212,7 +211,6 @@ const compileCvaConfig = (
     }
   }
 
-  // Object.prototype keys must remain visible to compound selectors.
   const compoundDefaultValues: Record<string, unknown> = { ...defaultVariants };
 
   const memoPropNames: string[] = [];
@@ -296,7 +294,6 @@ const resolveVariantClassName = (
     if (propValue === null) continue;
     const normalizedVariantKey = normalizeVariantKey(propValue);
     const variantKey = normalizedVariantKey || compiledConfig.defaultVariantKeys[variantIndex];
-    // Preserve prototype-chain and ToPropertyKey behavior on uncommon keys.
     let variantClassName =
       compiledConfig.variantClassNamesByKey[variantIndex]![variantKey as string];
     if (variantClassName === undefined) {

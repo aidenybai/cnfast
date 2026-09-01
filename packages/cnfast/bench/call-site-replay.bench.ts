@@ -69,7 +69,6 @@ const createCallSiteModel = (
 
 const callSiteModels = [
   createCallSiteModel("monomorphic upper bound", (callRow) => JSON.stringify(callRow)),
-  // The capture lacks source locations, so call shape is used as a proxy.
   createCallSiteModel("component-variant proxy", (callRow) =>
     JSON.stringify([callRow.length, callRow[0]]),
   ),
@@ -79,7 +78,6 @@ interface BoundCaller {
   (): string;
 }
 
-// Avoid measuring spread-dispatch overhead.
 const createBoundCaller = (
   implementation: ClassNameFunction,
   callRow: ClassValue[],

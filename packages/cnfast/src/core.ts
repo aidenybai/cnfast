@@ -194,7 +194,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     secondClassValue: ClassValue,
   ): string => {
     if (secondClassValue) {
-      // trimBucket can leave predicted positions over numeric bookkeeping slots.
       const predictedId = successorIds[lastHitId]!;
       if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
         const predictedBucket = predictedBuckets[predictedId]!;
@@ -237,7 +236,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeTwoValuesUncacheable(firstClassValue, secondClassValue);
   };
 
-  // Keep the JSC fast path separate to preserve V8 inlining.
   const getMergedClassNameForTwoValuesJsc = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
