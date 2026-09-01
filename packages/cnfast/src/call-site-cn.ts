@@ -1,54 +1,62 @@
 import { cn, type ClassNameFunction } from "./core.js";
-import { CALL_SITE_MEMO_ROWS, CALL_SITE_MEMO_ROW_ARG_SLOTS } from "./lib/constants.js";
+import {
+  CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW,
+  CALL_SITE_MEMO_ROW_COUNT,
+  EMPTY_CALL_SITE_MEMO_ARGUMENT_COUNT,
+} from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
-// A memo row may only hold primitives: cn is a pure function of its argument
-// VALUES, so === on primitives guarantees a byte-identical result, while a
-// truthy object/array can mutate between calls without changing identity.
-// Rows are invalidated before the store loop because bailing out mid-write
-// (on a truthy object argument) would otherwise leave a row whose surviving
-// tail arguments belong to the evicted entry's result. The store loop reads
-// this function's arguments object, which the delegated call cannot mutate.
+// Only primitive argument vectors are memoized because objects and arrays can mutate.
+// Invalidating a row before writes prevents an aborted store from exposing partial data.
 export const createCallSiteCn = (classNameFunction: ClassNameFunction = cn): ClassNameFunction => {
-  const rowArities = createFilledArray(CALL_SITE_MEMO_ROWS, -1);
-  const rowResults = createFilledArray(CALL_SITE_MEMO_ROWS, "");
-  const rowArguments = createFilledArray<unknown>(
-    CALL_SITE_MEMO_ROWS * CALL_SITE_MEMO_ROW_ARG_SLOTS,
+  const memoizedArgumentCounts = createFilledArray(
+    CALL_SITE_MEMO_ROW_COUNT,
+    EMPTY_CALL_SITE_MEMO_ARGUMENT_COUNT,
+  );
+  const memoizedResults = createFilledArray(CALL_SITE_MEMO_ROW_COUNT, "");
+  const memoizedArguments = createFilledArray<unknown>(
+    CALL_SITE_MEMO_ROW_COUNT * CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW,
     undefined,
   );
-  let victimRow = 0;
+  let nextMemoRowIndex = 0;
 
-  const callSiteCn: ClassNameFunction = function (): string {
+  // A function expression reads arguments without allocating a rest array.
+  const memoizedClassNameFunction: ClassNameFunction = function (): string {
     const argumentCount = arguments.length;
-    for (let row = 0; row < CALL_SITE_MEMO_ROWS; row++) {
-      if (rowArities[row] !== argumentCount) continue;
-      const base = row * CALL_SITE_MEMO_ROW_ARG_SLOTS;
-      let index = 0;
-      while (index < argumentCount && arguments[index] === rowArguments[base + index]) index++;
-      if (index === argumentCount) return rowResults[row]!;
+    for (let rowIndex = 0; rowIndex < CALL_SITE_MEMO_ROW_COUNT; rowIndex++) {
+      if (memoizedArgumentCounts[rowIndex] !== argumentCount) continue;
+      const rowStartIndex = rowIndex * CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW;
+      let argumentIndex = 0;
+      while (
+        argumentIndex < argumentCount &&
+        arguments[argumentIndex] === memoizedArguments[rowStartIndex + argumentIndex]
+      ) {
+        argumentIndex++;
+      }
+      if (argumentIndex === argumentCount) return memoizedResults[rowIndex]!;
     }
-    const mergedClassName = Reflect.apply(classNameFunction, undefined, arguments);
-    if (argumentCount <= CALL_SITE_MEMO_ROW_ARG_SLOTS) {
-      const row = victimRow;
-      const base = row * CALL_SITE_MEMO_ROW_ARG_SLOTS;
-      rowArities[row] = -1;
-      let index = 0;
-      for (; index < argumentCount; index++) {
-        const classValue = arguments[index];
+    const resolvedClassName = Reflect.apply(classNameFunction, undefined, arguments);
+    if (argumentCount <= CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW) {
+      const rowIndex = nextMemoRowIndex;
+      const rowStartIndex = rowIndex * CALL_SITE_MEMO_ARGUMENT_SLOTS_PER_ROW;
+      memoizedArgumentCounts[rowIndex] = EMPTY_CALL_SITE_MEMO_ARGUMENT_COUNT;
+      let argumentIndex = 0;
+      for (; argumentIndex < argumentCount; argumentIndex++) {
+        const classValue = arguments[argumentIndex];
         if (
           classValue !== null &&
           (typeof classValue === "object" || typeof classValue === "function")
         )
           break;
-        rowArguments[base + index] = classValue;
+        memoizedArguments[rowStartIndex + argumentIndex] = classValue;
       }
-      if (index === argumentCount) {
-        victimRow = row + 1 === CALL_SITE_MEMO_ROWS ? 0 : row + 1;
-        rowArities[row] = argumentCount;
-        rowResults[row] = mergedClassName;
+      if (argumentIndex === argumentCount) {
+        nextMemoRowIndex = rowIndex + 1 === CALL_SITE_MEMO_ROW_COUNT ? 0 : rowIndex + 1;
+        memoizedArgumentCounts[rowIndex] = argumentCount;
+        memoizedResults[rowIndex] = resolvedClassName;
       }
     }
-    return mergedClassName;
+    return resolvedClassName;
   };
-  return callSiteCn;
+  return memoizedClassNameFunction;
 };
