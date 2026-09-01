@@ -78,32 +78,61 @@ export const createPerformanceSection = (
   siteData: BenchmarkSiteData,
 ): BenchmarkSection => {
   const workloadRows: BenchmarkTableRow[] = [];
-  const scenarioRows: BenchmarkTableRow[] = [];
+  const specificWorkloadRows: BenchmarkTableRow[] = [];
+  let repositorySummaryRow: BenchmarkTableRow | undefined;
 
   for (const reportRow of report.rows) {
     const tableRow = createThroughputRow(reportRow);
-    if (reportRow.cacheState) workloadRows.push(tableRow);
-    else scenarioRows.push(tableRow);
+    if (reportRow.label === "Component corpus") {
+      repositorySummaryRow = {
+        ...tableRow,
+        id: "repository-summary",
+        label: `${siteData.repositories.length}-repository corpus`,
+        detail: `geometric mean across ${siteData.repositories.length} real-world component repositories`,
+        isSummary: true,
+      };
+    } else if (reportRow.cacheState) {
+      workloadRows.push(tableRow);
+    } else if (reportRow.emphasis) {
+      specificWorkloadRows.push({
+        ...tableRow,
+        label: "All benchmark groups",
+      });
+    } else {
+      specificWorkloadRows.push(tableRow);
+    }
   }
 
-  const summaryRows = scenarioRows.filter((row) => row.isSummary);
-  const applicationRows = scenarioRows.filter((row) => !row.isSummary);
-  applicationRows.push(...siteData.repositories.map(createRepositoryRow), ...summaryRows);
+  if (repositorySummaryRow === undefined) {
+    throw new Error("Component corpus summary is missing from the benchmark report");
+  }
 
-  const workloadSection = createThroughputSection(
-    "workload-performance",
-    "Workload performance",
-    "Working sets that fit in both implementations' caches alongside working sets that exceed them.",
-    workloadRows,
+  const repositorySection = createThroughputSection(
+    "repository-performance",
+    "Repository performance",
+    `The geometric mean across ${siteData.repositories.length} real-world component repositories. This is the repository result reported in the README.`,
+    [repositorySummaryRow],
   );
-  workloadSection.relatedSections = [
+  repositorySection.relatedSections = [
     createThroughputSection(
-      "application-performance",
-      "Application workloads",
-      "Repository, page, and cache-boundary workloads with naturally mixed reuse.",
-      applicationRows,
+      "workload-performance",
+      "Cache workloads",
+      "Working sets that fit in both implementations' caches alongside working sets that exceed them.",
+      workloadRows,
+    ),
+    createThroughputSection(
+      "specific-workloads",
+      "Specific workloads",
+      "Focused tests for input shapes, Tailwind syntax, rendering patterns, CVA, pages, and live data.",
+      specificWorkloadRows,
+    ),
+    createThroughputSection(
+      "repository-breakdown",
+      "Repository breakdown",
+      `Measured throughput and speedup for each repository in the ${siteData.repositories.length}-repository corpus.`,
+      siteData.repositories.map(createRepositoryRow),
     ),
     createBundleSection(report),
   ];
-  return workloadSection;
+  return repositorySection;
 };

@@ -12,15 +12,15 @@ import { getBenchmarkSortState } from "@/utils/get-benchmark-sort-state";
 
 const benchmarkReport: BenchmarkReport = latestBenchmarkReport;
 const benchmarkSiteData: BenchmarkSiteData = generatedBenchmarkData;
-const performanceSection = createPerformanceSection(benchmarkReport, benchmarkSiteData);
+const repositoryPerformanceSection = createPerformanceSection(benchmarkReport, benchmarkSiteData);
 
-const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps) => {
+const RepositoryPerformanceTable = async ({ searchParams }: BenchmarkTablesProps) => {
   const resolvedSearchParams = await searchParams;
 
   return (
     <BenchmarkSectionTable
-      section={performanceSection}
-      sortState={getBenchmarkSortState(performanceSection.id, resolvedSearchParams)}
+      section={repositoryPerformanceSection}
+      sortState={getBenchmarkSortState(repositoryPerformanceSection.id, resolvedSearchParams)}
     />
   );
 };
@@ -28,7 +28,7 @@ const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps)
 const RelatedBenchmarkTables = async ({ searchParams }: BenchmarkTablesProps) => {
   const resolvedSearchParams = await searchParams;
 
-  return performanceSection.relatedSections?.map((relatedSection) => (
+  return repositoryPerformanceSection.relatedSections?.map((relatedSection) => (
     <BenchmarkSectionTable
       key={relatedSection.id}
       section={relatedSection}
@@ -66,9 +66,11 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                   timed attempts of {benchmarkReport.timeMs} ms after warmup.
                 </p>
                 <p>
-                  Overall speedup is balanced across {benchmarkReport.workloadGroupCount} workload
-                  groups containing {benchmarkReport.workloadCount} workloads. Bundle size is
-                  reported separately because smaller is better.
+                  The repository headline is the geometric mean across{" "}
+                  {benchmarkSiteData.repositories.length} real-world component repositories. The
+                  all-groups result is balanced across {benchmarkReport.workloadGroupCount} groups
+                  containing {benchmarkReport.workloadCount} workloads. Bundle size is reported
+                  separately because smaller is better.
                 </p>
               </div>
 
@@ -88,13 +90,15 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
               <div className="space-y-10">
                 <section>
                   <Suspense
-                    fallback={<BenchmarkSectionTableSkeleton section={performanceSection} />}
+                    fallback={
+                      <BenchmarkSectionTableSkeleton section={repositoryPerformanceSection} />
+                    }
                   >
-                    <PerformanceBenchmarkTable searchParams={searchParams} />
+                    <RepositoryPerformanceTable searchParams={searchParams} />
                   </Suspense>
                 </section>
                 <Suspense
-                  fallback={performanceSection.relatedSections?.map((relatedSection) => (
+                  fallback={repositoryPerformanceSection.relatedSections?.map((relatedSection) => (
                     <BenchmarkSectionTableSkeleton
                       key={relatedSection.id}
                       section={relatedSection}
