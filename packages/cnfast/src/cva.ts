@@ -1,4 +1,6 @@
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
+import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
+import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
 
@@ -234,14 +236,78 @@ const resolveVariantClassName = (
   return result;
 };
 
+// Per-instance memo in the createCallSiteCn mold: only primitives are stored
+// (=== on primitives guarantees a byte-identical result, while a truthy
+// object/array can mutate between calls without changing identity), the victim
+// row is invalidated before the store loop so a mid-store bailout on an object
+// value can never leave a half-written row serveable, and validity lives in
+// rowValidFlags rather than in-band sentinel values. The key is the resolved
+// relevant-prop vector (declared variants plus compound selector keys) plus the
+// class/className slots, so a memo hit returns the SAME string instance per
+// combination — which keeps a wrapping cn() on its whole-string cache hits.
 export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
   let compiled: CompiledVariantConfig | null = null;
+  let defaultClassName: string | null = null;
+  let memoWidth = 0;
+  let scratchValues: unknown[] = [];
+  let rowValues: unknown[] = [];
+  let rowValidFlags: boolean[] = [];
+  let rowResults: string[] = [];
+  let victimRow = 0;
 
   return (props?: CvaProps<T>): string => {
-    if (compiled === null) compiled = compileVariantConfig(base, config as RawVariantConfig);
-    return resolveVariantClassName(
-      compiled,
-      props == null ? undefined : (props as Record<string, unknown>),
-    );
+    if (compiled === null) {
+      compiled = compileVariantConfig(base, config as RawVariantConfig | null | undefined);
+      const width = compiled.relevantKeys.length + 2;
+      if (width <= CVA_MEMO_MAX_VALUE_SLOTS) {
+        memoWidth = width;
+        scratchValues = createFilledArray<unknown>(width, undefined);
+        rowValues = createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined);
+        rowValidFlags = createFilledArray(CVA_MEMO_ROWS, false);
+        rowResults = createFilledArray(CVA_MEMO_ROWS, "");
+      }
+    }
+
+    if (props == null) {
+      if (defaultClassName === null)
+        defaultClassName = resolveVariantClassName(compiled, undefined);
+      return defaultClassName;
+    }
+
+    const propRecord = props as Record<string, unknown>;
+    if (memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
+
+    const relevantKeys = compiled.relevantKeys;
+    const relevantKeyCount = relevantKeys.length;
+    for (let index = 0; index < relevantKeyCount; index++) {
+      scratchValues[index] = propRecord[relevantKeys[index]!];
+    }
+    scratchValues[relevantKeyCount] = propRecord.class;
+    scratchValues[relevantKeyCount + 1] = propRecord.className;
+
+    for (let row = 0; row < CVA_MEMO_ROWS; row++) {
+      if (!rowValidFlags[row]) continue;
+      const rowBase = row * memoWidth;
+      let slot = 0;
+      while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
+      if (slot === memoWidth) return rowResults[row]!;
+    }
+
+    const resolvedClassName = resolveVariantClassName(compiled, propRecord);
+    const victim = victimRow;
+    rowValidFlags[victim] = false;
+    const storeBase = victim * memoWidth;
+    let slot = 0;
+    for (; slot < memoWidth; slot++) {
+      const value = scratchValues[slot];
+      if (value !== null && (typeof value === "object" || typeof value === "function")) break;
+      rowValues[storeBase + slot] = value;
+    }
+    if (slot === memoWidth) {
+      victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
+      rowValidFlags[victim] = true;
+      rowResults[victim] = resolvedClassName;
+    }
+    return resolvedClassName;
   };
 };
