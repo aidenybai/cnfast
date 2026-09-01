@@ -194,8 +194,13 @@ describe("cva combination table: interned results stay byte-identical to the ref
     expect(ported({ size: "a" })).toBe(first);
   });
 
-  it("tables a variants-only config with no declared variant keys", () => {
+  it("matches a vacuous compound entry, which keeps the config off the table", () => {
     const pair = createPair("card", { variants: {}, compoundVariants: [{ class: "vacuous" }] });
+    expectSameAcrossRounds(pair, [{}, { className: "ml-2" }, { class: "px-2" }, undefined]);
+  });
+
+  it("tables a variants-only config with no declared variant keys", () => {
+    const pair = createPair("card", { variants: {} });
     expectSameAcrossRounds(pair, [{}, { className: "ml-2" }, { class: "px-2" }, undefined]);
   });
 

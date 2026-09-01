@@ -29,6 +29,12 @@ export const CVA_MEMO_NARROW_ROWS = 8;
 export const CVA_MEMO_MAX_VALUE_SLOTS = 16;
 export const CVA_TABLE_MAX_SLOTS = 256;
 
+export const CVA_MEMO_LANE_NONE = 0;
+export const CVA_MEMO_LANE_FAST = 1;
+export const CVA_MEMO_LANE_WIDE = 2;
+export const CVA_MEMO_FAST_LANE_MAX_KEYS = 2;
+export const CVA_MEMO_FAST_LANE_SLOTS = 4;
+
 export const SPACE_CHARACTER = " ";
 export const OPEN_BRACKET_CHARACTER = "[";
 export const COLON_CHARACTER = ":";

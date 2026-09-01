@@ -6,6 +6,11 @@
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
 import {
+  CVA_MEMO_FAST_LANE_MAX_KEYS,
+  CVA_MEMO_FAST_LANE_SLOTS,
+  CVA_MEMO_LANE_FAST,
+  CVA_MEMO_LANE_NONE,
+  CVA_MEMO_LANE_WIDE,
   CVA_MEMO_MAX_VALUE_SLOTS,
   CVA_MEMO_NARROW_ROWS,
   CVA_MEMO_ROWS,
@@ -88,7 +93,7 @@ interface CompiledVariantConfig {
   defaultsForCompounds: Record<string, unknown>;
   relevantKeys: string[];
   defaultClassName: string | null;
-  memoKind: number;
+  memoLane: number;
   memoKey0: string;
   memoKey1: string;
   memoWidth: number;
@@ -152,10 +157,16 @@ const compileCombinationTable = (
   let slotCount = 1;
   for (let index = 0; index < variantNames.length; index++) {
     const defaultKey = defaultKeys[index];
-    // Coercing an object or symbol default to its lookup key here would move an
-    // observable step (a custom toString, or a symbol that is not a string key
-    // at all) off the call that actually falls back to it.
-    if (defaultKey !== null && (typeof defaultKey === "object" || typeof defaultKey === "symbol")) {
+    // Coercing a default that carries user code (an object or function with a
+    // custom toString, or a symbol that is not a string key at all) to its
+    // lookup key here would move an observable step off the call that actually
+    // falls back to it.
+    if (
+      defaultKey !== null &&
+      (typeof defaultKey === "object" ||
+        typeof defaultKey === "symbol" ||
+        typeof defaultKey === "function")
+    ) {
       return null;
     }
     const stateIndex: Record<string, number> = Object.create(null);
@@ -235,8 +246,8 @@ const compileVariantConfig = (
   const relevantKeyCount = relevantKeys.length;
   const naturalWidth = relevantKeyCount + 2;
   const isMemoizable = naturalWidth <= CVA_MEMO_MAX_VALUE_SLOTS;
-  const isFastLane = isMemoizable && relevantKeyCount <= 2;
-  const width = isFastLane ? 4 : naturalWidth;
+  const isFastLane = isMemoizable && relevantKeyCount <= CVA_MEMO_FAST_LANE_MAX_KEYS;
+  const width = isFastLane ? CVA_MEMO_FAST_LANE_SLOTS : naturalWidth;
   const combinationTable =
     compoundRows.length === 0 && isMemoizable
       ? compileCombinationTable(variantNames, fragmentTables, defaultKeys)
@@ -252,7 +263,11 @@ const compileVariantConfig = (
     defaultsForCompounds,
     relevantKeys,
     defaultClassName: null,
-    memoKind: isFastLane ? 1 : isMemoizable ? 2 : 0,
+    memoLane: isFastLane
+      ? CVA_MEMO_LANE_FAST
+      : isMemoizable
+        ? CVA_MEMO_LANE_WIDE
+        : CVA_MEMO_LANE_NONE,
     memoKey0: relevantKeys[0] ?? "class",
     memoKey1: relevantKeys[1] ?? relevantKeys[0] ?? "class",
     memoWidth: isMemoizable ? width : 0,
@@ -365,7 +380,7 @@ const resolveVariantClassName = (
 // every row below it holds a complete entry. The key is the resolved
 // relevant-prop vector (declared variants plus compound selector keys) plus
 // the class/className slots, so a memo hit returns the SAME string instance
-// per combination — which keeps a wrapping cn() on its whole-string cache
+// per combination, which keeps a wrapping cn() on its whole-string cache
 // hits.
 const resolveMemoMiss = (
   compiled: CompiledVariantConfig,
@@ -426,7 +441,7 @@ const resolveThroughFastMemo = (
   const rowValues = compiled.rowValues;
   const rowLimit = compiled.scanRows;
   for (let row = 0; row < rowLimit; row++) {
-    const rowBase = row * 4;
+    const rowBase = row * CVA_MEMO_FAST_LANE_SLOTS;
     if (
       value0 === rowValues[rowBase] &&
       value1 === rowValues[rowBase + 1] &&
@@ -481,7 +496,7 @@ const resolveThroughMemo = (
   compiled: CompiledVariantConfig,
   propRecord: Record<string, unknown>,
 ): string =>
-  compiled.memoKind === 1
+  compiled.memoLane === CVA_MEMO_LANE_FAST
     ? resolveThroughFastMemo(compiled, propRecord)
     : resolveThroughWideMemo(compiled, propRecord);
 
@@ -528,8 +543,8 @@ const resolveThroughTable = (
     }
     slot = slot * stateCounts[index]! + state;
   }
-  const tabled = compiled.tableResults[slot]!;
-  if (tabled !== null) return tabled;
+  const tabledClassName = compiled.tableResults[slot]!;
+  if (tabledClassName !== null) return tabledClassName;
   const resolvedClassName = resolveVariantClassName(compiled, propRecord);
   compiled.tableResults[slot] = resolvedClassName;
   return resolvedClassName;
@@ -552,9 +567,9 @@ export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
     }
     const propRecord = props as Record<string, unknown>;
     if (compiled.tableSlotCount !== 0) return resolveThroughTable(compiled, propRecord);
-    const memoKind = compiled.memoKind;
-    if (memoKind === 1) return resolveThroughFastMemo(compiled, propRecord);
-    if (memoKind === 2) return resolveThroughWideMemo(compiled, propRecord);
+    const memoLane = compiled.memoLane;
+    if (memoLane === CVA_MEMO_LANE_FAST) return resolveThroughFastMemo(compiled, propRecord);
+    if (memoLane === CVA_MEMO_LANE_WIDE) return resolveThroughWideMemo(compiled, propRecord);
     return resolveVariantClassName(compiled, propRecord);
   };
 };
