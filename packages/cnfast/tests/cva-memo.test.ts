@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cva as referenceCva } from "class-variance-authority";
 import { cva } from "./src/index.js";
-import { CVA_FAST_MEMO_ROWS } from "./src/lib/constants.js";
+import { CVA_MEMO_ROWS } from "./src/lib/constants.js";
 
 const buttonConfig = {
   variants: {
@@ -120,7 +120,7 @@ describe("cva memo: matches the reference byte-for-byte across cache states", ()
   it("wraps the victim row round-robin past capacity", () => {
     const { ported, reference } = createPair();
     for (let round = 0; round < 4; round++) {
-      for (let combo = 0; combo < CVA_FAST_MEMO_ROWS + 3; combo++) {
+      for (let combo = 0; combo < CVA_MEMO_ROWS + 3; combo++) {
         const props = { intent: "primary", className: `adhoc-${combo}` };
         expect(ported(props)).toBe(reference(props));
       }

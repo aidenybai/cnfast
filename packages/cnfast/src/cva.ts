@@ -5,7 +5,7 @@
 // inherited value from an own one). None of these shapes occur in real usage; the
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_FAST_MEMO_ROWS, CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS } from "./lib/constants.js";
+import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_NARROW_ROWS, CVA_MEMO_ROWS } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -171,18 +171,15 @@ const compileVariantConfig = (
   // [key0, key1, class, className] (a missing key slot duplicates its
   // neighbor's read, which compares equal by construction), so one unrolled
   // scan with the values held in locals serves the 85% of real configs that
-  // declare at most two relevant keys.
+  // declare at most two relevant keys. Both lanes share the row count: real
+  // sites cycle more prop shapes than eight rows hold (the 48-site replay has
+  // a median of 11 distinct shapes per site, and 38 of its 48 sites exceed
+  // eight), and the ring below shrinks itself back for sites that never hit.
   const relevantKeyCount = relevantKeys.length;
   const naturalWidth = relevantKeyCount + 2;
   const isMemoizable = naturalWidth <= CVA_MEMO_MAX_VALUE_SLOTS;
   const isFastLane = isMemoizable && relevantKeyCount <= 2;
   const width = isFastLane ? 4 : naturalWidth;
-  // Real sites cycle more prop shapes than eight rows hold (the 48-site replay
-  // has a median of 11 distinct shapes per site, and 38 of its 48 sites exceed
-  // eight), so the fast lane carries twice the rows and lets the ring shrink
-  // back to eight for sites that never hit. The wide lane stays at eight,
-  // where one row is up to four times as many slots.
-  const rowCount = isFastLane ? CVA_FAST_MEMO_ROWS : CVA_MEMO_ROWS;
   return {
     baseFragment,
     variantNames,
@@ -197,12 +194,12 @@ const compileVariantConfig = (
     memoKey0: relevantKeys[0] ?? "class",
     memoKey1: relevantKeys[1] ?? relevantKeys[0] ?? "class",
     memoWidth: isMemoizable ? width : 0,
-    memoRows: isMemoizable ? rowCount : 0,
-    memoMinRows: isMemoizable ? CVA_MEMO_ROWS : 0,
+    memoRows: isMemoizable ? CVA_MEMO_ROWS : 0,
+    memoMinRows: isMemoizable ? CVA_MEMO_NARROW_ROWS : 0,
     scratchValues: isMemoizable ? createFilledArray<unknown>(width, undefined) : [],
-    rowValues: isMemoizable ? createFilledArray<unknown>(rowCount * width, undefined) : [],
-    rowResults: isMemoizable ? createFilledArray(rowCount, "") : [],
-    ringRows: rowCount,
+    rowValues: isMemoizable ? createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined) : [],
+    rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
+    ringRows: CVA_MEMO_ROWS,
     writtenRows: 0,
     scanRows: 0,
     victimRow: 0,
