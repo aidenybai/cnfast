@@ -7,6 +7,7 @@ import {
   pageWorkloads,
 } from "../bench/lib/workloads";
 import { getCacheWorkloads } from "../bench/workloads/cache-workloads";
+import { getCvaWorkloads } from "../bench/workloads/cva-workloads";
 import { getInputShapeWorkloads } from "../bench/workloads/input-shape-workloads";
 import { getMergeSyntaxWorkloads } from "../bench/workloads/merge-syntax-workloads";
 import { getResultReuseWorkloads } from "../bench/workloads/result-reuse-workloads";
@@ -88,6 +89,7 @@ const benchmarkWorkloads = [
   ...getCacheWorkloads(),
   ...getToggleWorkloads(),
   ...getResultReuseWorkloads(),
+  ...getCvaWorkloads(),
   ...corpusWorkloads(),
   ...pageWorkloads(),
   ...gridWorkloads(),
@@ -190,6 +192,12 @@ const chartRows: BenchChartRow[] = [
     "Result reuse",
     "nested calls and keyed consumers, geomean",
     "uncached",
+  ),
+  createChartRow(
+    aggregateWorkloadGroup(workloadResults, "cva"),
+    "CVA variants",
+    "class-variance-authority port, geomean",
+    "cached",
   ),
   createChartRow(
     aggregateWorkloadGroup(workloadResults, "corpus"),
