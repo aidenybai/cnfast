@@ -19,7 +19,6 @@ const PerformanceBenchmarkTable = async ({ searchParams }: BenchmarkTablesProps)
 
   return (
     <BenchmarkSectionTable
-      hideHeading
       section={performanceSection}
       sortState={getBenchmarkSortState(performanceSection.id, resolvedSearchParams)}
     />
@@ -63,12 +62,13 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
                 <p>
                   The latest committed result was generated{" "}
                   {formatBenchmarkDate(benchmarkReport.generatedAt)} with {benchmarkReport.runtime}.
-                  Each workload records the highest mean throughput from {benchmarkReport.bestOf}
+                  Each workload records the highest mean throughput from {benchmarkReport.bestOf}{" "}
                   timed attempts of {benchmarkReport.timeMs} ms after warmup.
                 </p>
                 <p>
-                  Overall speedup is the geometric mean of {benchmarkReport.workloadCount} common
-                  workloads. Bundle size is reported separately because smaller is better.
+                  Overall speedup is balanced across {benchmarkReport.workloadGroupCount} workload
+                  groups containing {benchmarkReport.workloadCount} workloads. Bundle size is
+                  reported separately because smaller is better.
                 </p>
               </div>
 
@@ -88,9 +88,7 @@ const BenchmarkPage = ({ searchParams }: BenchmarkPageProps) => {
               <div className="space-y-10">
                 <section>
                   <Suspense
-                    fallback={
-                      <BenchmarkSectionTableSkeleton hideHeading section={performanceSection} />
-                    }
+                    fallback={<BenchmarkSectionTableSkeleton section={performanceSection} />}
                   >
                     <PerformanceBenchmarkTable searchParams={searchParams} />
                   </Suspense>

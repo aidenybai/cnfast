@@ -1,4 +1,5 @@
 [
+  ["  animate-spin fill-stone-600 text-stone-200", "h-4 w-4"],
   ["-mx-1 h-px bg-border"],
   [
     "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
@@ -9,6 +10,7 @@
   [
     "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
   ],
+  ["border-l-4 border-primary"],
   [
     "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
   ],
@@ -23,6 +25,7 @@
   ["flex flex-col"],
   ["flex flex-col space-y-1.5 text-center sm:text-left"],
   ["flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"],
+  ["flex gap-2 items-start my-4"],
   ["flex gap-2 px-4"],
   ["flex h-10 w-10 items-center justify-center rounded-md border border-muted bg-background"],
   [
@@ -42,16 +45,11 @@
   ["flex min-h-screen flex-col items-center gap-4 py-4 sm:px-5"],
   [
     "flex touch-none select-none transition-colors",
-    "vertical",
     "h-full w-2.5 border-l border-l-transparent p-[1px]",
-    "horizontal",
     "h-2.5 flex-col border-t border-t-transparent p-[1px]"
   ],
   [
     "flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-muted bg-background shadow-xl"
-  ],
-  [
-    "flex w-full items-center justify-between rounded px-2 py-1 text-sm text-stone-600 hover:bg-stone-100"
   ],
   ["flex w-full items-center justify-between rounded px-2 py-1.5 text-sm"],
   [
@@ -92,6 +90,9 @@
     "default",
     "default"
   ],
+  ["leading-normal -mb-2"],
+  ["list-decimal list-outside leading-3 -mt-2"],
+  ["list-disc list-outside leading-3 -mt-2"],
   ["max-h-[300px] overflow-y-auto overflow-x-hidden"],
   ["max-h-screen"],
   ["ml gap-2"],
@@ -100,17 +101,19 @@
   ["ml-auto text-xs tracking-widest text-muted-foreground"],
   ["mr-2 h-4 w-4 shrink-0  "],
   ["mr-2 h-4 w-4 shrink-0 text-purple-500 "],
+  ["mt-4 mb-6 border-t border-muted-foreground"],
   [
     "my-1 flex max-h-80 w-48 flex-col overflow-hidden overflow-y-auto rounded border p-1 shadow-xl "
   ],
   ["my-1 px-2 text-sm font-semibold text-muted-foreground"],
+  ["not-prose"],
+  ["not-prose pl-2 "],
+  ["opacity-40 rounded-lg border border-stone-200"],
   ["overflow-hidden p-0 shadow-lg"],
   [
     "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
   ],
-  ["p-2"],
   ["p-2 text-xs font-medium text-muted-foreground"],
-  ["p-2 text-xs font-medium text-stone-500"],
   ["prose p-2 px-4 prose-sm"],
   ["px-2 text-muted-foreground"],
   ["py-6 text-center text-sm"],
@@ -122,20 +125,29 @@
   ["relative overflow-hidden"],
   ["relative w-full max-w-screen-lg"],
   ["rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground"],
+  ["rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground", "hidden"],
+  ["rounded-lg border border-muted"],
+  ["rounded-md bg-muted  px-1.5 py-1 font-mono font-medium"],
+  ["rounded-md bg-muted text-muted-foreground border p-5 font-mono font-medium"],
   ["rounded-none"],
   ["rounded-none w-12"],
   ["rounded-sm border  p-1"],
-  ["rounded-sm border border-stone-200 p-1"],
   ["rounded-sm border p-1"],
   ["rounded-sm border px-2 py-px font-medium"],
   ["rounded-sm px-1"],
-  ["shrink-0 bg-border", "horizontal", "h-[1px] w-full", " w-[1px]"],
+  ["shrink-0 bg-border", "h-[1px] w-full", " w-[1px]"],
+  ["size-4", "math"],
   ["size-4", "text-blue-500", "math"],
   ["sr-only"],
   ["text-base"],
+  ["text-foreground rounded p-1 hover:bg-accent cursor-pointer"],
   ["text-lg font-semibold leading-none tracking-tight"],
+  [
+    "text-muted-foreground underline underline-offset-[3px] hover:text-primary transition-colors cursor-pointer"
+  ],
   ["text-sm text-muted-foreground"],
   ["text-xs text-muted-foreground"],
+  ["underline decoration-stone-400 underline-offset-4", "link"],
   ["underline decoration-stone-400 underline-offset-4", "text-blue-500", "link"],
   ["w-[350px]"],
   ["w-48 p-1"],

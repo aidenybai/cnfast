@@ -1,534 +1,584 @@
 {
-  "benchmarkTimestamp": "2026-08-30T12:23:55.101Z",
+  "benchmarkTimestamp": "2026-09-01T08:52:53.164Z",
   "repositories": [
     {
       "name": "calcom",
       "url": "https://github.com/calcom/cal.com",
       "benchmark": {
-        "cnfast": 547.4208577018177,
-        "reference": 141.06609465764822,
-        "speedup": 3.880598375040774,
-        "detail": "(3394 calls, 3921 unique)"
+        "cnfast": 6303.204807980268,
+        "reference": 129.70565803850843,
+        "speedup": 48.596220884280186,
+        "detail": "(3491 calls, 4002 unique)"
       }
     },
     {
       "name": "shadcn-ui",
       "url": "https://github.com/shadcn-ui/ui",
       "benchmark": {
-        "cnfast": 277.39341996657873,
-        "reference": 79.2985930236305,
-        "speedup": 3.4980875371132645,
-        "detail": "(3864 calls, 4278 unique)"
+        "cnfast": 6564.537340537332,
+        "reference": 135.7483659991327,
+        "speedup": 48.358131548922465,
+        "detail": "(3265 calls, 3540 unique)"
       }
     },
     {
       "name": "dub",
       "url": "https://github.com/dubinc/dub",
       "benchmark": {
-        "cnfast": 224.15710326724312,
-        "reference": 62.718074909660096,
-        "speedup": 3.574043106235672,
-        "detail": "(6731 calls, 7418 unique)"
+        "cnfast": 2911.633508026057,
+        "reference": 48.28922148544799,
+        "speedup": 60.29572269876997,
+        "detail": "(6863 calls, 7485 unique)"
       }
     },
     {
       "name": "documenso",
       "url": "https://github.com/documenso/documenso",
       "benchmark": {
-        "cnfast": 1009.857303861614,
-        "reference": 253.80533390856522,
-        "speedup": 3.9788655672044335,
-        "detail": "(2045 calls, 2196 unique)"
+        "cnfast": 10321.808291790021,
+        "reference": 231.5901934535329,
+        "speedup": 44.56928049443089,
+        "detail": "(2254 calls, 2364 unique)"
       }
     },
     {
       "name": "plane",
       "url": "https://github.com/makeplane/plane",
       "benchmark": {
-        "cnfast": 464.18035966655856,
-        "reference": 125.91064411375692,
-        "speedup": 3.6865855379723413,
-        "detail": "(4181 calls, 4533 unique)"
+        "cnfast": 4601.315685585637,
+        "reference": 106.95048462770002,
+        "speedup": 43.02285961211907,
+        "detail": "(4617 calls, 4752 unique)"
       }
     },
     {
       "name": "formbricks",
       "url": "https://github.com/formbricks/formbricks",
       "benchmark": {
-        "cnfast": 741.4036082755539,
-        "reference": 201.46063399049555,
-        "speedup": 3.6801413436956203,
-        "detail": "(2735 calls, 2994 unique)"
+        "cnfast": 7027.830687403609,
+        "reference": 168.02536411736313,
+        "speedup": 41.82601075927309,
+        "detail": "(3085 calls, 3363 unique)"
       }
     },
     {
       "name": "novel",
       "url": "https://github.com/steven-tey/novel",
       "benchmark": {
-        "cnfast": 266466.19907726377,
-        "reference": 71949.08530404068,
-        "speedup": 3.7035383834448683,
-        "detail": "(99 calls, 118 unique)"
+        "cnfast": 335795.3494173239,
+        "reference": 66519.17704258308,
+        "speedup": 5.04809837323093,
+        "detail": "(113 calls, 128 unique)"
       }
     },
     {
       "name": "midday",
       "url": "https://github.com/midday-ai/midday",
       "benchmark": {
-        "cnfast": 500.17271180967583,
-        "reference": 128.13376065511144,
-        "speedup": 3.9035201125170693,
-        "detail": "(4044 calls, 4352 unique)"
+        "cnfast": 5333.3667696926395,
+        "reference": 120.89138846516543,
+        "speedup": 44.11701145470288,
+        "detail": "(4058 calls, 4353 unique)"
       }
     },
     {
       "name": "unkey",
       "url": "https://github.com/unkeyed/unkey",
       "benchmark": {
-        "cnfast": 685.2412783705275,
-        "reference": 182.6395408536108,
-        "speedup": 3.751878017037734,
-        "detail": "(2658 calls, 3102 unique)"
+        "cnfast": 6879.224512029533,
+        "reference": 147.5703635413149,
+        "speedup": 46.61657223676605,
+        "detail": "(3059 calls, 3502 unique)"
       }
     },
     {
       "name": "taxonomy",
       "url": "https://github.com/shadcn-ui/taxonomy",
       "benchmark": {
-        "cnfast": 60452.341119373654,
-        "reference": 18778.157964005128,
-        "speedup": 3.219290264532421,
-        "detail": "(376 calls, 449 unique)"
+        "cnfast": 82186.72323917631,
+        "reference": 17085.04716124599,
+        "speedup": 4.810447548871884,
+        "detail": "(392 calls, 446 unique)"
       }
     },
     {
       "name": "pierre",
       "url": "https://github.com/pierrecomputer/pierre",
       "benchmark": {
-        "cnfast": 5149.083921245186,
-        "reference": 1613.4357082973247,
-        "speedup": 3.1913784322271304,
-        "detail": "(666 calls, 790 unique)"
+        "cnfast": 40988.472124615044,
+        "reference": 962.0946315882168,
+        "speedup": 42.603368503316204,
+        "detail": "(788 calls, 905 unique)"
       }
     },
     {
       "name": "react-grab",
       "url": "https://github.com/aidenybai/react-grab",
       "benchmark": {
-        "cnfast": 7747.543980867619,
-        "reference": 2595.7650269536316,
-        "speedup": 2.98468617167559,
-        "detail": "(584 calls, 720 unique)"
+        "cnfast": 62612.56146780678,
+        "reference": 5442.152152229637,
+        "speedup": 11.505110426240941,
+        "detail": "(528 calls, 579 unique)"
       }
     },
     {
       "name": "bippy",
       "url": "https://github.com/aidenybai/bippy",
       "benchmark": {
-        "cnfast": 126507.36383549718,
-        "reference": 36431.27828938253,
-        "speedup": 3.4724931370955017,
-        "detail": "(164 calls, 213 unique)"
+        "cnfast": 3013795.5036993097,
+        "reference": 653837.1201828789,
+        "speedup": 4.609397984097856,
+        "detail": "(12 calls, 19 unique)"
       }
     },
     {
       "name": "expect",
       "url": "https://github.com/millionco/expect",
       "benchmark": {
-        "cnfast": 101221.29834050282,
-        "reference": 28191.97200680166,
-        "speedup": 3.5904298683356357,
-        "detail": "(266 calls, 295 unique)"
+        "cnfast": 127904.98437813912,
+        "reference": 22649.079799693096,
+        "speedup": 5.64724860830206,
+        "detail": "(288 calls, 343 unique)"
       }
     },
     {
       "name": "react-scan",
       "url": "https://github.com/aidenybai/react-scan",
       "benchmark": {
-        "cnfast": 47304.24400173832,
-        "reference": 16033.047447507553,
-        "speedup": 2.9504212568828945,
-        "detail": "(398 calls, 550 unique)"
+        "cnfast": 81896.18531186116,
+        "reference": 17232.43970834517,
+        "speedup": 4.752442875062039,
+        "detail": "(402 calls, 531 unique)"
       }
     },
     {
       "name": "posthog",
       "url": "https://github.com/PostHog/posthog",
       "benchmark": {
-        "cnfast": 178.01876497330917,
-        "reference": 60.03173279719773,
-        "speedup": 2.965411069753746,
-        "detail": "(11308 calls, 12274 unique)"
+        "cnfast": 248.55217265775983,
+        "reference": 33.9530749963943,
+        "speedup": 7.320461333300599,
+        "detail": "(18352 calls, 19410 unique)"
       }
     },
     {
       "name": "supabase",
       "url": "https://github.com/supabase/supabase",
       "benchmark": {
-        "cnfast": 115.96331617710794,
-        "reference": 45.475342095681825,
-        "speedup": 2.5500262523175037,
-        "detail": "(11359 calls, 12378 unique)"
+        "cnfast": 1614.2863162810738,
+        "reference": 37.2353045376983,
+        "speedup": 43.353648810545245,
+        "detail": "(12225 calls, 13351 unique)"
       }
     },
     {
       "name": "onlook",
       "url": "https://github.com/onlook-dev/onlook",
       "benchmark": {
-        "cnfast": 769.5642170618455,
-        "reference": 192.17106988493364,
-        "speedup": 4.004578928153118,
-        "detail": "(2276 calls, 2549 unique)"
+        "cnfast": 9582.484915800105,
+        "reference": 192.499740643718,
+        "speedup": 49.77920948753661,
+        "detail": "(2332 calls, 2636 unique)"
       }
     },
     {
       "name": "payload",
       "url": "https://github.com/payloadcms/payload",
       "benchmark": {
-        "cnfast": 6183.127226924711,
-        "reference": 1914.5439941029815,
-        "speedup": 3.2295560958481304,
-        "detail": "(733 calls, 813 unique)"
+        "cnfast": 19911.92415768519,
+        "reference": 631.9017684695896,
+        "speedup": 31.511106870155018,
+        "detail": "(1427 calls, 1497 unique)"
       }
     },
     {
       "name": "nodejs-org",
       "url": "https://github.com/nodejs/nodejs.org",
       "benchmark": {
-        "cnfast": 199722.53756118316,
-        "reference": 46836.35616691208,
-        "speedup": 4.264262933893195,
-        "detail": "(187 calls, 190 unique)"
+        "cnfast": 205685.66821832926,
+        "reference": 42331.144475517394,
+        "speedup": 4.85896780648795,
+        "detail": "(213 calls, 216 unique)"
       }
     },
     {
       "name": "langfuse",
       "url": "https://github.com/langfuse/langfuse",
       "benchmark": {
-        "cnfast": 684.0188454177121,
-        "reference": 178.59180844776412,
-        "speedup": 3.830068418943073,
-        "detail": "(2984 calls, 3249 unique)"
+        "cnfast": 5437.068147237596,
+        "reference": 132.32750287225414,
+        "speedup": 41.087967574559414,
+        "detail": "(3955 calls, 4281 unique)"
       }
     },
     {
       "name": "trigger-dev",
       "url": "https://github.com/triggerdotdev/trigger.dev",
       "benchmark": {
-        "cnfast": 823.8220604536684,
-        "reference": 229.23351737262766,
-        "speedup": 3.593811541592824,
-        "detail": "(2514 calls, 2715 unique)"
+        "cnfast": 7630.842864792937,
+        "reference": 182.81723542940048,
+        "speedup": 41.74028147220167,
+        "detail": "(2888 calls, 3071 unique)"
       }
     },
     {
       "name": "typebot-io",
       "url": "https://github.com/baptisteArno/typebot.io",
       "benchmark": {
-        "cnfast": 1636.757442664187,
-        "reference": 421.1737567595764,
-        "speedup": 3.8861809796912787,
-        "detail": "(1133 calls, 1299 unique)"
+        "cnfast": 22993.431642970412,
+        "reference": 354.2019370762952,
+        "speedup": 64.91616571260484,
+        "detail": "(1330 calls, 1549 unique)"
       }
     },
     {
       "name": "medusa",
       "url": "https://github.com/medusajs/medusa",
       "benchmark": {
-        "cnfast": 920.4505634983863,
-        "reference": 247.5541217346848,
-        "speedup": 3.7181791078593944,
-        "detail": "(2213 calls, 2799 unique)"
+        "cnfast": 7978.038559403938,
+        "reference": 190.43049201895087,
+        "speedup": 41.89475369632504,
+        "detail": "(2781 calls, 3422 unique)"
       }
     },
     {
       "name": "executor",
       "url": "https://github.com/RhysSullivan/executor",
       "benchmark": {
-        "cnfast": 1668.8520337121238,
-        "reference": 432.5370424190159,
-        "speedup": 3.858286967467263,
-        "detail": "(1066 calls, 1252 unique)"
+        "cnfast": 15732.18128592115,
+        "reference": 272.8877382448739,
+        "speedup": 57.65074454098039,
+        "detail": "(1695 calls, 1884 unique)"
       }
     },
     {
       "name": "better-auth",
       "url": "https://github.com/better-auth/better-auth",
       "benchmark": {
-        "cnfast": 939.2402161747932,
-        "reference": 254.03205373891223,
-        "speedup": 3.6973295391302106,
-        "detail": "(1791 calls, 2021 unique)"
+        "cnfast": 13088.04469555264,
+        "reference": 225.06199509281439,
+        "speedup": 58.15306440412207,
+        "detail": "(1833 calls, 2061 unique)"
       }
     },
     {
       "name": "mastra",
       "url": "https://github.com/mastra-ai/mastra",
       "benchmark": {
-        "cnfast": 514.963841143286,
-        "reference": 135.1089270973891,
-        "speedup": 3.811471619281605,
-        "detail": "(3600 calls, 4417 unique)"
+        "cnfast": 4299.481751730214,
+        "reference": 98.49965353356889,
+        "speedup": 43.64971446589851,
+        "detail": "(4868 calls, 5646 unique)"
       }
     },
     {
       "name": "affine",
       "url": "https://github.com/toeverything/AFFiNE",
       "benchmark": {
-        "cnfast": 5613.680518941659,
-        "reference": 1794.8213678843274,
-        "speedup": 3.1277098765315396,
-        "detail": "(675 calls, 748 unique)"
+        "cnfast": 44219.87108106519,
+        "reference": 1835.1908293996644,
+        "speedup": 24.095516592969563,
+        "detail": "(690 calls, 764 unique)"
       }
     },
     {
       "name": "memos",
       "url": "https://github.com/usememos/memos",
       "benchmark": {
-        "cnfast": 2070.595727133315,
-        "reference": 553.826817502584,
-        "speedup": 3.738706147294238,
-        "detail": "(948 calls, 1089 unique)"
+        "cnfast": 28792.045951883934,
+        "reference": 413.1366622781212,
+        "speedup": 69.69133601728451,
+        "detail": "(1115 calls, 1280 unique)"
       }
     },
     {
       "name": "cal-diy",
       "url": "https://github.com/calcom/cal.diy",
       "benchmark": {
-        "cnfast": 518.6715280286496,
-        "reference": 130.6819198899794,
-        "speedup": 3.9689616472218736,
-        "detail": "(3394 calls, 3921 unique)"
+        "cnfast": 5545.13859505196,
+        "reference": 125.41759356577501,
+        "speedup": 44.21340289983975,
+        "detail": "(3491 calls, 4002 unique)"
       }
     },
     {
       "name": "insomnia",
       "url": "https://github.com/Kong/insomnia",
       "benchmark": {
-        "cnfast": 978.6484115409021,
-        "reference": 236.81555020027528,
-        "speedup": 4.132534416398153,
-        "detail": "(1964 calls, 2023 unique)"
+        "cnfast": 10794.275067052262,
+        "reference": 193.4428294958773,
+        "speedup": 55.80085390181036,
+        "detail": "(2191 calls, 2284 unique)"
       }
     },
     {
       "name": "open-assistant",
       "url": "https://github.com/LAION-AI/Open-Assistant",
       "benchmark": {
-        "cnfast": 256670.91768393115,
-        "reference": 60517.7114780464,
-        "speedup": 4.241252873169897,
-        "detail": "(152 calls, 153 unique)"
+        "cnfast": 243582.45690128705,
+        "reference": 51039.83337420586,
+        "speedup": 4.772399140009477,
+        "detail": "(165 calls, 166 unique)"
       }
     },
     {
       "name": "drawdb",
       "url": "https://github.com/drawdb-io/drawdb",
       "benchmark": {
-        "cnfast": 99045.49569878682,
-        "reference": 31833.37646700845,
-        "speedup": 3.111372612372295,
-        "detail": "(387 calls, 387 unique)"
+        "cnfast": 77930.72464531257,
+        "reference": 16084.496409420508,
+        "speedup": 4.845083281542432,
+        "detail": "(446 calls, 486 unique)"
       }
     },
     {
       "name": "reactive-resume",
       "url": "https://github.com/amruthpillai/reactive-resume",
       "benchmark": {
-        "cnfast": 2244.135148394032,
-        "reference": 547.3223096911681,
-        "speedup": 4.100207699664768,
-        "detail": "(908 calls, 1022 unique)"
+        "cnfast": 26502.672208676526,
+        "reference": 366.01812246267116,
+        "speedup": 72.40808742026,
+        "detail": "(1211 calls, 1351 unique)"
       }
     },
     {
       "name": "postiz-app",
       "url": "https://github.com/gitroomhq/postiz-app",
       "benchmark": {
-        "cnfast": 1350.6854471252548,
-        "reference": 354.0487603582465,
-        "speedup": 3.814970135069969,
-        "detail": "(1350 calls, 1473 unique)"
+        "cnfast": 20647.51014246191,
+        "reference": 348.9952234431395,
+        "speedup": 59.16272990431324,
+        "detail": "(1413 calls, 1540 unique)"
       }
     },
     {
       "name": "create-t3-app",
       "url": "https://github.com/t3-oss/create-t3-app",
       "benchmark": {
-        "cnfast": 337876.87940284755,
-        "reference": 94458.39406235165,
-        "speedup": 3.5769915713347427,
-        "detail": "(71 calls, 88 unique)"
+        "cnfast": 117850.33930357509,
+        "reference": 21971.357141453136,
+        "speedup": 5.363817016165472,
+        "detail": "(311 calls, 349 unique)"
       }
     },
     {
       "name": "nx",
       "url": "https://github.com/nrwl/nx",
       "benchmark": {
-        "cnfast": 1789.0797383132672,
-        "reference": 446.67030210364373,
-        "speedup": 4.005369799351772,
-        "detail": "(996 calls, 1096 unique)"
+        "cnfast": 27254.990585029576,
+        "reference": 376.82506827579317,
+        "speedup": 72.32796562537081,
+        "detail": "(1178 calls, 1294 unique)"
       }
     },
     {
       "name": "fastgpt",
       "url": "https://github.com/labring/FastGPT",
       "benchmark": {
-        "cnfast": 187256.50671049595,
-        "reference": 46831.8849610595,
-        "speedup": 3.998483231375352,
-        "detail": "(164 calls, 177 unique)"
+        "cnfast": 94776.68996564962,
+        "reference": 18821.33478785972,
+        "speedup": 5.035598751836836,
+        "detail": "(389 calls, 420 unique)"
       }
     },
     {
       "name": "infisical",
       "url": "https://github.com/Infisical/infisical",
       "benchmark": {
-        "cnfast": 413.7013420141348,
-        "reference": 108.3353390284625,
-        "speedup": 3.8187109185622683,
-        "detail": "(4938 calls, 5442 unique)"
+        "cnfast": 4452.3518585913,
+        "reference": 109.50956018448201,
+        "speedup": 40.65719788382656,
+        "detail": "(5021 calls, 5601 unique)"
       }
     },
     {
       "name": "karakeep",
       "url": "https://github.com/karakeep-app/karakeep",
       "benchmark": {
-        "cnfast": 1441.0475869513543,
-        "reference": 389.23887022462173,
-        "speedup": 3.7022191183520685,
-        "detail": "(1476 calls, 1637 unique)"
+        "cnfast": 17525.036138638487,
+        "reference": 368.27318242580884,
+        "speedup": 47.58705486834906,
+        "detail": "(1607 calls, 1724 unique)"
       }
     },
     {
       "name": "responsively-app",
       "url": "https://github.com/responsively-org/responsively-app",
       "benchmark": {
-        "cnfast": 97028.37033235401,
-        "reference": 22437.248915228105,
-        "speedup": 4.324432585248947,
-        "detail": "(314 calls, 337 unique)"
+        "cnfast": 101980.2715095295,
+        "reference": 21032.16156839267,
+        "speedup": 4.848777486703336,
+        "detail": "(344 calls, 360 unique)"
       }
     },
     {
       "name": "chartdb",
       "url": "https://github.com/chartdb/chartdb",
       "benchmark": {
-        "cnfast": 2713.217913756574,
-        "reference": 777.1326664332032,
-        "speedup": 3.4913188326124533,
-        "detail": "(856 calls, 1001 unique)"
+        "cnfast": 33477.37176408407,
+        "reference": 603.0063743570435,
+        "speedup": 55.51744258056869,
+        "detail": "(895 calls, 1045 unique)"
       }
     },
     {
       "name": "teable",
       "url": "https://github.com/teableio/teable",
       "benchmark": {
-        "cnfast": 620.3033619688271,
-        "reference": 165.69725920415667,
-        "speedup": 3.743594582964992,
-        "detail": "(3262 calls, 3533 unique)"
+        "cnfast": 5883.520404853456,
+        "reference": 155.06337995806902,
+        "speedup": 37.942681285835704,
+        "detail": "(3605 calls, 3785 unique)"
       }
     },
     {
       "name": "dyad",
       "url": "https://github.com/dyad-sh/dyad",
       "benchmark": {
-        "cnfast": 736.1617185138973,
-        "reference": 182.98211803151747,
-        "speedup": 4.023134754550706,
-        "detail": "(2414 calls, 2615 unique)"
+        "cnfast": 7104.636644963714,
+        "reference": 100.74871249429106,
+        "speedup": 70.51838647929421,
+        "detail": "(2832 calls, 3111 unique)"
       }
     },
     {
       "name": "cap",
       "url": "https://github.com/CapSoftware/Cap",
       "benchmark": {
-        "cnfast": 542.9477392498371,
-        "reference": 132.59012483218152,
-        "speedup": 4.094933464592802,
-        "detail": "(3317 calls, 3585 unique)"
+        "cnfast": 3513.9755362742662,
+        "reference": 75.09977275076787,
+        "speedup": 46.79076124419214,
+        "detail": "(5705 calls, 6288 unique)"
       }
     },
     {
       "name": "linkwarden",
       "url": "https://github.com/linkwarden/linkwarden",
       "benchmark": {
-        "cnfast": 3174.166800474401,
-        "reference": 906.4539446639911,
-        "speedup": 3.501740843161113,
-        "detail": "(855 calls, 944 unique)"
+        "cnfast": 31177.647664928267,
+        "reference": 600.1344771122652,
+        "speedup": 51.951102384501006,
+        "detail": "(1047 calls, 1151 unique)"
       }
     },
     {
       "name": "social-app",
       "url": "https://github.com/bluesky-social/social-app",
       "benchmark": {
-        "cnfast": 350321.29714294494,
-        "reference": 112667.81316420091,
-        "speedup": 3.1093289849550048,
-        "detail": "(116 calls, 116 unique)"
+        "cnfast": 340596.3967369909,
+        "reference": 68462.46557872555,
+        "speedup": 4.974936176456226,
+        "detail": "(126 calls, 129 unique)"
       }
     },
     {
       "name": "commerce",
       "url": "https://github.com/vercel/commerce",
       "benchmark": {
-        "cnfast": 179523.509530954,
-        "reference": 44745.89154593634,
-        "speedup": 4.01206688097061,
-        "detail": "(160 calls, 176 unique)"
+        "cnfast": 240380.17800800284,
+        "reference": 43511.4173095252,
+        "speedup": 5.524531097160574,
+        "detail": "(170 calls, 175 unique)"
       }
     },
     {
       "name": "tinacms",
       "url": "https://github.com/tinacms/tinacms",
       "benchmark": {
-        "cnfast": 1559.8650492744543,
-        "reference": 392.7775305153,
-        "speedup": 3.9713703765793507,
-        "detail": "(1118 calls, 1240 unique)"
+        "cnfast": 19578.26910383558,
+        "reference": 264.62950186594657,
+        "speedup": 73.98369783333284,
+        "detail": "(1426 calls, 1703 unique)"
       }
     },
     {
       "name": "omi",
       "url": "https://github.com/BasedHardware/omi",
       "benchmark": {
-        "cnfast": 463.5136626296396,
-        "reference": 126.48674005400088,
-        "speedup": 3.6645237471671113,
-        "detail": "(3707 calls, 4226 unique)"
+        "cnfast": 4201.386189098169,
+        "reference": 87.13105193815575,
+        "speedup": 48.21916062806457,
+        "detail": "(5072 calls, 5789 unique)"
       }
     },
     {
       "name": "openreplay",
       "url": "https://github.com/openreplay/openreplay",
       "benchmark": {
-        "cnfast": 1240.9052113834769,
-        "reference": 352.8135981265625,
-        "speedup": 3.5171694571090057,
-        "detail": "(2163 calls, 2252 unique)"
+        "cnfast": 8478.815657166824,
+        "reference": 268.997805752929,
+        "speedup": 31.520017917746532,
+        "detail": "(2533 calls, 2580 unique)"
       }
     },
     {
       "name": "note-gen",
       "url": "https://github.com/codexu/note-gen",
       "benchmark": {
-        "cnfast": 1101.1440232697073,
-        "reference": 287.1816341922846,
-        "speedup": 3.8343121292095863,
-        "detail": "(1763 calls, 2024 unique)"
+        "cnfast": 9721.55134165802,
+        "reference": 211.39182369686955,
+        "speedup": 45.98830348139895,
+        "detail": "(2288 calls, 2605 unique)"
       }
     },
     {
       "name": "inbox-zero",
       "url": "https://github.com/elie222/inbox-zero",
       "benchmark": {
-        "cnfast": 854.9470985898414,
-        "reference": 222.7030733703924,
-        "speedup": 3.838955096806956,
-        "detail": "(2454 calls, 2775 unique)"
+        "cnfast": 8531.315882047256,
+        "reference": 192.79529294022342,
+        "speedup": 44.250644048101364,
+        "detail": "(2663 calls, 2981 unique)"
+      }
+    },
+    {
+      "name": "openstatus",
+      "url": "https://github.com/openstatusHQ/openstatus",
+      "benchmark": {
+        "cnfast": 18185.476333073464,
+        "reference": 337.6337720218372,
+        "speedup": 53.86154419379966,
+        "detail": "(1539 calls, 1753 unique)"
+      }
+    },
+    {
+      "name": "open-webui",
+      "url": "https://github.com/open-webui/open-webui",
+      "benchmark": {
+        "cnfast": 6535.129178074864,
+        "reference": 156.77591500497684,
+        "speedup": 41.684522637724086,
+        "detail": "(3241 calls, 3245 unique)"
+      }
+    },
+    {
+      "name": "starlight",
+      "url": "https://github.com/withastro/starlight",
+      "benchmark": {
+        "cnfast": 338153.7860051091,
+        "reference": 75962.35563505821,
+        "speedup": 4.451596888723183,
+        "detail": "(129 calls, 130 unique)"
+      }
+    },
+    {
+      "name": "nuxt-ui",
+      "url": "https://github.com/nuxt/ui",
+      "benchmark": {
+        "cnfast": 53209.315479199926,
+        "reference": 2875.760357917043,
+        "speedup": 18.502694542232387,
+        "detail": "(649 calls, 650 unique)"
+      }
+    },
+    {
+      "name": "huly",
+      "url": "https://github.com/hcengineering/platform",
+      "benchmark": {
+        "cnfast": 6501.761370139171,
+        "reference": 346.24154804873814,
+        "speedup": 18.778108539486894,
+        "detail": "(3659 calls, 3655 unique)"
       }
     }
   ]

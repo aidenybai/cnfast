@@ -1,4 +1,5 @@
 [
+  ["    antialiased"],
   [" min-w-fit flex justify-end items-center ml-auto"],
   [" text-[14px] font-semibold px-2 py-2 bg-[#18181B] text-white flex justify-center"],
   [" text-[8px]  text-[#d36cff] pl-1 py-1 "],
@@ -6,6 +7,7 @@
   [" text-zinc-400"],
   [" text-zinc-400 mb-4 text-xs"],
   ["-rotate-90"],
+  ["!border-red-500"],
   [
     "absolute",
     "-top-2.5 -right-2.5",
@@ -30,6 +32,11 @@
   ["absolute inset-0 flex items-center px-2"],
   ["absolute inset-0 flex items-center px-2", "min-w-0"],
   ["absolute inset-0 w-full h-full flex items-center justify-center"],
+  [
+    "absolute inset-x-0 -top-12 transition-all duration-500  ",
+    "opacity-100 translate-y-0",
+    "opacity-0 translate-y-2"
+  ],
   ["absolute inset-y-0 inset-x-1"],
   [
     "absolute left-0 w-full overflow-hidden",
@@ -59,8 +66,6 @@
     "after:border-r-[5px] after:border-r-transparent",
     "after:border-t-[6px] after:border-t-white",
     "pointer-events-none",
-    "opening",
-    "closing",
     "opacity-0",
     "opacity-100"
   ],
@@ -69,15 +74,18 @@
     "flex items-center justify-center",
     "group",
     "transition-colors select-none",
+    "peer"
+  ],
+  [
+    "absolute z-50",
+    "flex items-center justify-center",
+    "group",
+    "transition-colors select-none",
     "peer",
     "resize-left peer/left",
-    "left",
     "resize-right peer/right z-10",
-    "right",
     "resize-top peer/top",
-    "top",
-    "resize-bottom peer/bottom",
-    "bottom"
+    "resize-bottom peer/bottom"
   ],
   ["animate-bounce inline-block"],
   ["animate-spin h-5 w-5 text-white"],
@@ -95,25 +103,28 @@
   ["bg-zinc-800 flex hover:bg-zinc-700 text-zinc-200 px-2 py-1 rounded gap-x-3"],
   ["bg-zinc-900/30 border-t border-zinc-800 px-2.5 py-3"],
   ["block px-4 py-3 text-white/60 hover:bg-white/5 hover:text-white transition-colors"],
-  ["body"],
   ["border border-[#27272A] rounded-sm h-4/5 text-xs overflow-hidden"],
-  ["border-4", "m-[2px]"],
   ["button flex items-center justify-center h-full pl-2.5 pr-2.5"],
   ["button flex items-center justify-center h-full w-full pl-3 pr-2.5"],
   [
     "button rounded w-4 h-4 flex items-center justify-center text-neutral-400 hover:text-neutral-300"
   ],
-  ["cell"],
   ["container"],
   ["count-badge"],
-  ["data-grid"],
+  ["count-flash"],
+  ["count-flash-white"],
+  ["cursor-e-resize"],
+  ["cursor-ew-resize"],
+  ["cursor-ew-resize", "cursor-w-resize", "cursor-e-resize"],
+  ["cursor-w-resize"],
   ["divide-y divide-white/10"],
   ["divide-y divide-zinc-800"],
   ["dot"],
+  ["fade-in"],
+  ["fade-out"],
   ["fixed bottom-4 right-4 z-[124124124124]"],
   [
     "fixed inset-0",
-    "horizontal",
     "horizontal",
     "right",
     "rounded-tl-lg rounded-bl-lg shadow-lg",
@@ -135,14 +146,7 @@
   ],
   ["fixed inset-0 z-50 flex items-center justify-center overflow-y-auto pt-8 pb-16"],
   ["fixed top-0 left-0 w-screen h-screen", "z-[214748365]"],
-  [
-    "flex ",
-    "h-[calc(100%-48px)]",
-    "h-full",
-    "h-[calc(100%-200px)]",
-    "dropped-frames",
-    "h-[calc(100%-150px)]"
-  ],
+  ["flex ", "h-[calc(100%-48px)]", "h-full", "h-[calc(100%-200px)]", "h-[calc(100%-150px)]"],
   ["flex flex-1"],
   [
     "flex flex-1 flex-col",
@@ -184,7 +188,6 @@
   ],
   ["flex flex-col px-1 gap-y-1"],
   ["flex flex-col sm:flex-row gap-2 sm:gap-0"],
-  ["flex flex-col space-y-1.5 p-6"],
   ["flex flex-col w-screen h-screen"],
   ["flex flex-none border-b border-gray-950"],
   ["flex flex-none flex-col border-r border-gray-950"],
@@ -245,19 +248,6 @@
   ["flex items-center justify-center w-full h-full text-white"],
   [
     "flex items-center justify-center whitespace-nowrap py-1.5 px-3 rounded-sm",
-    "data",
-    "text-white bg-[#7521c8]",
-    "text-[#6E6E77] hover:text-white"
-  ],
-  [
-    "flex items-center justify-center whitespace-nowrap py-1.5 px-3 rounded-sm",
-    "explanation",
-    "text-white bg-[#7521c8]",
-    "text-[#6E6E77] hover:text-white"
-  ],
-  [
-    "flex items-center justify-center whitespace-nowrap py-1.5 px-3 rounded-sm",
-    "fix",
     "text-white bg-[#7521c8]",
     "text-[#6E6E77] hover:text-white"
   ],
@@ -269,7 +259,6 @@
   [
     "flex items-center min-w-fit shrink-0 rounded-r-md h-[28px]",
     "hover:bg-[#0f0f0f]",
-    "render",
     "cursor-pointer",
     "cursor-default"
   ],
@@ -277,13 +266,9 @@
   ["flex items-center p-0 opacity-50"],
   [
     "flex items-center rounded-sm text-white text-xs h-[28px] shrink-0",
-    "render",
     "bg-[#412162] group-hover:bg-[#5b2d89]",
-    "other-frame-drop",
     "bg-[#44444a] group-hover:bg-[#6a6a6a]",
-    "other-javascript",
     "bg-[#efd81a6b] group-hover:bg-[#efda1a2f]",
-    "other-not-javascript",
     "bg-[#214379d4] group-hover:bg-[#21437982]"
   ],
   ["flex items-center rounded-sm text-white text-xs h-[28px] w-full"],
@@ -292,7 +277,6 @@
   ["flex items-start gap-x-4 "],
   ["flex max-h-9 min-h-9 flex-1 items-stretch overflow-hidden"],
   ["flex w-full"],
-  ["flex w-full h-full flex-col overflow-y-auto"],
   ["flex w-full justify-between items-center px-3 py-2 text-xs"],
   ["flex-1"],
   ["flex-1 flex items-center justify-center"],
@@ -317,13 +301,11 @@
   ["font-bold"],
   ["font-medium flex items-center text-left"],
   ["font-mono text-[#E4E4E7] flex items-center bg-[#27272A] pl-2 py-1 rounded-sm overflow-x-auto"],
+  ["freeze"],
   [
     "gap-x-0.5 w-fit flex items-end justify-center h-full text-white px-1 py-1 rounded-sm font-semibold text-[10px]",
-    "low",
     "bg-green-500/50",
-    "needs-improvement",
     "bg-[#b77116] text-[10px]",
-    "high",
     "bg-[#b94040]"
   ],
   ["group flex gap-0.5 items-start text-[#4ade80] bg-[#1a2a1a] py-[3px] px-1.5 rounded mt-0.5"],
@@ -351,13 +333,13 @@
   ],
   ["group relative"],
   ["h-[18px] w-[18px]"],
-  ["h-[50px] w-full"],
   ["h-1 bg-zinc-800 rounded-full overflow-hidden"],
   [
     "h-16 w-16 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center transform group-hover:scale-105 transition-all duration-300 group-hover:bg-white"
   ],
+  ["h-4 w-4 text-zinc-400 transition-transform  ", "rotate-90"],
   ["h-7 w-7 rounded-md hover:bg-[#4B4DB3]/5 flex items-center justify-center transition-colors"],
-  ["h-calc(100%-50px) flex flex-col overflow-y-auto px-3"],
+  ["h-full   transition-all"],
   ["h-full flex items-center justify-center"],
   ["h-full flex items-center min-w-fit"],
   ["h-full min-w-[200px]"],
@@ -365,9 +347,8 @@
   ["h-full w-full flex flex-col"],
   ["h-full w-full flex flex-col items-center justify-center relative py-2 px-4"],
   ["h-full w-full flex items-center relative"],
-  ["header"],
-  ["header-cell", "sorted", "desc", "desc"],
   ["hidden md:flex gap-4 text-sm sm:text-base"],
+  ["hidden", "pointer-events-none", "opacity-0"],
   ["hidden sm:flex justify-end px-3 py-2 bg-white border-b border-[#4B4DB3]/10"],
   ["hidden sm:inline text-white"],
   ["hover:bg-[#18181B] rounded-full p-2"],
@@ -380,8 +361,8 @@
   ],
   ["italic text-[#4ade80]"],
   ["italic text-[#f87171]"],
-  ["layout"],
   ["lucide lucide-arrow-left"],
+  ["lucide lucide-bell  "],
   ["lucide lucide-chevron-right"],
   ["m-8 font-bold text-3xl"],
   ["mb-3 text-sm text-white/50 sm:text-base"],
@@ -398,6 +379,7 @@
   ["ml-auto", "change-scope", "transition-opacity duration-300 delay-150"],
   ["ml-auto min-w-fit flex justify-end items-center"],
   ["mr-1.5"],
+  ["mt-1 text-sm text-white/70 sm:text-base"],
   ["mt-4 block text-sm text-white/50 sm:text-base"],
   [
     "mt-4 overflow-hidden rounded-lg border border-white/10 bg-white/5 text-white shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
@@ -448,6 +430,7 @@
   ["pl-3 text-xs font-mono border-l-1 border-[#333]"],
   ["pl-5 border-l border-[#333] mt-0.5 ml-1 flex flex-col gap-0.5"],
   ["place-self-center"],
+  ["pointer-events-none"],
   ["pt-2"],
   ["pt-4 sm:pt-8"],
   ["px-1 py-0.5 bg-[#6a369e] flex items-center rounded-sm font-semibold text-[8px] shrink-0"],
@@ -462,17 +445,13 @@
     "px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
   ],
   [
-    "px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-sm w-full",
-    " text-sm flex items-center gap-x-2 justify-center"
-  ],
-  [
     "px-4 py-2 border-b border-[#27272A] bg-[#18181B]/50 h-[calc(100%-40px)]",
-    "dropped-frames",
     "h-[calc(100%-25px)]"
   ],
   ["px-8 py-4 border-b border-gray-950"],
   ["react-scan-close-button"],
   ["react-scan-components-tree flex"],
+  ["react-scan-expandable"],
   ["react-scan-expandable", "react-scan-expanded"],
   ["react-scan-flash-overlay"],
   ["react-scan-header"],
@@ -494,7 +473,8 @@
   ],
   ["react-scan-toggle"],
   ["react-section-header", "overflow-hidden", "max-h-0", "transition-[max-height]"],
-  ["regex", "!ml-0"],
+  ["regex"],
+  ["regex", "start", "middle", "end", "!ml-0"],
   ["relative"],
   ["relative bg-black/60"],
   [
@@ -547,7 +527,6 @@
     "rounded py-[1px] px-1",
     "bg-neutral-700 text-neutral-300",
     "truncate",
-    "memo",
     "bg-[#8e61e3] text-white",
     "bg-yellow-300 text-black"
   ],
@@ -556,17 +535,18 @@
     "truncate",
     "bg-purple-800 text-neutral-400",
     "bg-neutral-700 text-neutral-300",
-    "memo",
     "bg-[#5f3f9a] text-white"
   ],
   ["rounded-full  text-[#d36cff] pl-1 py-1 text-[8px]"],
   ["rounded-full text-[#d36cff] pl-1 py-1 text-[8px] text-wrap"],
-  ["rounded-lg border"],
-  ["rounded-lg px-4"],
-  ["rounded-lg px-4", "bg-primary", "bg-secondary", "h-10", "h-8", "h-12", "default", "default"],
+  ["rounded-lg border border-white/20 bg-white/10 px-4 py-4 text-white shadow-lg"],
   ["rounded-sm border border-zinc-800 text-xs"],
-  ["row"],
   ["shrink-0 text-white/50 transition-colors group-hover:text-white"],
+  [
+    "shrink-0 whitespace-nowrap border-b pb-2 font-sans text-sm transition-colors sm:text-base  ",
+    "border-white text-white",
+    "border-transparent text-white/60 hover:text-white"
+  ],
   ["single"],
   [
     "sm:hidden absolute right-3 top-3 z-10 h-8 w-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center"
@@ -575,6 +555,7 @@
   ["text-[#5a5a5a] mr-0.5"],
   ["text-[#666] text-[10px]"],
   ["text-[#666] text-[10px] italic mt-1 flex items-center gap-x-1"],
+  ["text-[#666] transition-transform duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]"],
   [
     "text-[#666] transition-transform duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]",
     "rotate-90"
@@ -583,7 +564,7 @@
   ["text-[#6F6F78]"],
   ["text-[#6F6F78] mx-0.5"],
   ["text-[#6F6F78] text-xs font-medium"],
-  ["text-[#999]", "notifications", "text-[#8E61E3]"],
+  ["text-[#999]", "text-[#8E61E3]"],
   ["text-[#A1A1AA] transition-transform", "rotate-90"],
   ["text-[#A855F7]"],
   ["text-[#A855F7] mb-px"],
@@ -601,7 +582,7 @@
   ["text-gray-500"],
   ["text-gray-500 font-italic"],
   ["text-green-500"],
-  ["text-neutral-400", "left", "right", "rotate-90"],
+  ["text-neutral-400", "rotate-90"],
   ["text-pretty text-white"],
   ["text-pretty text-white/70"],
   ["text-purple-400"],
@@ -620,6 +601,7 @@
   [
     "text-white hover:bg-[#34343b] flex gap-x-1 justify-center items-center mb-4 w-fit px-2.5 py-1.5 text-xs rounded-sm bg-[#18181B]"
   ],
+  ["text-white underline transition-colors hover:text-white/80"],
   ["text-white/30 text-[11px] font-medium tracking-wide ml-auto min-w-fit"],
   ["text-white/50 underline hover:text-white transition-colors"],
   ["text-x w-full text-lefts"],
@@ -636,13 +618,15 @@
   ["text-yellow-500 mb-px"],
   ["text-zinc-400 font-medium text-[17px]"],
   ["text-zinc-600 text-xs"],
+  ["todo-item  ", "complete", "pending"],
   ["todo-item-actions"],
   ["todo-item-content"],
   ["todo-item-delete"],
+  ["todo-item-toggle  ", "complete", "pending"],
   ["todo-list"],
   ["todo-list-form"],
   ["transition-[color,transform]", "text-[#f87171]", "text-[#4ade80]", "rotate-90"],
-  ["transition-all duration-300"],
+  ["transition-opacity duration-200  ", "opacity-0", "opacity-100"],
   ["transition-transform"],
   ["transition-transform duration-200", "scale-110"],
   ["transition-transform", "rotate-90"],
@@ -656,20 +640,6 @@
   ["w-1 bg-[#d36cff]"],
   [
     "w-1/2 flex items-center justify-center whitespace-nowrap py-[5px] px-1 gap-x-1",
-    "optimize",
-    "text-white bg-[#7521c8] rounded-sm",
-    "text-[#6E6E77] bg-[#18181B] rounded-sm"
-  ],
-  [
-    "w-1/2 flex items-center justify-center whitespace-nowrap py-[5px] px-1 gap-x-1",
-    "other-visualization",
-    "text-white bg-[#7521c8] rounded-sm",
-    "text-[#6E6E77] bg-[#18181B] rounded-sm"
-  ],
-  [
-    "w-1/2 flex items-center justify-center whitespace-nowrap py-[5px] px-1 gap-x-1",
-    "render-visualization",
-    "render-explanation",
     "text-white bg-[#7521c8] rounded-sm",
     "text-[#6E6E77] bg-[#18181B] rounded-sm"
   ],
@@ -683,32 +653,22 @@
   ["w-6 h-6"],
   ["w-6 h-6 flex items-center justify-center", "text-left"],
   ["w-7 h-7 text-gray-900 relative left-0.5"],
-  ["w-fit flex items-center"],
   [
     "w-fit flex items-center justify-center h-fit text-white px-1 rounded-sm font-semibold text-[10px] whitespace-nowrap",
-    "low",
     "bg-green-500/50",
-    "needs-improvement",
     "bg-[#b77116]",
-    "high",
     "bg-[#b94040]"
   ],
   [
     "w-fit flex items-center justify-center h-full text-white px-1 py-1 rounded-sm text-[10px] font-bold",
-    "low",
     "bg-green-500/60",
-    "needs-improvement",
     "bg-[#b77116] text-[10px]",
-    "high",
     "bg-[#b94040]"
   ],
   [
     "w-fit flex items-center text-[10px] justify-center h-full text-white px-1 py-1 rounded-sm font-semibold",
-    "low",
     "bg-green-500/60",
-    "needs-improvement",
     "bg-[#b77116] text-[10px]",
-    "high",
     "bg-[#b94040]"
   ],
   ["w-full"],
@@ -716,9 +676,8 @@
   ["w-full flex items-center relative text-xs"],
   ["w-full flex items-center relative text-xs min-w-0"],
   ["w-full flex justify-center"],
-  ["w-full h-[48px] flex flex-col", "h-[235px]", "dropped-frames", "h-[150px]"],
+  ["w-full h-[48px] flex flex-col", "h-[235px]", "h-[150px]"],
   ["w-full h-full"],
-  ["w-full h-full flex flex-col gap-y-2"],
   ["w-full h-full gap-y-2 flex flex-col border-r border-[#27272A] overflow-y-auto"],
   ["w-full h-full object-cover"],
   ["w-full mb-4 bg-[#0A0A0A] border border-[#27272A] rounded-sm overflow-hidden flex"],
@@ -728,7 +687,6 @@
   ["whitespace-pre-wrap break-words text-left font-medium flex items-center gap-x-1.5"],
   ["with-data-text !overflow-visible"],
   ["with-data-text cursor-pointer !overflow-visible"],
-  ["wrapper"],
   [
     "z-10",
     "flex items-center justify-center",

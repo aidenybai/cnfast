@@ -1,4 +1,16 @@
 [
+  [
+    "\n                w-[8px] h-[8px] rounded-full\n                 \n                 \n                 \n              ",
+    "bg-[#612bd3]",
+    "bg-[#32d583]",
+    "bg-[#1d9bf0]"
+  ],
+  [
+    "\n          flex flex-col h-full\n          bg-newTableHeader\n          border border-newTableBorder\n          rounded-[12px]\n          overflow-hidden\n          transition-all duration-200\n          hover:border-[#612bd3]/50\n        "
+  ],
+  [
+    "    text-white px-[16px] py-[8px] text-center cursor-pointer rounded-[8px] text-[14px] font-[500] transition-colors"
+  ],
   ["-mt-[23px] mb-[23px] text-red-600"],
   [
     "-mt-[23px]",
@@ -8,11 +20,18 @@
   [
     "-mt-3 group-[.sidebar]:rotate-[180deg] group-[.sidebar]:mx-auto text-btnText bg-btnSimple rounded-[6px] w-[24px] h-[24px] flex items-center justify-center cursor-pointer select-none"
   ],
+  [
+    "-mx-[15px] min-h-[320px] flex items-center justify-center text-center px-[32px] py-[32px] text-[28px] font-[700] leading-[36px] whitespace-pre-line break-words"
+  ],
+  ["!bg-blue-700 rounded-[4px]"],
   ["!bg-cover w-full aspect-[calc(16/9)] rounded-[20px] overflow-hidden"],
   ["!bg-cover w-full aspect-[calc(16/9)] rounded-[4px] overflow-hidden"],
   ["!bg-cover w-full aspect-[calc(16/9)] rounded-[8px] overflow-hidden"],
+  ["!bg-customColor3 !h-[24px] border border-customColor21 rounded-[4px] text-[12px]"],
   ["!bg-customColor45"],
+  ["!bg-red-500"],
   ["!bg-red-700 rounded-[4px]"],
+  ["!bg-red-700 rounded-[4px] !h-[24px] !px-[10px] text-[12px]"],
   ["!bg-red-800"],
   ["!flex-1"],
   ["!h-[30px] !text-sm !bg-red-800"],
@@ -59,7 +78,6 @@
   ["absolute left-0 top-0 gap-[12px] w-full h-full flex flex-col p-[16px] bg-bgYoutube"],
   [
     "absolute left-0 top-0 w-[24px] h-[24px] bg-customColor5 rounded-full transition-all cursor-pointer",
-    "on",
     "left-[100%] -translate-x-[100%]",
     "left-0"
   ],
@@ -97,7 +115,15 @@
     "absolute start-0 top-0 w-full h-full flex flex-col overflow-auto scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor"
   ],
   ["absolute start-0 top-0 w-full h-full pointer-events-none"],
-  ["absolute top-[100%] w-full start-0 bg-sixth border border-customColor6 text-textColor z-[999]"],
+  [
+    "absolute top-[100%] start-0 p-[8px] px-[20px] bg-fifth flex flex-col gap-[16px] z-[100] rounded-[8px] border border-tableBorder text-nowrap"
+  ],
+  [
+    "absolute top-[100%] start-0 w-max min-w-full max-w-[90vw] bg-sixth border border-customColor6 text-textColor z-[999]"
+  ],
+  [
+    "absolute top-[100%] w-max min-w-full max-w-[90vw] start-0 bg-sixth border border-customColor6 text-textColor z-[999]"
+  ],
   ["absolute top-[10px] end-[10px]"],
   ["absolute top-[20%] left-[10%] w-[300px] h-[300px] bg-[#612BD3] rounded-full blur-[120px]"],
   [
@@ -124,6 +150,8 @@
   ["absolute w-full h-full left-0 top-0 bg-newBackdrop opacity-60 z-[100] rounded-[12px]"],
   ["absolute w-full h-full left-0 top-0 px-[40px] overflow-hidden"],
   ["absolute w-full h-full start-0 top-0"],
+  ["absolute z-[1] justify-center items-center w-full start-0 -top-[4px] flex"],
+  ["absolute z-[1] justify-center items-center w-full start-0 top-0 flex"],
   ["absolute z-[20] left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"],
   ["absolute z-[500] -start-[50px]", "top-[35px]", "bottom-[35px]"],
   ["absolute z-10 -bottom-[5px] -end-[5px]"],
@@ -131,9 +159,9 @@
   ["absolute z-10 bottom-[5px] -end-[5px]"],
   ["absolute z-10 bottom-0 -end-[5px]"],
   ["absolute z-10 bottom-0 -end-[5px] min-w-[16px]"],
+  ["animate-bounce drop-shadow-glow"],
   [
     "animate-fadeDown rounded-[8px] gap-[18px] flex items-center overflow-hidden bg-customColor8 p-[16px] min-w-[319px] fixed start-[50%] text-white z-[900] top-[32px] -translate-x-[50%] h-[56px]",
-    "success",
     "shadow-greenToast",
     "shadow-yellowToast"
   ],
@@ -205,9 +233,13 @@
   [
     "bg-newBgColorInner border border-newBorder rounded-[8px] px-[16px] h-[44px] text-textColor outline-none"
   ],
+  [
+    "bg-newBgColorInner border border-newTableBorder rounded-[8px] max-h-[160px] overflow-auto p-[12px] flex flex-col gap-[8px]"
+  ],
   ["bg-newBgColorInner flex flex-1"],
   ["bg-newBgColorInner flex-1"],
   ["bg-newBgColorInner flex-1 flex-col flex p-[20px] gap-[12px]"],
+  ["bg-newBgColorInner flex-1 min-w-0 flex-col flex p-[20px] gap-[12px]"],
   [
     "bg-newBgColorInner h-[38px] border border-newTableBorder rounded-[8px] px-[10px] text-[14px] text-textColor"
   ],
@@ -225,16 +257,15 @@
     "bg-newBgColorInner p-[20px] flex flex-1 flex-col gap-[15px] transition-all items-center justify-center"
   ],
   [
-    "bg-newBgColorInner p-[20px] flex flex-col gap-[15px] transition-all",
-    "1",
-    "group sidebar w-[100px]",
-    "w-[260px]"
-  ],
-  [
     "bg-newBgColorInner p-[20px] flex flex-col gap-[15px] transition-all absolute start-0 top-0 w-full h-full overflow-x-hidden overflow-y-auto scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor"
   ],
   [
     "bg-newBgColorInner p-[20px] flex flex-col gap-[15px] transition-all flex-1 justify-center items-center text-center"
+  ],
+  [
+    "bg-newBgColorInner p-[20px] flex flex-col gap-[15px] transition-all",
+    "group sidebar w-[100px]",
+    "w-[260px]"
   ],
   ["bg-newBgColorInner p-[20px] flex flex-col transition-all w-[260px]"],
   ["bg-newBgColorInner px-[20px] py-[14px] border-b border-newBorder"],
@@ -244,6 +275,7 @@
   ["bg-newBgColorInner rounded-[12px] border border-newBorder overflow-hidden"],
   ["bg-newBgColorInner rounded-[12px] p-[20px] border border-newTableBorder"],
   ["bg-newBgColorInnerInner rounded-[12px] border border-newBorder overflow-hidden"],
+  ["bg-newSettings pb-[12px] px-[12px]", "hidden bg-newSettings px-[12px] pb-[12px]"],
   ["bg-newTableHeader rounded-[8px] p-[16px]"],
   ["bg-primary p-[20px]"],
   ["bg-primary/60 w-[39px] h-[46px] start-0 top-0 absolute rounded-full z-[199]"],
@@ -278,6 +310,7 @@
   ["block tablet:hidden"],
   ["block xs:hidden"],
   ["blur-sm select-none"],
+  ["blur-xs", "pointer-events-none"],
   ["blurMe flex flex-1 flex-col bg-newBgColorInner pb-[60px] mobile:pb-[100px]"],
   ["border border-borderPreview rounded-[12px] shadow-previewShadow"],
   ["border border-borderPreview rounded-[12px] shadow-previewShadow", "hidden"],
@@ -311,13 +344,26 @@
     "col-span-full flex flex-col items-center justify-center py-[48px] px-[24px] bg-newTableHeader border border-newTableBorder rounded-[12px]"
   ],
   ["copilotKitInput"],
+  ["copilotKitInputContainer  ", "poweredByContainer"],
   ["copilotKitInputControlButton"],
   ["copilotKitInputControls"],
   ["copilotKitMessage copilotKitUserMessage min-w-[300px]"],
   ["cursor-pointer"],
   ["cursor-pointer aspect-square rounded-[6px] overflow-hidden relative group"],
   [
+    "cursor-pointer bg-[#2EA6DD] h-[44px] rounded-[4px] flex justify-center items-center text-white gap-[4px]"
+  ],
+  [
     "cursor-pointer bg-btnSimple changeColor flex gap-[8px] h-[44px] px-[18px] justify-center items-center rounded-[8px]"
+  ],
+  [
+    "cursor-pointer bg-white flex-1 h-[52px] rounded-[10px] flex justify-center items-center text-[#0E0E0E] gap-[5px]"
+  ],
+  [
+    "cursor-pointer bg-white h-[44px] rounded-[4px] flex justify-center items-center text-customColor16 gap-[4px]"
+  ],
+  [
+    "cursor-pointer bg-white h-[52px] flex-1 rounded-[10px] flex justify-center items-center text-[#0E0E0E] gap-[5px]"
   ],
   [
     "cursor-pointer border-[2px] relative rounded-full flex justify-center items-center bg-fifth filter transition-all duration-500",
@@ -327,7 +373,6 @@
   ["cursor-pointer flex gap-[4px]"],
   [
     "cursor-pointer flex gap-[8px] rounded-[8px] w-[40px] h-[40px] justify-center items-center bg-newBgLineColor",
-    "global",
     "text-[#A3A3A3]",
     "border border-[#FC69FF] text-[#FC69FF]"
   ],
@@ -336,7 +381,14 @@
     "bg-boxHover"
   ],
   ["cursor-pointer flex items-center gap-[4px]", "bg-[#D82D7E] text-white rounded-full"],
+  ["cursor-pointer flex items-center gap-[8px] text-red-400 hover:text-red-500 text-[14px]"],
   ["cursor-pointer flex text-[#FF3F3F] gap-[8px] items-center text-[15px] font-[600]"],
+  [
+    "cursor-pointer flex-1 bg-white h-[44px] rounded-[4px] flex justify-center items-center text-customColor16 gap-[4px]"
+  ],
+  [
+    "cursor-pointer flex-1 bg-white h-[52px] rounded-[10px] flex justify-center items-center text-[#0E0E0E] gap-[5px]"
+  ],
   ["cursor-pointer float-left"],
   [
     "cursor-pointer gap-[8px] flex w-full h-[34px] rounded-[8px] mt-[12px] px-[16px] justify-center items-center bg-[#612BD3] text-white"
@@ -405,7 +457,6 @@
   ],
   [
     "cursor-pointer rounded-[4px] select-none w-[24px] h-[24px] justify-center items-center flex text-white",
-    "default",
     "bg-forth",
     "border-customColor1 border-2 bg-customColor2"
   ],
@@ -416,6 +467,11 @@
   ],
   [
     "cursor-pointer rounded-[5px] w-[40px] h-[40px] border-2 border-tableBorder relative flex transition-all"
+  ],
+  [
+    "cursor-pointer rounded-[8px] overflow-hidden border-2 transition-all  ",
+    "border-[#612BD3] scale-[1.02]",
+    "border-transparent hover:border-textColor/20"
   ],
   [
     "cursor-pointer select-none w-[266px] h-[138px] tablet:w-full tablet:h-[124px] p-[24px] tablet:p-[15px] rounded-[20px] flex flex-col",
@@ -435,6 +491,7 @@
   ],
   ["custom:scale-90 transition-transform"],
   ["custom:text-[9px] minCustom:text-[10px] leading-[1.1] text-center"],
+  ["dark", "light"],
   ["dark text-primary !bg-primary"],
   [
     "dropdown-menu bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto p-2"
@@ -450,6 +507,9 @@
   ],
   [
     "fixed left-0 top-0 w-full leading-[50px] pt-[200px] h-screen bg-black/90 z-50 flex flex-col justify-center items-center text-center text-3xl"
+  ],
+  [
+    "fixed p-[12px] bg-newBgColorInner shadow-menu flex flex-col gap-[16px] z-[100] rounded-[8px] border border-tableBorder text-nowrap"
   ],
   ["flex"],
   ["flex bg-newBgColorInner h-[80px] px-[20px] items-center"],
@@ -477,12 +537,14 @@
   ["flex flex-col flex-1"],
   ["flex flex-col flex-1 border-e border-newBorder"],
   ["flex flex-col flex-1 items-center justify-center"],
+  ["flex", "flex-col", "flex-row flex items-end gap-[10px]"],
   ["flex flex-col gap-[10px]"],
   ["flex flex-col gap-[10px] border-tableBorder border p-[15px] rounded-lg"],
   ["flex flex-col gap-[10px] border-tableBorder border p-[15px] rounded-lg mb-5"],
   ["flex flex-col gap-[10px] flex-1 relative"],
   ["flex flex-col gap-[10px] justify-center text-[16px] text-customColor18"],
   ["flex flex-col gap-[10px] mb-[20px] px-[10px]"],
+  ["flex flex-col gap-[10px] min-w-[400px]"],
   ["flex flex-col gap-[10px] mt-[10px] p-[15px] border border-input rounded-[8px]"],
   ["flex flex-col gap-[10px]", "opacity-25 pointer-events-none"],
   ["flex flex-col gap-[12px]"],
@@ -495,8 +557,10 @@
   ["flex flex-col gap-[16px]"],
   ["flex flex-col gap-[16px] h-full"],
   ["flex flex-col gap-[16px] min-w-[500px]"],
+  ["flex flex-col gap-[16px] p-[16px]"],
   ["flex flex-col gap-[16px] pt-[8px]"],
   ["flex flex-col gap-[16px] text-textColor"],
+  ["flex flex-col gap-[18px] mb-[24px]"],
   ["flex flex-col gap-[1px]"],
   ["flex flex-col gap-[20px]"],
   ["flex flex-col gap-[20px] bg-newBgColor"],
@@ -510,6 +574,7 @@
   ["flex flex-col gap-[40px] w-full"],
   ["flex flex-col gap-[4px]"],
   ["flex flex-col gap-[4px] bg-bgCommentFacebook py-[8px] px-[12px] rounded-[12px]"],
+  ["flex flex-col gap-[4px] text-[14px]"],
   ["flex flex-col gap-[6px]"],
   ["flex flex-col", "gap-[6px]"],
   ["flex flex-col gap-[6px] flex-1"],
@@ -534,6 +599,7 @@
   ["flex flex-col h-full gap-[32px] flex-1 py-[12px]"],
   ["flex flex-col items-center gap-[10px] pe-[12px]"],
   ["flex flex-col items-center gap-[16px]"],
+  ["flex flex-col items-center gap-[8px] rounded-[8px] bg-newBgColorInner p-[24px] text-center"],
   ["flex flex-col justify-center"],
   ["flex flex-col justify-center relative me-[20px]"],
   ["flex flex-col justify-end gap-[10px] ml-[18px]"],
@@ -547,6 +613,7 @@
   ["flex flex-col minCustom:gap-[20px] custom:gap-[8px] blurMe"],
   ["flex flex-col mobile:hidden tablet:hidden"],
   ["flex flex-col mt-[54px] gap-[24px] tablet:mt-[40px]"],
+  ["flex flex-col p-[8px] hover:bg-newTableBorder cursor-pointer"],
   [
     "flex flex-col ps-[40px] tablet:!ps-[0] border-l border-newColColor py-[40px] mobile:!pt-[24px] tablet:border-none tablet:pb-0"
   ],
@@ -556,12 +623,16 @@
   ["flex flex-col relative"],
   ["flex flex-col space-y-2"],
   ["flex flex-col space-y-4"],
+  ["flex flex-col text-[14px]"],
   ["flex flex-col text-textColor flex-1"],
   ["flex flex-col text-white p-[10px]"],
   [
     "flex flex-col w-[500px] h-[250px] bg-sixth border-tableBorder border-2 rounded-xl pb-[20px] px-[20px] relative"
   ],
   ["flex flex-col w-full"],
+  [
+    "flex flex-col w-full max-w-[1200px] mx-auto h-full bg-sixth border-tableBorder border-2 rounded-xl pb-[20px] px-[20px] relative"
+  ],
   [
     "flex flex-col w-full min-h-full relative",
     "repeated-strip",
@@ -617,6 +688,7 @@
   ],
   ["flex gap-[12px] items-center py-[8px] px-[10px]"],
   ["flex gap-[12px] items-end"],
+  ["flex gap-[12px] items-start"],
   ["flex gap-[12px] justify-end"],
   ["flex gap-[12px] min-w-0"],
   ["flex gap-[12px] mt-[16px]"],
@@ -680,6 +752,9 @@
     "border-tableBorder hover:border-textColor/30"
   ],
   ["flex items-center gap-[12px]"],
+  [
+    "flex items-center gap-[12px] bg-newBgColorInner border-newTableBorder border rounded-[8px] p-[12px]"
+  ],
   ["flex items-center gap-[12px]", "hidden"],
   ["flex items-center gap-[12px] mb-[12px]"],
   [
@@ -690,12 +765,15 @@
   ["flex items-center gap-[16px]"],
   ["flex items-center gap-[20px]"],
   ["flex items-center gap-[3px]"],
+  ["flex items-center gap-[4px] text-[13px] font-medium  ", "text-[#32d583]", "text-[#f97066]"],
   ["flex items-center gap-[5px] cursor-pointer"],
   ["flex items-center gap-[6px]"],
   ["flex items-center gap-[6px] text-[13px] cursor-pointer h-[38px]"],
   ["flex items-center gap-[6px] text-orange-500 hover:text-orange-400 cursor-default"],
   ["flex items-center gap-[8px]"],
   ["flex items-center gap-[8px] bg-customColor47/30 rounded-[8px] px-[12px] py-[8px]"],
+  ["flex items-center gap-[8px] cursor-pointer text-[14px]"],
+  ["flex items-center gap-[8px] flex-1"],
   ["flex items-center gap-[8px] flex-wrap"],
   ["flex items-center justify-between"],
   ["flex items-center justify-between gap-[24px]"],
@@ -757,8 +835,8 @@
   ["flex py-[10px] b2 items-center gap-[4px]"],
   ["flex py-[20px] items-center gap-[15px]"],
   ["flex", "relative flex-1"],
-  ["flex relative flex-col", "1", "group sidebar w-[100px]", "w-[260px]"],
   ["flex relative flex-col", "gap-[10px]"],
+  ["flex relative flex-col", "group sidebar w-[100px]", "w-[260px]"],
   ["flex select-none", "gap-[10px]"],
   ["flex shrink-0 rounded-full h-30 w-30 relative"],
   ["flex space-x-2"],
@@ -766,7 +844,6 @@
   ["flex space-x-3"],
   ["flex space-x-3 border-t border-tableBorder py-3"],
   ["flex text-textLinkedin text-[12px] font-[400] items-center"],
-  ["flex", "textarea", "flex-col", "flex-row flex items-end gap-[10px]"],
   ["flex w-full"],
   ["flex w-full gap-[10px]"],
   [
@@ -781,11 +858,9 @@
   [
     "flex-1 bg-[#612BD3] hover:bg-[#7B3FF2] disabled:opacity-50 text-white rounded-[8px] py-[10px] px-[16px] text-[14px] font-semibold transition-colors"
   ],
-  ["flex-1 bg-forth flex justify-center items-center"],
   ["flex-1 bg-forth text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all"],
   ["flex-1 bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all"],
   ["flex-1 bg-newBgLineColor rounded-[12px] overflow-hidden flex flex-col gap-[1px] blurMe"],
-  ["flex-1 bg-primary flex justify-center items-center"],
   ["flex-1 bg-secondary"],
   ["flex-1", "bg-secondary"],
   ["flex-1 bg-secondary py-[10px] px-[16px] flex flex-col"],
@@ -829,6 +904,8 @@
   ["flex-1 items-center justify-center flex", "invisible"],
   ["flex-1 justify-end flex py-[10px] b2 items-center gap-[4px]"],
   ["flex-1 max-h-[500px] justify-center items-center flex"],
+  ["flex-1 min-w-[220px]"],
+  ["flex-1 min-w-[220px] shrink-0"],
   ["flex-1 ps-[16px] text-[14px] select-none flex gap-[8px]"],
   ["flex-1 px-[12px] py-[8px]"],
   ["flex-1 px-[16px] text-[14px] select-none flex gap-[8px] items-center"],
@@ -849,7 +926,11 @@
   ["flex-1 text-[20px]"],
   ["flex-1 text-[24px]"],
   ["flex-1 text-[24px] font-[700]"],
-  ["flex-1 text-gray-800"],
+  [
+    "flex-1 text-center py-[8px] rounded-[8px] text-white text-[13px] cursor-pointer transition-opacity    ",
+    "opacity-100 ring-2 ring-white",
+    "opacity-40"
+  ],
   ["flex-1 text-start text-[14px] group-[.sidebar]:hidden"],
   ["flex-1 text-start text-[16px] group-[.sidebar]:hidden"],
   ["flex-1 text-textColor"],
@@ -883,10 +964,8 @@
   ["font-[700] text-[18px] text-textColor"],
   ["font-medium"],
   ["forceChange flex gap-[8px]"],
-  ["FREE", "!bg-red-500"],
   [
     "gap-[10px] h-[32px] mobile:flex-1 rounded-[6px] text-[16px] px-[12px] flex justify-center items-center",
-    "YEARLY",
     "bg-boxFocused text-textItemFocused",
     "cursor-pointer"
   ],
@@ -923,6 +1002,7 @@
   ["gap-[8px] flex flex-col"],
   ["gap-[8px] flex flex-col pt-[10px]"],
   ["gap-[9px] items-center flex"],
+  ["grid   w-full gap-y-[10px]", "grid-cols-[1fr,1fr,1fr,1fr,1fr]", "grid-cols-[1fr,1fr,1fr,1fr]"],
   [
     "grid [grid-template-columns:136px_repeat(7,_minmax(0,_1fr))] gap-[4px] rounded-[10px] absolute h-full start-0 top-0 w-full overflow-auto scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor"
   ],
@@ -942,13 +1022,13 @@
   ["grid grid-cols-[1fr,1fr,1fr,1fr] w-full gap-y-[10px]"],
   ["grid grid-cols-[2fr,1fr,1fr] w-full gap-y-[10px]"],
   ["grid grid-cols-[auto_auto_auto] text-[14px] font-[500] gap-[8px] items-center"],
-  ["grid grid-cols-1 md:grid-cols-3 gap-[12px]"],
   ["grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]"],
   ["grid grid-cols-2 gap-[10px]"],
   ["grid grid-cols-2 gap-[12px] text-[13px] mb-[12px]"],
   ["grid grid-cols-2 gap-[8px] mobile:!grid-cols-2 tablet:grid-cols-4"],
   ["grid grid-cols-2 mobile:grid-cols-1 gap-y-[8px] gap-x-[32px]"],
   ["grid grid-cols-3"],
+  ["grid grid-cols-3 gap-[12px]"],
   ["grid grid-cols-3 gap-[30px]"],
   ["grid grid-cols-3 justify-items-center select-none cursor-pointer gap-[10px]"],
   [
@@ -1012,7 +1092,6 @@
   ["group-hover:rotate-180", "text-white"],
   ["group-hover:scale-110 transition-transform"],
   ["group-hover:translate-x-1 transition-transform"],
-  ["grow shrink basis-0 flex-col justify-start items-start gap-1 inline-flex"],
   ["h-[100px] mt-[12px] -mx-[15px] overflow-hidden flex"],
   ["h-[120px] relative"],
   ["h-[20px] mb-[24px] mt-[24px] relative"],
@@ -1027,12 +1106,16 @@
   ],
   [
     "h-[32px] mobile:flex-1 rounded-[6px] text-[16px] px-[12px] flex justify-center items-center",
-    "MONTHLY",
     "bg-boxFocused text-textItemFocused",
     "cursor-pointer"
   ],
   [
     "h-[32px] px-[10px] rounded-[4px] bg-[#612BD3] text-white text-[12px] font-[600] hover:bg-[#612BD3]/80"
+  ],
+  [
+    "h-[32px] px-[12px] rounded-[8px] text-[13px] border cursor-pointer whitespace-nowrap  ",
+    "bg-forth text-white border-forth",
+    "bg-newBgColorInner text-textColor border-newTableBorder hover:bg-tableBorder"
   ],
   [
     "h-[32px] text-[12px] text-newBgColor font-[500] px-[14px] flex justify-center items-center bg-youtubeButton rounded-[16px]"
@@ -1104,10 +1187,11 @@
   ["hidden group-hover:block hover:underline cursor-pointer", "mix-blend-difference"],
   ["hidden mobile:block"],
   [
-    "hidden py-[12px] px-[12px] group-hover:flex absolute top-[100%] end-0 bg-third border-tableBorder border gap-[12px] cursor-pointer flex-col",
+    "hidden py-[12px] px-[12px] group-hover:flex absolute top-[100%] end-0 w-max max-w-[400px] bg-third border-tableBorder border gap-[12px] cursor-pointer flex-col",
     "!flex !relative max-w-[500px] mx-auto mb-[10px]"
   ],
   ["hidden tablet:block"],
+  ["hideCopilot   h-[100vh] w-full text-textColor flex flex-1 flex-col !bg-none"],
   ["hover:text-newTextColor"],
   ["hover:text-newTextColor cursor-pointer"],
   [
@@ -1119,15 +1203,10 @@
   ["inline-flex items-center justify-center h-10 w-10 text-textColor select-none"],
   [
     "inline-flex items-center justify-center rounded-full text-white font-bold uppercase tracking-wide leading-none cursor-default",
-    "WEB",
     "bg-[#6b7280]",
-    "API",
     "bg-[#2563eb]",
-    "MCP",
     "bg-[#9333ea]",
-    "AUTOPOST",
     "bg-[#d97706]",
-    "CLI",
     "bg-[#0f766e]"
   ],
   [
@@ -1135,14 +1214,12 @@
   ],
   ["innerComponent"],
   ["innerComponent flex-1 flex"],
-  ["input", "flex-1"],
-  ["input", "mb-[27px]"],
   ["invisible"],
+  ["invisible h-0 overflow-hidden"],
   ["invisible h-0 overflow-hidden", "mt-[20px]"],
   ["justify-center items-center flex"],
   ["justify-center items-center flex -mt-[90px]"],
   ["justify-center items-center flex flex-col pt-[16px]"],
-  ["justify-center items-center gap-1 inline-flex"],
   ["justify-center items-center py-[20px] flex-col w-[500px]"],
   ["line-clamp-1"],
   ["list-disc ps-5"],
@@ -1157,7 +1234,9 @@
   ["max-w-[150px]"],
   ["max-w-[200px]"],
   ["max-w-[20px] max-h-[20px] fill-current h-[1.25em]"],
+  ["max-w-[240px] truncate"],
   ["max-w-[55px]"],
+  ["max-w-[600px]"],
   ["max-w-full max-h-[500px] object-contain rounded-lg border border-tableBorder"],
   ["mb-[12px]"],
   ["mb-[15px] border-tableBorder"],
@@ -1165,6 +1244,7 @@
   ["mb-[16px]"],
   ["mb-[16px] text-[24px] font-[700]"],
   ["mb-[20px]"],
+  ["mb-[27px]"],
   ["mb-[32px] text-[24px] font-[700]"],
   ["mb-[4px]"],
   ["mb-[6px]"],
@@ -1182,6 +1262,7 @@
   ["min-w-[21px] min-h-[20px]"],
   ["min-w-[40px] h-[40px] min-h-[40px] w-[40px] flex flex-col items-center"],
   ["min-w-[42px] min-h-[42px] w-[42px] h-[42px] rounded-full"],
+  ["min-w-[50px] float-left ms-[4px] p-[3px] rounded-sm relative"],
   ["min-w-[55px]"],
   ["mix-blend-difference", "group-hover:hidden cursor-pointer"],
   ["ml-[8px] opacity-70"],
@@ -1205,12 +1286,16 @@
   ["mt-[16px]"],
   ["mt-[16px] flex"],
   ["mt-[16px] text-sm opacity-70"],
+  [
+    "mt-[16px] w-full text-wrap font-[400] text-[16px] text-customColor17 select-text max-w-[450px]"
+  ],
   ["mt-[18px]"],
   ["mt-[18px] flex flex-col gap-[18px]"],
   ["mt-[20px]"],
   ["mt-[20px] flex items-center gap-[10px]"],
   ["mt-[20px] flex justify-end"],
   ["mt-[24px]"],
+  ["mt-[24px] p-[24px] rounded-[20px] border-[1.5px] border-newColColor text-[16px] font-[500]"],
   ["mt-[24px] text-[16px] font-[600] flex gap-[4px] items-center"],
   ["mt-[32px] flex justify-center"],
   ["mt-[40px]"],
@@ -1247,7 +1332,6 @@
   ["my-[16px] mt-[16px] h-[90px] bg-sixth border-fifth border rounded-[4px] p-[24px]"],
   ["my-[20px]"],
   ["my-[20px] cursor-pointer w-[200px] h-[200px] border-2 border-tableBorder"],
-  ["my-[30px] flex h-[32px]"],
   ["object-contain", "object-cover", "w-full h-full"],
   [
     "opacity-0 animate-normalFadeDown mt-[10px] absolute w-[420px] min-h-[200px] top-[100%] end-0 bg-third text-textColor rounded-[16px] flex flex-col border border-tableBorder z-[600]"
@@ -1259,7 +1343,9 @@
   ["opacity-50 pointer-events-none"],
   [
     "opacity-50 pointer-events-none",
-    "  px-[24px] h-[40px] cursor-pointer items-center justify-center flex relative"
+    "  px-[24px] h-[40px] cursor-pointer items-center justify-center flex relative",
+    "bg-third",
+    "bg-forth text-white"
   ],
   ["opacity-60"],
   ["opacity-60 text-[12px]"],
@@ -1295,10 +1381,17 @@
     "overflow-ellipsis overflow-hidden whitespace-nowrap hover:bg-newBgColor px-[10px] py-[6px] rounded-[10px] cursor-pointer",
     "bg-newBgColor"
   ],
-  ["p-[10px] border-b border-customColor6 hover:bg-tableBorder cursor-pointer"],
+  ["overflow-hidden"],
+  [
+    "overflow-x-auto pb-[8px] scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor flex flex-col gap-[16px]"
+  ],
+  [
+    "p-[10px] border-b border-customColor6 hover:bg-tableBorder cursor-pointer whitespace-nowrap truncate"
+  ],
   ["p-[12px] hover:bg-newBgColor text-[14px] font-[500] h-[32px] flex items-center"],
   ["p-[12px] text-[14px] opacity-70"],
   ["p-[15px] absolute left-0 top-0 w-full h-full flex justify-center bg-newBgColorInner"],
+  ["p-[16px] border-b border-tableBorder font-bold"],
   ["p-[16px] h-full flex flex-col flex-1"],
   ["p-[20px]"],
   ["p-[20px] flex flex-col gap-[16px]"],
@@ -1312,14 +1405,13 @@
   [
     "p-2 text-center bg-newTableHeader flex justify-center items-center flex-col h-[62px] rounded-[8px] sticky top-0 z-[20]"
   ],
-  ["p-2 text-gray-500 text-center"],
   ["p-3 border border-tableBorder rounded-lg cursor-pointer hover:transition-colors"],
   ["p-4 pt-0"],
   ["p-4 text-sm"],
   ["pb-[10px] rounded-[4px]"],
-  ["pb-[16px]", "global", "hidden"],
+  ["pb-[16px]"],
   ["pb-[2.5px] px-[5px] flex-1 flex"],
-  ["pb-[20px] px-[20px] select-none", "flex-1 flex pt-[20px]", "global", "hidden"],
+  ["pb-[20px] px-[20px] select-none", "flex-1 flex pt-[20px]", "hidden"],
   [
     "pb-[50px] min-w-full min-h-full",
     "w-full h-full",
@@ -1329,9 +1421,13 @@
   ["pe-[16px] flex gap-[8px]"],
   ["pe-[20px] flex items-center justify-end gap-[8px]"],
   ["pl-[14px] pr-[24px] whitespace-nowrap editor rm-bg"],
+  ["pointer-events-none invisible"],
+  ["pointer-events-none select-none opacity-75"],
+  ["ps-[10px] flex items-center gap-[10px]"],
   ["ps-[16px]"],
   ["pt-[10px]"],
   ["pt-[12px]"],
+  ["pt-[20px]"],
   [
     "pt-[6px] pb-[5px] cursor-pointer flex justify-center items-center w-[34px] text-center rounded-[6px]",
     "text-textItemFocused bg-boxFocused"
@@ -1342,17 +1438,6 @@
   ],
   [
     "pt-[6px] pb-[5px] cursor-pointer w-[74px] text-center rounded-[6px]",
-    "day",
-    "text-textItemFocused bg-boxFocused"
-  ],
-  [
-    "pt-[6px] pb-[5px] cursor-pointer w-[74px] text-center rounded-[6px]",
-    "month",
-    "text-textItemFocused bg-boxFocused"
-  ],
-  [
-    "pt-[6px] pb-[5px] cursor-pointer w-[74px] text-center rounded-[6px]",
-    "week",
     "text-textItemFocused bg-boxFocused"
   ],
   [
@@ -1369,6 +1454,7 @@
   ["px-[10px] rounded-[4px] bg-purple-700 text-white cursor-pointer whitespace-nowrap"],
   ["px-[10px] rounded-[4px] bg-red-500 text-white cursor-pointer"],
   ["px-[10px] rounded-[4px] bg-red-700 text-white cursor-pointer whitespace-nowrap"],
+  ["px-[10px] rounded-[4px] bg-teal-700 text-white cursor-pointer whitespace-nowrap"],
   ["px-[10px] rounded-[4px] bg-yellow-600 text-white cursor-pointer whitespace-nowrap"],
   ["px-[12px] py-[10px] text-[13px] opacity-70"],
   ["px-[12px] text-[12px] opacity-70 hover:opacity-100", "opacity-100"],
@@ -1402,6 +1488,7 @@
   ],
   ["relative cursor-pointer select-none"],
   ["relative cursor-text flex flex-1 flex-col"],
+  ["relative flex flex-col  ", "w-full px-[20px]", "w-[600px]"],
   [
     "relative flex flex-col flex-1 text-white rounded-[8px] min-h-[70px]",
     "border border-[#612BD3]"
@@ -1413,7 +1500,6 @@
     "blur-s",
     "hidden"
   ],
-  ["relative flex flex-col w-[600px]"],
   ["relative flex gap-[10px] flex-col flex-1 p-[16px] pt-0"],
   ["relative flex gap-[20px] flex-col flex-1 rounded-[4px]"],
   [
@@ -1424,6 +1510,7 @@
   ],
   ["relative flex gap-[20px] flex-col flex-1 rounded-[4px] border border-customColor6 pt-0"],
   ["relative flex gap-[20px] flex-col flex-1 rounded-[4px] pt-0"],
+  ["relative flex items-center gap-[10px]"],
   ["relative flex-1"],
   ["relative flex-1 me-[20px] overflow-x-hidden"],
   ["relative flex-1 px-[12px] pt-[12px] pb-[12px] flex flex-col", "!rounded-bs-[0]"],
@@ -1478,6 +1565,7 @@
   ],
   ["rounded-[4px] relative"],
   ["rounded-[4px] w-[16px] h-[16px] min-w-[16px] min-h-[16px]"],
+  ["rounded-[4px] whitespace-nowrap"],
   ["rounded-[8px]"],
   ["rounded-[8px] absolute z-10 -bottom-[5px] -end-[5px] border border-fifth"],
   ["rounded-[8px] absolute z-10 bottom-[5px] -end-[5px] border border-fifth"],
@@ -1494,6 +1582,9 @@
   ["rounded-full overflow-hidden h-[22px] w-[22px] relative cursor-pointer"],
   ["rounded-full relative z-[2]"],
   ["rounded-full relative z-[2] h-[34px] w-[34px]"],
+  [
+    "rounded-full relative z-[2] text-blue-500 font-bold flex justify-center items-center w-[40px] h-[40px] bg-white border-tableBorder border"
+  ],
   ["rounded-full relative z-[2] w-[29px] h-[29px]"],
   ["rounded-full relative z-[2] w-[36px] h-[36px]"],
   ["rounded-full relative z-[2] w-[48px] h-[48px]"],
@@ -1519,11 +1610,6 @@
   ],
   ["select-none h-[84px] py-[20px] border-t border-newBorder flex items-center"],
   ["select-none left-0 absolute w-full z-[100] px-[20px]"],
-  ["self-stretch justify-start items-center gap-1 inline-flex"],
-  [
-    "self-stretch justify-start items-start gap-2.5 inline-flex pb-[16.5px] border-b-[1px] border-fifth"
-  ],
-  ["self-stretch text-neutral-400 text-xs font-normal"],
   ["shrink-0 mt-[2px]"],
   ["space-y-2"],
   ["space-y-3"],
@@ -1533,6 +1619,7 @@
     "sticky top-0 bg-newBgColorInner py-[16px] flex items-center justify-between gap-[12px] z-10 border-b border-newTableBorder mb-[12px]"
   ],
   ["table mx-auto"],
+  ["table1"],
   [
     "tablet:mb-[32px] cursor-pointer mt-[32px] flex gap-[10px] items-center underline hover:font-[700]"
   ],
@@ -1565,10 +1652,12 @@
   ["text-[12px] font-[400] text-textLinkedin"],
   ["text-[12px] font-[700]"],
   ["text-[12px] opacity-70"],
+  ["text-[12px] opacity-70 mt-[8px]"],
   ["text-[12px] text-customColor18"],
   ["text-[12px] text-customColor18 font-[500]"],
   ["text-[12px] text-red-400"],
   ["text-[12px] text-textColor/70 flex flex-col gap-[4px] min-w-0 break-all"],
+  ["text-[12px] text-textItemBlur"],
   ["text-[13px]"],
   ["text-[13px] font-[400] whitespace-pre-line line-clamp-6 w-full"],
   ["text-[13px] font-[500]"],
@@ -1585,6 +1674,7 @@
   ["text-[13px] text-textColor/60"],
   ["text-[14px]"],
   ["text-[14px] flex gap-[10px]"],
+  ["text-[14px] flex items-center gap-[6px]"],
   ["text-[14px] flex-1 truncate"],
   ["text-[14px] font-[400] whitespace-pre-line"],
   ["text-[14px] font-[500]"],
@@ -1613,6 +1703,7 @@
   ["text-[14px] mt-[10px] mb-[24px] text-balance"],
   ["text-[14px] mt-[32px] mb-[12px]"],
   ["text-[14px] my-[10px] text-balance"],
+  ["text-[14px] opacity-70"],
   ["text-[14px] text-balance whitespace-pre-line"],
   ["text-[14px] text-customColor18"],
   ["text-[14px] text-gray-400"],
@@ -1623,6 +1714,7 @@
   ["text-[14px] text-textColor/50 hover:text-textColor transition-colors"],
   ["text-[14px] text-textColor/70"],
   ["text-[14px] text-textColor/80"],
+  ["text-[14px] text-textItemBlur"],
   ["text-[15px] font-[400] text-customColor27 ms-[4px]"],
   ["text-[15px] font-[600]"],
   ["text-[15px] font-[600]", "invisible"],
@@ -1642,7 +1734,9 @@
   ["text-[18px] font-[500]"],
   ["text-[18px] font-[600] text-textColor"],
   ["text-[20px]"],
+  ["text-[20px] cursor-pointer flex justify-center"],
   ["text-[20px] font-[600]"],
+  ["text-[20px] font-semibold"],
   ["text-[20px] mb-[20px]"],
   ["text-[20px] mb-[8px] flex-1"],
   ["text-[20px] mobile:text-[18px] font-[500]"],
@@ -1654,7 +1748,6 @@
   ["text-[24px] font-semibold"],
   ["text-[24px] font-semibold text-center"],
   ["text-[24px] mobile:text-[18px] font-[400]"],
-  ["text-[24px] mt-[48px] mb-[40px] tablet:mt-[80px]"],
   ["text-[24px]", "text-customColor12", "text-customColor13"],
   ["text-[28px] font-[600]"],
   ["text-[28px] font-semibold mb-[12px]"],
@@ -1689,7 +1782,7 @@
   ],
   ["text-center flex flex-col justify-center items-center text-[18px] leading-[26px] h-[300px]"],
   ["text-center flex h-[42px]"],
-  ["text-center flex justify-center items-center gap-[20px]"],
+  ["text-center flex justify-center items-center gap-[10px]"],
   ["text-center hover:underline py-[5px]"],
   ["text-center hover:underline py-[5px] text-textColor"],
   ["text-center items-center justify-center flex"],
@@ -1707,7 +1800,6 @@
   ["text-center text-gray-400 py-[20px]"],
   ["text-center text-textColor py-[20px]"],
   ["text-center w-full absolute start-0 line-clamp-1 top-[50%] -translate-y-[50%]"],
-  ["text-customColor10 text-xs font-normal"],
   ["text-customColor18"],
   ["text-customColor18 mt-[4px]"],
   ["text-customColor18 text-[12px]"],
@@ -1723,12 +1815,13 @@
   ["text-lg mb-3"],
   ["text-lg my-3"],
   ["text-menuDots group-hover/profile:text-menuDotsHover"],
-  ["text-neutral-500 text-[10px] font-normal uppercase tracking-wide"],
   ["text-newColColor h-full flex items-center"],
   ["text-newTextColor/60 text-[13px]"],
   ["text-red-400"],
+  ["text-red-400 font-[600]", "opacity-90"],
   ["text-red-400 text-[12px]"],
   ["text-red-400 text-[12px] mb-3"],
+  ["text-red-500"],
   ["text-red-500 mb-[16px]"],
   ["text-red-500 text-[12px] mt-[10px]"],
   ["text-red-500 text-[13px]"],
@@ -1751,11 +1844,15 @@
   ["text-start mt-6"],
   ["text-start text-[14px] group-[.sidebar]:hidden"],
   ["text-textColor"],
+  ["text-textColor fixed start-0 top-0 bg-primary/80 z-[300] w-full h-full p-[60px] animate-fade"],
   [
     "text-textColor fixed start-0 top-0 bg-primary/80 z-[300] w-full h-full p-[60px] animate-fade justify-center flex"
   ],
   [
     "text-textColor fixed start-0 top-0 bg-primary/80 z-[300] w-full h-full p-[60px] animate-fade justify-center flex bg-black/50"
+  ],
+  [
+    "text-textColor fixed start-0 top-0 bg-primary/80 z-[500] w-full h-full animate-fade flex flex-col items-center justify-center gap-[24px]"
   ],
   ["text-textColor flex flex-col md:flex-row gap-[8px] items-center select-none"],
   ["text-textColor flex gap-[8px] items-center select-none"],
@@ -1776,8 +1873,8 @@
     "cursor-pointer hover:text-textItemFocused hover:bg-boxFocused",
     "opacity-50 cursor-not-allowed"
   ],
+  ["text-textColor text-[14px]"],
   ["text-textColor text-[16px]"],
-  ["text-textColor text-sm font-medium leading-tight"],
   ["text-textColor/50 text-[12px] whitespace-nowrap flex items-center"],
   ["text-white"],
   ["text-white absolute -end-[5px] -bottom-[5px]"],
@@ -1814,6 +1911,7 @@
   ["text-wrap whitespace-pre", "preview"],
   ["text-xs text-gray-400"],
   ["text-xs text-gray-500"],
+  ["text-xs text-gray-500 break-all"],
   ["top-[20px] sticky"],
   ["top-title-content"],
   ["transition-all duration-500 overflow-hidden", "max-h-[0]", "max-h-[500px]"],
@@ -1823,7 +1921,6 @@
   ],
   [
     "trz bg-newBgColorInner flex flex-col gap-[15px] transition-all relative",
-    "1",
     "group sidebar w-[100px]",
     "w-[260px]"
   ],
@@ -1836,10 +1933,19 @@
   ["w-[100px] h-[100px] rounded-full"],
   ["w-[12px] h-[12px] rounded-[8px] absolute z-10 top-[10px] end-0 border border-fifth"],
   ["w-[14px] h-[14px] rounded-[4px] ml-auto"],
+  [
+    "w-[16px] h-[16px] rounded-full border border-textColor/60 text-textColor/60 flex items-center justify-center text-[11px] leading-none cursor-help select-none"
+  ],
   ["w-[1px] h-[20px] bg-blockSeparator"],
   ["w-[200px]"],
   ["w-[20px] h-[20px]"],
   ["w-[20px] h-[20px] rounded-[4px]"],
+  [
+    "w-[20px] h-[20px] rounded-[4px] border-2 flex items-center justify-center  ",
+    "border-newTextColor/20 opacity-40",
+    "bg-forth border-forth",
+    "border-newTextColor/40"
+  ],
   ["w-[20px] h-[20px] rounded-[8px]"],
   ["w-[20px] h-[20px] rounded-full absolute z-10 -bottom-[5px] -end-[5px] border border-fifth"],
   ["w-[24px] h-[24px] rounded-[6px]"],
@@ -1847,12 +1953,10 @@
     "w-[29px] h-[29px] rounded-full bg-bgTiktokItem flex justify-center items-center text-bgTiktokItemIcon"
   ],
   ["w-[2px] h-[30px] bg-customColor11 me-[16px]"],
-  ["w-[30px] h-[30px] rounded-full object-cover"],
-  ["w-[318px] bg-third mt-[-44px] p-[16px]"],
   ["w-[32px] h-[32px]"],
-  ["w-[32px] h-[32px]", "google_my_business", "rounded-full"],
   ["w-[32px] h-[32px] relative"],
   ["w-[32px] h-[32px] rounded-full"],
+  ["w-[32px] h-[32px]", "rounded-full"],
   [
     "w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-semibold transition-colors",
     "bg-boxFocused text-textItemFocused",
@@ -1874,6 +1978,7 @@
   [
     "w-[48px] h-[48px] border-[3px] border-[#612BD3] border-t-transparent rounded-full animate-spin"
   ],
+  ["w-[48px] h-[48px] border-[3px] border-forth border-t-transparent rounded-full animate-spin"],
   ["w-[48px] h-[48px] mb-[16px] rounded-full bg-[#612bd3]/10 flex items-center justify-center"],
   [
     "w-[48px] h-[48px] rounded-full bg-btnSimple flex items-center justify-center text-customColor18"
@@ -1885,7 +1990,7 @@
   ["w-[50px] h-[50px] z-[20]"],
   ["w-[54px] h-[54px] rounded-full absolute z-[101] flex justify-center items-center"],
   ["w-[54px] h-[54px] rounded-full bg-newSettings opacity-80"],
-  ["w-[57px] h-[34px] p-[4px] border-fifth border rounded-[100px]", "on", "bg-customColor4"],
+  ["w-[57px] h-[34px] p-[4px] border-fifth border rounded-[100px]", "bg-customColor4"],
   ["w-[580px] flex flex-col"],
   [
     "w-[64px] h-[64px] rounded-full bg-[#2A2929] flex items-center justify-center text-[24px] text-gray-400"
@@ -1895,6 +2000,9 @@
   ["w-[80px] h-[80px] bg-input rounded-[8px] flex items-center justify-center"],
   ["w-[80px] h-[80px] bg-input rounded-full flex items-center justify-center"],
   [
+    "w-[80px] h-[80px] bg-input rounded-full flex items-center justify-center text-[32px] font-semibold"
+  ],
+  [
     "w-[80px] h-[80px] mx-auto mb-[24px] rounded-full bg-green-500/20 flex items-center justify-center"
   ],
   [
@@ -1903,6 +2011,7 @@
   ["w-[80px] h-[80px] object-cover rounded-[8px]"],
   ["w-[80px] h-[80px] object-cover rounded-full"],
   ["w-[8px] h-[8px] bg-[#FC69FF] -top-[1px] -end-[3px] absolute rounded-full"],
+  ["w-[8px] h-[8px] rounded-full      ", "bg-[#612bd3]", "bg-[#32d583]", "bg-[#1d9bf0]"],
   ["w-[8px] h-[8px] rounded-full bg-[#612BD3]"],
   ["w-[8px] h-[8px] rounded-full bg-[#FC69FF]"],
   [
@@ -1910,9 +2019,7 @@
     "bg-white",
     "bg-transparent border border-white"
   ],
-  ["w-4 h-4 relative"],
   ["w-4 h-4 text-primary border-gray-300 focus:ring-primary"],
-  ["w-8 h-8 rounded-full"],
   ["w-full"],
   ["w-full aspect-square object-cover"],
   ["w-full flex"],
@@ -1920,14 +2027,8 @@
   ["w-full flex flex-col flex-1"],
   ["w-full flex flex-col gap-[20px] rounded-[4px] relative]"],
   ["w-full flex flex-col rounded-[4px] relative"],
-  [
-    "w-full flex h-full flex-1 flex-col group",
-    "relative",
-    "ERROR",
-    "rounded-[10px] ring-2 ring-red-500"
-  ],
+  ["w-full flex h-full flex-1 flex-col group", "relative", "rounded-[10px] ring-2 ring-red-500"],
   ["w-full flex-1 flex flex-col min-h-[40px]"],
-  ["w-full flex-col justify-start items-start gap-4 inline-flex"],
   ["w-full h-[200px] object-contain"],
   [
     "w-full h-[200px] p-[12px] rounded-[8px] bg-input border border-tableBorder text-textColor font-mono text-[13px] resize-y"
@@ -1966,6 +2067,9 @@
   ["w-full h-full relative group"],
   ["w-full h-full relative rounded-[100px]"],
   ["w-full h-full relative z-[20] bg-black aspect-square rounded-full border-tableBorder"],
+  [
+    "w-full h-full rounded-[10px] py-[10px] flex-wrap hover:border hover:border-seventh flex justify-center items-center gap-[20px] opacity-30 grayscale hover:grayscale-0 hover:opacity-100"
+  ],
   ["w-full h-full rounded-[6px] border-[4px] relative", "border-[#612BD3]", "border-transparent"],
   ["w-full h-full rounded-[6px] overflow-hidden relative"],
   ["w-full h-full start-0 top-0 relative"],
@@ -1994,7 +2098,9 @@
   ["w-full space-y-[12px]"],
   ["w-full text-center"],
   ["w-screen h-screen overflow-hidden bg-black"],
+  ["whitespace-nowrap"],
   ["whitespace-nowrap", "text-[#FF3F3F]"],
+  ["whitespace-nowrap truncate"],
   ["whitespace-pre-line"],
   ["whitespace-pre-line", "flex flex-1 flex-col"],
   ["whitespace-pre-line text-[14px] font-[400]"],

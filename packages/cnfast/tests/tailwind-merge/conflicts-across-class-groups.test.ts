@@ -14,24 +14,26 @@ test("handles conflicts across class groups correctly", () => {
   expect(twMerge("inset-x-1 hover:left-1 inset-1")).toBe("hover:left-1 inset-1");
 });
 
-test("axis shorthands override logical sides", () => {
-  expect(twMerge("ps-2 px-4")).toBe("px-4");
-  expect(twMerge("pe-2 px-4")).toBe("px-4");
+test("keeps logical sides distinct from physical axis shorthands", () => {
+  expect(twMerge("ps-2 px-4")).toBe("ps-2 px-4");
+  expect(twMerge("pe-2 px-4")).toBe("pe-2 px-4");
   expect(twMerge("px-4 ps-2")).toBe("px-4 ps-2");
-  expect(twMerge("pbs-2 py-4")).toBe("py-4");
-  expect(twMerge("ms-2 mx-4")).toBe("mx-4");
-  expect(twMerge("mbe-2 my-4")).toBe("my-4");
-  expect(twMerge("start-2 inset-x-4")).toBe("inset-x-4");
-  expect(twMerge("end-2 inset-x-4")).toBe("inset-x-4");
-  expect(twMerge("inset-bs-2 inset-y-4")).toBe("inset-y-4");
-  expect(twMerge("border-s-2 border-x-4")).toBe("border-x-4");
-  expect(twMerge("border-be-2 border-y-4")).toBe("border-y-4");
-  expect(twMerge("border-s-red-500 border-x-blue-500")).toBe("border-x-blue-500");
-  expect(twMerge("border-bs-red-500 border-y-blue-500")).toBe("border-y-blue-500");
-  expect(twMerge("scroll-ms-2 scroll-mx-4")).toBe("scroll-mx-4");
-  expect(twMerge("scroll-mbs-2 scroll-my-4")).toBe("scroll-my-4");
-  expect(twMerge("scroll-ps-2 scroll-px-4")).toBe("scroll-px-4");
-  expect(twMerge("scroll-pbe-2 scroll-py-4")).toBe("scroll-py-4");
+  expect(twMerge("pbs-2 py-4")).toBe("pbs-2 py-4");
+  expect(twMerge("ms-2 mx-4")).toBe("ms-2 mx-4");
+  expect(twMerge("mbe-2 my-4")).toBe("mbe-2 my-4");
+  expect(twMerge("start-2 inset-x-4")).toBe("start-2 inset-x-4");
+  expect(twMerge("end-2 inset-x-4")).toBe("end-2 inset-x-4");
+  expect(twMerge("inset-bs-2 inset-y-4")).toBe("inset-bs-2 inset-y-4");
+  expect(twMerge("border-s-2 border-x-4")).toBe("border-s-2 border-x-4");
+  expect(twMerge("border-be-2 border-y-4")).toBe("border-be-2 border-y-4");
+  expect(twMerge("border-s-red-500 border-x-blue-500")).toBe("border-s-red-500 border-x-blue-500");
+  expect(twMerge("border-bs-red-500 border-y-blue-500")).toBe(
+    "border-bs-red-500 border-y-blue-500",
+  );
+  expect(twMerge("scroll-ms-2 scroll-mx-4")).toBe("scroll-ms-2 scroll-mx-4");
+  expect(twMerge("scroll-mbs-2 scroll-my-4")).toBe("scroll-mbs-2 scroll-my-4");
+  expect(twMerge("scroll-ps-2 scroll-px-4")).toBe("scroll-ps-2 scroll-px-4");
+  expect(twMerge("scroll-pbe-2 scroll-py-4")).toBe("scroll-pbe-2 scroll-py-4");
 });
 
 test("ring and shadow classes do not create conflict", () => {

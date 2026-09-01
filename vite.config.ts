@@ -38,6 +38,34 @@ export default defineConfig({
           "prefer-spread": "error",
         },
       },
+      {
+        files: ["packages/cnfast/src/core.ts"],
+        rules: {
+          "prefer-rest-params": "off",
+        },
+      },
+      {
+        files: ["packages/cnfast/src/call-site-cn.ts"],
+        rules: {
+          "prefer-rest-params": "off",
+          "prefer-spread": "off",
+        },
+      },
+      {
+        files: ["packages/cnfast/src/clsx.ts"],
+        rules: {
+          "@typescript-eslint/no-explicit-any": "off",
+        },
+      },
+      {
+        files: [
+          "packages/cnfast/tests/clsx/clsx.test.ts",
+          "packages/cnfast/tests/tailwind-merge/tw-join.test.ts",
+        ],
+        rules: {
+          "no-constant-binary-expression": "off",
+        },
+      },
     ],
   },
   fmt: {

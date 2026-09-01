@@ -10,10 +10,7 @@ import {
 import { BENCHMARK_LIBRARY_COLUMNS } from "@/constants";
 import { cn } from "@/lib/utils";
 
-export const BenchmarkSectionTableSkeleton = ({
-  hideHeading = false,
-  section,
-}: BenchmarkSectionTableSkeletonProps) => {
+export const BenchmarkSectionTableSkeleton = ({ section }: BenchmarkSectionTableSkeletonProps) => {
   const libraryColumns = section.isCnfastFirst
     ? BENCHMARK_LIBRARY_COLUMNS
     : [...BENCHMARK_LIBRARY_COLUMNS].reverse();
@@ -24,18 +21,9 @@ export const BenchmarkSectionTableSkeleton = ({
       aria-busy
       role="status"
     >
-      {hideHeading ? null : (
-        <>
-          <h2 className="text-lg font-semibold tracking-tight">{section.label}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
-        </>
-      )}
-      <div
-        className={cn(
-          "overflow-hidden rounded-lg border bg-background",
-          hideHeading ? "mt-0" : "mt-3",
-        )}
-      >
+      <h2 className="text-lg font-semibold tracking-tight">{section.label}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
+      <div className="mt-3 overflow-hidden rounded-lg border bg-background">
         <Table aria-hidden className="min-w-3xl">
           <TableHeader>
             <TableRow className="hover:bg-transparent">

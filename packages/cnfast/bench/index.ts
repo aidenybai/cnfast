@@ -1,11 +1,20 @@
 import { runSuite } from "./lib/harness";
 import { corpusWorkloads, gridWorkloads, microWorkloads, pageWorkloads } from "./lib/workloads";
+import { getCacheWorkloads } from "./workloads/cache-workloads";
+import { getCvaWorkloads } from "./workloads/cva-workloads";
+import { getInputShapeWorkloads } from "./workloads/input-shape-workloads";
+import { getMergeSyntaxWorkloads } from "./workloads/merge-syntax-workloads";
+import { getResultReuseWorkloads } from "./workloads/result-reuse-workloads";
+import { getToggleWorkloads } from "./workloads/toggle-workloads";
 
-// Comprehensive suite: micro extremes + real-app corpora + real page render sequences + a
-// conflict-heavy live data grid, measured through one DCE-safe harness with a single geomean.
-// SSR (React) lives in its own entry because it pulls in react-dom; run `pnpm bench:ssr`.
 const workloads = [
   ...microWorkloads(),
+  ...getInputShapeWorkloads(),
+  ...getMergeSyntaxWorkloads(),
+  ...getCacheWorkloads(),
+  ...getToggleWorkloads(),
+  ...getResultReuseWorkloads(),
+  ...getCvaWorkloads(),
   ...corpusWorkloads(),
   ...pageWorkloads(),
   ...gridWorkloads(),

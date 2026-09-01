@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Autoresearch optimization iteration:
-#   1. parity gate (full test suite incl. differential fuzz vs real twMerge)
-#   2. benchmark (best-of-N) vs clsx + tailwind-merge, appended to bench/results.jsonl
-#   3. bundle size vs clsx + tailwind-merge
-# Usage: scripts/optimize-iter.sh <label>
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

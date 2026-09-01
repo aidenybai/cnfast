@@ -210,5 +210,25 @@
   {
     "name": "inbox-zero",
     "url": "https://github.com/elie222/inbox-zero.git"
+  },
+  {
+    "name": "openstatus",
+    "url": "https://github.com/openstatusHQ/openstatus.git"
+  },
+  {
+    "name": "open-webui",
+    "url": "https://github.com/open-webui/open-webui.git"
+  },
+  {
+    "name": "starlight",
+    "url": "https://github.com/withastro/starlight.git"
+  },
+  {
+    "name": "nuxt-ui",
+    "url": "https://github.com/nuxt/ui.git"
+  },
+  {
+    "name": "huly",
+    "url": "https://github.com/hcengineering/platform.git"
   }
 ]

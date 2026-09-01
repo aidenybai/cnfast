@@ -4,6 +4,7 @@ interface BenchmarkReportRow {
   cnfast: number;
   reference: number;
   speedup: number;
+  cacheState?: string;
   emphasis: boolean;
 }
 
@@ -39,7 +40,9 @@ interface BenchmarkReport {
   bestOf: number;
   timeMs: number;
   workloadCount: number;
+  workloadGroupCount: number;
   overallSpeedup: number;
+  groupBalancedSpeedup: number;
   bundle: {
     cnfastGzip: number;
     referenceGzip: number;
@@ -89,13 +92,11 @@ interface BenchmarkSourceUrlMap {
 }
 
 interface BenchmarkSectionTableProps {
-  hideHeading?: boolean;
   section: BenchmarkSection;
   sortState: BenchmarkSortState;
 }
 
 interface BenchmarkSectionTableSkeletonProps {
-  hideHeading?: boolean;
   section: BenchmarkSection;
 }
 

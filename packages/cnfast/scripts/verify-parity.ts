@@ -6,32 +6,33 @@ import { loadCorpora } from "./lib/load-corpus";
 
 const referenceCn = (...inputs: ClassListArgs): string => twMerge(clsx(inputs));
 
-let total = 0;
-let mismatches = 0;
-const samples: string[] = [];
+let classGroupCount = 0;
+let mismatchCount = 0;
+const mismatchSamples: string[] = [];
 
 for (const corpus of loadCorpora()) {
-  for (const group of corpus.groups) {
-    total++;
-    const mine = cn(...group);
-    const reference = referenceCn(...group);
-    if (mine !== reference) {
-      mismatches++;
-      if (samples.length < 10) {
-        samples.push(
-          `[${corpus.name}] in=${JSON.stringify(group)}\n  cnfast:    ${mine}\n  reference: ${reference}`,
+  for (const classGroup of corpus.groups) {
+    classGroupCount++;
+    const cnfastOutput = cn(...classGroup);
+    const referenceOutput = referenceCn(...classGroup);
+    if (cnfastOutput !== referenceOutput) {
+      mismatchCount++;
+      if (mismatchSamples.length < 10) {
+        mismatchSamples.push(
+          `[${corpus.name}] in=${JSON.stringify(classGroup)}\n  cnfast:    ${cnfastOutput}\n  reference: ${referenceOutput}`,
         );
       }
     }
   }
 }
 
-console.log(`Checked ${total} real-world call groups across all corpora.`);
+console.log(`Checked ${classGroupCount} real-world call groups across all corpora.`);
 console.log(
-  `Mismatches vs twMerge(clsx(...)): ${mismatches} (${((mismatches / total) * 100).toFixed(4)}%)`,
+  `Mismatches vs twMerge(clsx(...)): ${mismatchCount} ` +
+    `(${((mismatchCount / classGroupCount) * 100).toFixed(4)}%)`,
 );
-if (samples.length > 0) {
-  console.log(`\nFirst mismatches:\n${samples.join("\n\n")}`);
+if (mismatchSamples.length > 0) {
+  console.log(`\nFirst mismatches:\n${mismatchSamples.join("\n\n")}`);
   process.exit(1);
 }
 console.log("\ncnfast output is byte-identical to clsx + tailwind-merge on every input.");

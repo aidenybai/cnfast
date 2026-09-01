@@ -10,8 +10,7 @@ const STATIC_IMPORT_REGEX = /^[ \t]*(import|export)\s+([^;'"()]*?)\s+from\s*(['"
 const DYNAMIC_IMPORT_REGEX = /\b(import|require)\s*\(\s*(['"])([^'"]+)\2\s*\)/g;
 const SIDE_EFFECT_IMPORT_REGEX = /(^|\n)([ \t]*import\s+)(['"])([^'"]+)\3/g;
 
-const isMigratableSource = (source: string): boolean =>
-  (MIGRATABLE_SOURCES as readonly string[]).includes(source);
+const isMigratableSource = (source: string): boolean => MIGRATABLE_SOURCES.includes(source);
 
 const rewriteImportClause = (rawClause: string, source: string): string | null => {
   const clause = rawClause.trim();
@@ -23,9 +22,14 @@ const rewriteImportClause = (rawClause: string, source: string): string | null =
     .replace(/,\s*$/, "")
     .trim();
 
+  // `import type { ... }` is a named type-only import, not a default import
+  // called "type" - only the module source needs rewriting.
+  if (bracesMatch && defaultPart === "type") return null;
+
   if (defaultPart === "" || /\s/.test(defaultPart)) return null;
 
   const namedExport = DEFAULT_EXPORT_NAME[source];
+  if (namedExport === undefined) return null;
   const namedSpecifier =
     defaultPart === namedExport ? namedExport : `${namedExport} as ${defaultPart}`;
   const namedBody = bracesMatch ? bracesMatch[1].trim() : "";
@@ -37,11 +41,11 @@ export const migrateSource = (code: string): MigrationResult => {
   const magic = new MagicString(code);
   let changeCount = 0;
 
-  for (const match of code.matchAll(STATIC_IMPORT_REGEX)) {
-    const [statement, keyword, clause, quote, source] = match;
-    if (match.index === undefined || !isMigratableSource(source)) continue;
+  for (const importMatch of code.matchAll(STATIC_IMPORT_REGEX)) {
+    const [statement, keyword, clause, quote, source] = importMatch;
+    if (importMatch.index === undefined || !isMigratableSource(source)) continue;
 
-    const statementStart = match.index;
+    const statementStart = importMatch.index;
     const sourceTokenStart = statementStart + statement.length - (source.length + 2);
     const newClause = keyword === "import" ? rewriteImportClause(clause, source) : null;
 
@@ -61,11 +65,12 @@ export const migrateSource = (code: string): MigrationResult => {
     changeCount++;
   }
 
-  for (const match of code.matchAll(DYNAMIC_IMPORT_REGEX)) {
-    const [, , quote, source] = match;
-    if (match.index === undefined || !isMigratableSource(source)) continue;
+  for (const importMatch of code.matchAll(DYNAMIC_IMPORT_REGEX)) {
+    const [, , quote, source] = importMatch;
+    if (importMatch.index === undefined || !isMigratableSource(source)) continue;
 
-    const sourceTokenStart = match.index + match[0].indexOf(`${quote}${source}${quote}`);
+    const sourceTokenStart =
+      importMatch.index + importMatch[0].indexOf(`${quote}${source}${quote}`);
     magic.overwrite(
       sourceTokenStart,
       sourceTokenStart + source.length + 2,
@@ -74,11 +79,11 @@ export const migrateSource = (code: string): MigrationResult => {
     changeCount++;
   }
 
-  for (const match of code.matchAll(SIDE_EFFECT_IMPORT_REGEX)) {
-    const [, leading, importKeyword, quote, source] = match;
-    if (match.index === undefined || !isMigratableSource(source)) continue;
+  for (const importMatch of code.matchAll(SIDE_EFFECT_IMPORT_REGEX)) {
+    const [, leading, importKeyword, quote, source] = importMatch;
+    if (importMatch.index === undefined || !isMigratableSource(source)) continue;
 
-    const sourceTokenStart = match.index + leading.length + importKeyword.length;
+    const sourceTokenStart = importMatch.index + leading.length + importKeyword.length;
     magic.overwrite(
       sourceTokenStart,
       sourceTokenStart + source.length + 2,

@@ -1,4 +1,9 @@
 [
+  [
+    "  pointer-events-none absolute left-0 top-0 z-10 flex h-full w-full border-spacing-1 items-center justify-center gap-2 rounded-full border-2 border-dashed border-[#37b598] bg-[#92e2ce] duration-100 dark:bg-[#86e0ca] dark:text-slate-900",
+    "opacity-100",
+    "opacity-0"
+  ],
   ["!rounded-full px-2 py-1"],
   [
     "absolute flex h-full w-full items-center justify-center bg-gray-100 !bg-opacity-70 dark:bg-slate-800"
@@ -43,9 +48,13 @@
   ["bg-red-500 px-2 text-white hover:bg-red-700 dark:hover:bg-red-600"],
   ["bg-slate-200 dark:bg-slate-800"],
   ["bg-white"],
+  ["block", "hidden"],
   ["border"],
   ["border border-b-0 border-gray-200 p-5 dark:border-gray-700 dark:bg-gray-900"],
   ["border-[#d0d0d0] bg-[#f3f3f3] text-[#555]"],
+  [
+    "border-1 bottom-auto flex flex-shrink-0 cursor-pointer items-center rounded-t-md border-gray-300 px-4"
+  ],
   [
     "border-1 bottom-auto flex flex-shrink-0 cursor-pointer items-center rounded-t-md border-gray-300 px-4",
     "bg-slate-400/60",
@@ -54,28 +63,31 @@
   ],
   ["border-b border-gray-200 px-4 py-3 dark:border-slate-700"],
   ["box bg-slate-200 dark:bg-slate-800"],
-  ["boxvis"],
+  ["btn-wrapper"],
   ["capitalize"],
   ["capitalize", "font-semibold text-black dark:text-white"],
   ["changeLogLink"],
   ["clr-i-outline clr-i-outline-path-1"],
   ["clr-i-outline clr-i-outline-path-2"],
+  ["color-block"],
+  ["connected"],
   ["crossThinIcon"],
   ["cssEditor"],
   ["currentLayer"],
   ["cursor-default truncate pl-3"],
   ["cursor-pointer"],
-  ["Custom"],
   ["custom-class"],
   [
     "custom-scrollbar flex flex-1  justify-center gap-1 overflow-x-auto border-b border-slate-400/60 dark:border-white"
   ],
+  ["dark"],
   ["deleteCookieIcon"],
   ["deleteStorageIcon"],
   ["designModeIcon"],
   ["device-item p-4"],
   ["deviceManagerIcon"],
   ["deviceRotateIcon"],
+  ["disconnected"],
   ["drawerCloseIcon"],
   ["extensionsIcon"],
   ["featureSuggestionLink"],
@@ -108,10 +120,15 @@
   ["flex gap-2"],
   ["flex gap-4"],
   ["flex h-[40px] w-60 justify-between hover:bg-slate-400 dark:hover:bg-slate-600 "],
+  ["flex h-full"],
   ["flex h-full", "flex-col", "flex-row", "justify-between", "justify-center"],
+  ["flex h-full gap-4 overflow-auto p-4"],
   ["flex h-full gap-4 overflow-auto p-4", "flex-wrap", "justify-center"],
   ["flex h-full w-full flex-col"],
   ["flex items-center"],
+  [
+    "flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium transition-colors hover:bg-gray-200 dark:hover:bg-slate-600  "
+  ],
   ["flex items-center gap-2"],
   ["flex items-center gap-2 border-l px-4 dark:border-slate-400"],
   ["flex items-center gap-2 text-gray-500"],
@@ -121,7 +138,7 @@
   ["flex items-center justify-between gap-2"],
   ["flex items-center justify-between rounded px-2 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"],
   [
-    "flex items-center justify-center rounded-sm p-1   focus:outline-none",
+    "flex items-center justify-center rounded-sm p-1    ",
     "bg-slate-400/60",
     "dark:bg-slate-600/60",
     "bg-emerald-500 text-white",
@@ -151,6 +168,11 @@
   ["flex w-fit items-center gap-2 border-l px-4 dark:border-slate-400"],
   ["flex w-fit items-center gap-2 rounded bg-slate-300 px-2 py-1 dark:bg-slate-600"],
   ["flex w-fit items-center gap-3 px-5 "],
+  [
+    "flex w-fit min-w-[320px] flex-col gap-4 rounded bg-slate-200 text-light-normal dark:bg-slate-800 dark:text-dark-normal  ",
+    "p-8",
+    "px-8 py-4"
+  ],
   ["flex w-full flex-shrink-0 items-center justify-between gap-12 whitespace-nowrap"],
   ["flex w-full flex-shrink-0 items-center justify-normal gap-1 whitespace-nowrap"],
   ["flex w-full items-center gap-4 overflow-x-auto"],
@@ -165,27 +187,37 @@
   ["flex-grow"],
   ["flexCenter"],
   ["font-bold"],
+  ["githubIcon  "],
+  ["globeIcon  "],
   ["gotoHomeIcon"],
+  ["group flex w-full items-center rounded-md px-2 py-2 text-sm"],
   ["group flex w-full items-center rounded-md px-2 py-2 text-sm", "bg-slate-200 dark:bg-slate-800"],
   ["group mt-2 flex w-full items-center rounded-md px-2"],
   ["h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-300 dark:bg-slate-600"],
+  ["h-3 w-3   shrink-0", "rotate-180"],
   ["h-4 w-4 cursor-pointer rounded border-slate-400"],
   ["h-6 w-px bg-gray-300 dark:bg-gray-700"],
+  ["h-fit"],
   ["h-fit", "w-52"],
   ["h-full"],
   ["h-screen gap-2 overflow-hidden pt-2"],
-  ["h1"],
-  ["h2"],
-  ["h3"],
+  ["header"],
   ["hidden"],
+  ["hidden", "rounded-l"],
+  ["inline-block text-left  "],
   [
     "inline-flex w-full justify-center gap-1 rounded-md bg-opacity-20 p-2 text-sm font-medium hover:bg-slate-300 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 dark:hover:bg-slate-700"
   ],
   ["input-adornment"],
   ["inspectElementIcon"],
+  ["invert"],
   ["isolate inline-flex rounded-md shadow-sm"],
   ["kebab"],
+  ["key"],
+  ["label"],
   ["loadingSpinner"],
+  ["logo"],
+  ["logoIcon  "],
   ["m-1 border-t-[1px] border-t-slate-500"],
   ["m-10 flex w-full flex-col items-center justify-center"],
   ["m-10 flex w-full items-center justify-center"],
@@ -213,6 +245,7 @@
   ["ml-[2px] text-xs opacity-60"],
   ["ml-1"],
   ["ml-1 flex shrink-0 items-center justify-center px-2"],
+  ["ml-1 flex shrink-0 items-center justify-center px-2", "invisible", "visible"],
   ["ml-1 text-xs"],
   ["ml-4 flex flex-row flex-wrap gap-4"],
   ["mr-1"],
@@ -249,6 +282,7 @@
   ["networkIcon"],
   ["notificationDismiss"],
   ["notificationOK"],
+  ["opacity-0"],
   ["opacity-0", "opacity-100"],
   ["origin-top-left"],
   ["outline-none"],
@@ -261,6 +295,9 @@
   ["peer sr-only"],
   ["pl-2"],
   ["pl-2 pr-2"],
+  [
+    "pointer-events-auto flex w-full items-center gap-2 py-1 pl-2 pr-8 hover:bg-slate-200 dark:hover:bg-slate-700"
+  ],
   [
     "pointer-events-auto flex w-full items-center gap-2 py-1 pl-2 pr-8 hover:bg-slate-200 dark:hover:bg-slate-700",
     "bg-slate-200 dark:bg-slate-700"
@@ -289,11 +326,15 @@
   ["relative inline-flex cursor-pointer items-center"],
   ["relative inline-flex h-2 w-2 rounded-full bg-red-500"],
   [
+    "relative inline-flex items-center px-2 py-2 text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-300 focus:z-10 dark:text-slate-200 hover:dark:bg-slate-600"
+  ],
+  [
     "relative inline-flex items-center px-2 py-2 text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-300 focus:z-10 dark:text-slate-200 hover:dark:bg-slate-600",
     "rounded-l-md",
     "rounded-r-md",
     "bg-slate-200 dark:bg-slate-600"
   ],
+  ["relative min-w-56 flex-shrink-0  rounded bg-white dark:bg-slate-900"],
   [
     "relative min-w-56 flex-shrink-0  rounded bg-white dark:bg-slate-900",
     "border-2 border-slate-500 "
@@ -306,7 +347,9 @@
   ["relative top-1 ml-6"],
   ["relative z-10 w-full flex-grow"],
   ["relative z-50"],
+  ["responsivelyApp__HiddenForScreenshot"],
   ["right-2 m-0 flex w-80 !justify-start pl-6"],
+  ["roadMapIcon  "],
   ["roadMapLink"],
   ["rounded bg-blue-600 px-2 py-1 text-xs text-white transition-colors hover:bg-blue-700"],
   ["rounded bg-gray-500 px-2 py-1 text-xs text-white transition-colors hover:bg-gray-600"],
@@ -320,13 +363,13 @@
   ["rounded-full"],
   ["rounded-full p-1 transition-colors hover:bg-gray-200 dark:hover:bg-slate-700"],
   ["rounded-full", "text-blue-500"],
+  ["rounded-lg text-xs"],
   ["rounded-lg text-xs", "bg-slate-400/60"],
   ["rounded-sm bg-slate-200 p-1 px-1 dark:bg-slate-700"],
   ["rounded-sm bg-white p-1 px-1 dark:bg-slate-900"],
   ["screenshotIcon"],
   ["scrollDownIcon"],
   ["scrollUpIcon"],
-  ["section"],
   ["setHomeIcon"],
   ["settingsIcon"],
   ["sr-only"],
@@ -351,6 +394,7 @@
   ["text-xs text-red-600 hover:underline dark:text-red-400"],
   ["textJustify"],
   ["toggleTouchIcon"],
+  ["twitterIcon  "],
   ["unMuteIcon"],
   ["unPlugIcon"],
   ["w-[75vw] max-w-3xl"],
@@ -370,6 +414,7 @@
   ["w-full border-t border-gray-300 dark:border-gray-600"],
   ["w-full flex-grow overflow-y-auto"],
   ["w-full gap-4 p-2"],
+  ["w-full text-ellipsis rounded-full px-2 py-1 pl-8 pr-40 dark:bg-slate-900"],
   [
     "w-full text-ellipsis rounded-full px-2 py-1 pl-8 pr-40 dark:bg-slate-900",
     "rounded-bl-none rounded-br-none rounded-tl-lg rounded-tr-lg outline-none"
@@ -382,6 +427,7 @@
     "z-50 mt-2 w-fit origin-top-right divide-y divide-slate-100 rounded-md bg-slate-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-900"
   ],
   ["zenButton"],
+  ["zenMode"],
   ["zoomIcon"],
   ["zoomText"]
 ]

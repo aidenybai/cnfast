@@ -2,6 +2,11 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { chromium } from "playwright-core";
+import {
+  EVENT_DURATION_THRESHOLD_MS,
+  FINAL_RENDER_SETTLE_TIME_MS,
+  INTERACTION_SETTLE_TIME_MS,
+} from "../constants";
 
 export interface VitalsSample {
   lcpMs: number;
@@ -10,16 +15,34 @@ export interface VitalsSample {
 }
 
 export interface MeasureOptions {
-  interactions: number;
-  runs: number;
+  interactionCount: number;
+  runCount: number;
   cpuSlowdown: number;
 }
 
-const sourceEntry = fileURLToPath(new URL("../../src/index.ts", import.meta.url));
+export interface ImplementationBundles {
+  cnfast: string;
+  reference: string;
+}
 
-const bundle = async (contents: string): Promise<string> => {
-  const result = await build({
-    stdin: { contents, resolveDir: fileURLToPath(new URL("../..", import.meta.url)), loader: "ts" },
+interface TestServer {
+  url: string;
+  close: () => Promise<void>;
+}
+
+declare global {
+  interface Window {
+    __lcp: number;
+    __inp: number;
+  }
+}
+
+const sourceEntryPath = fileURLToPath(new URL("../../src/index.ts", import.meta.url));
+const packageDirectoryPath = fileURLToPath(new URL("../..", import.meta.url));
+
+const createBundle = async (source: string): Promise<string> => {
+  const buildResult = await build({
+    stdin: { contents: source, resolveDir: packageDirectoryPath, loader: "ts" },
     bundle: true,
     minify: true,
     format: "iife",
@@ -28,42 +51,38 @@ const bundle = async (contents: string): Promise<string> => {
     write: false,
     legalComments: "none",
   });
-  return result.outputFiles[0]!.text;
+  return buildResult.outputFiles[0]!.text;
 };
 
-// IIFE bundles exposing window.__cnModule.cn for each implementation. The
-// reference is the canonical shadcn `cn = (...i) => twMerge(clsx(i))`.
-export const bundleImplementations = async (): Promise<{ cnfast: string; reference: string }> => ({
-  cnfast: await bundle(`export { cn } from ${JSON.stringify(sourceEntry)};`),
-  reference: await bundle(
+export const bundleImplementations = async (): Promise<ImplementationBundles> => ({
+  cnfast: await createBundle(`export { cn } from ${JSON.stringify(sourceEntryPath)};`),
+  reference: await createBundle(
     `import { clsx } from "clsx";
      import { twMerge } from "tailwind-merge";
      export const cn = (...inputs) => twMerge(clsx(inputs));`,
   ),
 });
 
-const serve = (html: string): Promise<{ url: string; close: () => Promise<void> }> =>
-  new Promise((resolve) => {
-    const server = createServer((_req, res) => {
-      res.writeHead(200, { "content-type": "text/html" });
-      res.end(html);
+const serveHtml = (html: string): Promise<TestServer> =>
+  new Promise((resolveServer) => {
+    const testServer = createServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/html" });
+      response.end(html);
     });
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      const port = typeof address === "object" && address ? address.port : 0;
-      resolve({
-        url: `http://127.0.0.1:${port}/`,
-        close: () => new Promise((done) => server.close(() => done())),
+    testServer.listen(0, "127.0.0.1", () => {
+      const serverAddress = testServer.address();
+      const serverPort =
+        typeof serverAddress === "object" && serverAddress ? serverAddress.port : 0;
+      resolveServer({
+        url: `http://127.0.0.1:${serverPort}/`,
+        close: () => new Promise((resolveClose) => testServer.close(() => resolveClose())),
       });
     });
   });
 
-// Contract for `html`: it must inject the cn bundle, render once synchronously
-// while wrapping the work in a `performance.measure('initial-render', ...)`, and
-// expose a `#go` button whose click triggers a cold re-render.
-const measureOnce = async (html: string, options: MeasureOptions): Promise<VitalsSample> => {
+const measureVitalsOnce = async (html: string, options: MeasureOptions): Promise<VitalsSample> => {
   const browser = await chromium.launch({ channel: "chrome", headless: true });
-  const server = await serve(html);
+  const testServer = await serveHtml(html);
   try {
     const page = await browser.newPage();
     if (options.cpuSlowdown > 1) {
@@ -71,31 +90,35 @@ const measureOnce = async (html: string, options: MeasureOptions): Promise<Vital
       await cdpSession.send("Emulation.setCPUThrottlingRate", { rate: options.cpuSlowdown });
     }
     await page.addInitScript(() => {
-      const globalWithVitals = window as unknown as { __lcp: number; __inp: number };
+      const globalWithVitals = window;
       globalWithVitals.__lcp = 0;
       globalWithVitals.__inp = 0;
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) globalWithVitals.__lcp = entry.startTime;
       }).observe({ type: "largest-contentful-paint", buffered: true });
-      const eventObserverInit = { type: "event", durationThreshold: 16, buffered: true };
+      const eventObserverInit = {
+        type: "event",
+        durationThreshold: EVENT_DURATION_THRESHOLD_MS,
+        buffered: true,
+      };
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const duration = (entry as PerformanceEntry & { duration: number }).duration;
+          const duration = entry.duration;
           if (duration > globalWithVitals.__inp) globalWithVitals.__inp = duration;
         }
       }).observe(eventObserverInit);
     });
 
-    await page.goto(server.url, { waitUntil: "load" });
+    await page.goto(testServer.url, { waitUntil: "load" });
 
-    for (let index = 0; index < options.interactions; index++) {
+    for (let index = 0; index < options.interactionCount; index++) {
       await page.click("#go");
-      await page.waitForTimeout(120);
+      await page.waitForTimeout(INTERACTION_SETTLE_TIME_MS);
     }
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(FINAL_RENDER_SETTLE_TIME_MS);
 
-    const sample = await page.evaluate(() => {
-      const globalWithVitals = window as unknown as { __lcp: number; __inp: number };
+    const vitalsSample = await page.evaluate(() => {
+      const globalWithVitals = window;
       const renderEntry = performance.getEntriesByName("initial-render")[0];
       return {
         lcpMs: globalWithVitals.__lcp,
@@ -104,25 +127,25 @@ const measureOnce = async (html: string, options: MeasureOptions): Promise<Vital
       };
     });
     await page.close();
-    return sample;
+    return vitalsSample;
   } finally {
     await browser.close();
-    await server.close();
+    await testServer.close();
   }
 };
 
-export const bestOfVitals = async (
+export const getBestVitals = async (
   html: string,
   options: MeasureOptions,
 ): Promise<VitalsSample> => {
-  let best: VitalsSample = { lcpMs: Infinity, initialRenderMs: Infinity, inpMs: Infinity };
-  for (let run = 0; run < options.runs; run++) {
-    const sample = await measureOnce(html, options);
-    best = {
-      lcpMs: Math.min(best.lcpMs, sample.lcpMs),
-      initialRenderMs: Math.min(best.initialRenderMs, sample.initialRenderMs),
-      inpMs: Math.min(best.inpMs, sample.inpMs),
+  let bestSample: VitalsSample = { lcpMs: Infinity, initialRenderMs: Infinity, inpMs: Infinity };
+  for (let runIndex = 0; runIndex < options.runCount; runIndex++) {
+    const vitalsSample = await measureVitalsOnce(html, options);
+    bestSample = {
+      lcpMs: Math.min(bestSample.lcpMs, vitalsSample.lcpMs),
+      initialRenderMs: Math.min(bestSample.initialRenderMs, vitalsSample.initialRenderMs),
+      inpMs: Math.min(bestSample.inpMs, vitalsSample.inpMs),
     };
   }
-  return best;
+  return bestSample;
 };

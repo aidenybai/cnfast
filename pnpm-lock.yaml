@@ -97,6 +97,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.17)
+      class-variance-authority:
+        specifier: 0.7.1
+        version: 0.7.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -131,8 +134,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
       tailwind-merge:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: 3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb
+        version: 3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb
       tinybench:
         specifier: ^6.0.2
         version: 6.0.2
@@ -2112,6 +2115,9 @@ packages:
   cjs-module-lexer@2.2.1:
     resolution: {integrity: sha512-Ca8swihM+/4yKecYHY52kgJd300hi2lADU/a1RxNTRe+RJ9jvqQlESpbz9DnG9mowez8qwXHB8qYdIUw9e+F5Q==}
 
+  class-variance-authority@0.7.1:
+    resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
+
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
     engines: {node: '>=18'}
@@ -3814,6 +3820,9 @@ packages:
 
   tailwind-merge@3.6.0:
     resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
+
+  tailwind-merge@3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb:
+    resolution: {integrity: sha512-u3fT41PYM6Y6V4vR5uobNSodxtkoP6tzY7BXbqELbI/g9P7fYt5l8yb403nIEWQ+KLGcJ/yTLYGVJLn4kMviVg==}
 
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
@@ -5862,6 +5871,10 @@ snapshots:
 
   cjs-module-lexer@2.2.1: {}
 
+  class-variance-authority@0.7.1:
+    dependencies:
+      clsx: 2.1.1
+
   cli-cursor@5.0.0:
     dependencies:
       restore-cursor: 5.1.0
@@ -7692,6 +7705,8 @@ snapshots:
   tagged-tag@1.0.0: {}
 
   tailwind-merge@3.6.0: {}
+
+  tailwind-merge@3.6.0-dev.bceabfd95eab05553d15c5368b2684de697a84eb: {}
 
   tailwindcss@4.3.3: {}
 

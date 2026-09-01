@@ -14,9 +14,6 @@ const cacheRoot = new URL("../../.cache/", import.meta.url);
 const envOverride = (name: string): string | undefined =>
   process.env[`REPO_DIR_${name.replace(/[^A-Za-z0-9]/g, "_").toUpperCase()}`];
 
-// Resolves a repo to a local source directory, cloning it shallow + blobless on
-// first use (cached under .cache/<name>). An env override REPO_DIR_<NAME> points
-// at an existing checkout to skip cloning entirely.
 export const ensureRepo = (target: RepoTarget): string => {
   const override = envOverride(target.name);
   if (override) {

@@ -1,9 +1,9 @@
-import { AnyConfig, ConfigExtension } from "./types";
+import type { AnyConfig, ConfigExtension } from "./types.js";
 
-type PropertyObject = Partial<Record<string, readonly unknown[]>>;
+interface PropertyObject {
+  [property: string]: readonly unknown[] | undefined;
+}
 
-// Ported from tailwind-merge (MIT, github.com/dcastil/tailwind-merge). Mutates `baseConfig`, so
-// callers pass a fresh `getDefaultConfig()`.
 export const mergeConfigs = (
   baseConfig: AnyConfig,
   { extend = {}, override = {} }: ConfigExtension,

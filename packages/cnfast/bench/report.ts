@@ -6,24 +6,24 @@ interface ReportStep {
   file: string;
 }
 
-const steps: ReportStep[] = [
+const reportSteps: ReportStep[] = [
   {
     title: "1/4  Correctness: output parity vs clsx + tailwind-merge",
     file: "scripts/verify-parity.ts",
   },
   { title: "2/4  Bundle size", file: "scripts/bundle-size.ts" },
   {
-    title: "3/4  Throughput: micro + corpus + page replay + data grid (unified geomean)",
+    title: "3/4  Throughput: full workload matrix (unified geomean)",
     file: "bench/index.ts",
   },
   { title: "4/4  SSR throughput", file: "bench/ssr.bench.ts" },
 ];
 
-const root = fileURLToPath(new URL("..", import.meta.url));
+const packageDirectoryPath = fileURLToPath(new URL("..", import.meta.url));
 
-for (const step of steps) {
+for (const step of reportSteps) {
   console.log(`\n=== ${step.title} ===`);
-  execFileSync("bun", [step.file], { cwd: root, stdio: "inherit" });
+  execFileSync("bun", [step.file], { cwd: packageDirectoryPath, stdio: "inherit" });
 }
 
 console.log("\nDone.");

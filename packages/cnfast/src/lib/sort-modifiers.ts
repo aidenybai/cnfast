@@ -1,44 +1,41 @@
-import { AnyConfig } from "./types";
+import { CHAR_OPEN_BRACKET } from "./char-codes.js";
+import type { AnyConfig } from "./types.js";
 
-/**
- * Sorts modifiers according to following schema:
- * - Predefined modifiers are sorted alphabetically
- * - When an arbitrary variant appears, it must be preserved which modifiers are before and after it
- */
 export const createSortModifiers = (config: AnyConfig) => {
   const orderSensitiveModifiers = new Set(config.orderSensitiveModifiers);
 
+  const appendSortedSegment = (segment: string[], sortedModifiers: string[]): void => {
+    segment.sort();
+    for (let index = 0; index < segment.length; index++) {
+      sortedModifiers.push(segment[index]!);
+    }
+  };
+
   return (modifiers: readonly string[]): string[] => {
-    const result: string[] = [];
+    const sortedModifiers: string[] = [];
     let currentSegment: string[] = [];
 
     for (let index = 0; index < modifiers.length; index++) {
       const modifier = modifiers[index]!;
 
-      const isArbitrary = modifier[0] === "[";
+      const isArbitrary = modifier.length !== 0 && modifier.charCodeAt(0) === CHAR_OPEN_BRACKET;
       const isOrderSensitive = orderSensitiveModifiers.has(modifier);
 
       if (isArbitrary || isOrderSensitive) {
         if (currentSegment.length > 0) {
-          currentSegment.sort();
-          for (let segmentIndex = 0; segmentIndex < currentSegment.length; segmentIndex++) {
-            result.push(currentSegment[segmentIndex]!);
-          }
+          appendSortedSegment(currentSegment, sortedModifiers);
           currentSegment = [];
         }
-        result.push(modifier);
+        sortedModifiers.push(modifier);
       } else {
         currentSegment.push(modifier);
       }
     }
 
     if (currentSegment.length > 0) {
-      currentSegment.sort();
-      for (let segmentIndex = 0; segmentIndex < currentSegment.length; segmentIndex++) {
-        result.push(currentSegment[segmentIndex]!);
-      }
+      appendSortedSegment(currentSegment, sortedModifiers);
     }
 
-    return result;
+    return sortedModifiers;
   };
 };

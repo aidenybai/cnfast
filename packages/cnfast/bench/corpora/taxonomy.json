@@ -209,6 +209,10 @@
   ["flex items-center space-x-2 text-sm"],
   [
     "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+    "/ "
+  ],
+  [
+    "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
     "/ ",
     "text-foreground",
     "text-foreground/60",
@@ -223,15 +227,14 @@
   ["flex space-x-4"],
   [
     "flex touch-none select-none transition-colors",
-    "vertical",
     "h-full w-2.5 border-l border-l-transparent p-[1px]",
-    "horizontal",
     "h-2.5 border-t border-t-transparent p-[1px]"
   ],
   ["flex w-full"],
   ["flex w-full cursor-not-allowed items-center rounded-md p-2 opacity-60"],
   ["flex w-full flex-1 flex-col overflow-hidden"],
   ["flex w-full items-center justify-between"],
+  ["flex w-full items-center rounded-md p-2 hover:underline"],
   ["flex w-full items-center rounded-md p-2 hover:underline", "bg-muted"],
   [
     "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
@@ -255,7 +258,6 @@
   ["ghost", "absolute left-[-200px] top-14 hidden xl:inline-flex"],
   ["ghost", "absolute left-4 top-4 md:left-8 md:top-8"],
   ["ghost", "absolute right-4 top-4 md:right-8 md:top-8"],
-  ["ghost", "h-9 w-9 p-0 font-normal aria-selected:opacity-100"],
   ["ghost", "ml-auto"],
   ["grid gap-1"],
   ["grid gap-10"],
@@ -263,6 +265,7 @@
   ["grid gap-2"],
   ["grid gap-3 text-sm text-muted-foreground sm:grid-cols-2"],
   ["grid gap-4 md:grid-cols-2 md:gap-6"],
+  ["grid gap-4 mt-6"],
   ["grid gap-6"],
   ["grid gap-8"],
   ["grid grid-flow-row auto-rows-max text-sm"],
@@ -327,7 +330,8 @@
   ["hover:text-brand underline underline-offset-4"],
   ["inline-block font-heading text-4xl lg:text-5xl"],
   ["inline-block font-heading text-4xl tracking-tight lg:text-5xl"],
-  ["inline-block no-underline", "# ", "font-medium text-primary", "text-sm text-muted-foreground"],
+  ["inline-block no-underline"],
+  ["inline-block no-underline", "font-medium text-primary", "text-sm text-muted-foreground"],
   ["inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground"],
   [
     "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-destructive/30 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive"
@@ -375,6 +379,7 @@
   ["lg"],
   ["lg:p-8"],
   ["m-0 border-t p-0 even:bg-muted"],
+  ["m-0 list-none"],
   ["m-0 list-none", "pl-4"],
   ["max-h-[300px] overflow-y-auto overflow-x-hidden"],
   ["max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8"],
@@ -428,12 +433,11 @@
   ["my-4"],
   ["my-4 md:my-6"],
   ["my-4 md:my-8"],
+  ["my-6 flex items-start rounded-md border border-l-4 p-4"],
   [
     "my-6 flex items-start rounded-md border border-l-4 p-4",
     "border-red-900 bg-red-50",
-    "danger",
-    "border-yellow-900 bg-yellow-50",
-    "warning"
+    "border-yellow-900 bg-yellow-50"
   ],
   ["my-6 ml-6 list-decimal"],
   ["my-6 ml-6 list-disc"],
@@ -444,7 +448,6 @@
     "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]"
   ],
   ["outline"],
-  ["outline", "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"],
   ["outline", "lg"],
   ["outline", "mt-2 sm:mt-0"],
   ["overflow-hidden p-0 shadow-2xl"],
@@ -456,7 +459,6 @@
   ],
   [
     "p-1",
-    "popper",
     "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
   ],
   ["p-3"],
@@ -532,7 +534,6 @@
   ["relative z-20 grid gap-6 rounded-md bg-popover p-4 text-popover-foreground shadow-md"],
   [
     "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80",
-    "popper",
     "translate-y-1"
   ],
   ["rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"],
@@ -544,7 +545,8 @@
   ["rounded-md border bg-muted px-1 text-xs uppercase"],
   ["rounded-md border bg-muted transition-colors"],
   ["secondary", "sm", "px-4"],
-  ["shrink-0 bg-border", "horizontal", "h-[1px] w-full", "h-full w-[1px]"],
+  ["shrink-0 bg-border", "h-[1px] w-full", "h-full w-[1px]"],
+  ["size", "lg"],
   ["space-x-4"],
   ["space-y-2"],
   ["space-y-2 [&>h3]:!mt-0 [&>h4]:!mt-0 [&>p]:text-muted-foreground"],
@@ -584,6 +586,17 @@
     "top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in"
   ],
   ["underline underline-offset-4"],
+  ["variant", "ghost"],
+  ["variant", "ghost", "absolute left-[-200px] top-14 hidden xl:inline-flex"],
+  ["variant", "ghost", "absolute left-4 top-4 md:left-8 md:top-8"],
+  ["variant", "ghost", "absolute right-4 top-4 md:right-8 md:top-8"],
+  ["variant", "ghost", "h-9 w-9 p-0 font-normal aria-selected:opacity-100"],
+  ["variant", "ghost", "ml-auto"],
+  ["variant", "outline"],
+  ["variant", "outline", "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"],
+  ["variant", "outline", "mt-2 sm:mt-0"],
+  ["variant", "outline", "size", "lg"],
+  ["variant", "secondary", "size", "sm", "px-4"],
   ["w-[200px] truncate text-sm text-muted-foreground"],
   ["w-[400px]"],
   ["w-full"],

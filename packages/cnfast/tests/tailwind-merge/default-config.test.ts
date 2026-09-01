@@ -6,8 +6,8 @@ import { Config, DefaultClassGroupIds, DefaultThemeGroupIds } from "../src/lib/t
 test("default config has correct types", () => {
   const defaultConfig = getDefaultConfig();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const genericConfig: Config<DefaultClassGroupIds, DefaultThemeGroupIds> = defaultConfig;
+  expect(genericConfig).toBe(defaultConfig);
 
   // @ts-expect-error nonExistent is not a config property
   expect(defaultConfig.nonExistent).toBeUndefined();

@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import { defineConfig } from "vite-plus";
 
-const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as {
+interface PackageJson {
   version: string;
-};
+}
+
+const packageJson: PackageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
 export default defineConfig({
   pack: [

@@ -1,5 +1,47 @@
 [
+  ["    flex aspect-square h-6 items-center justify-center rounded-sm"],
+  ["    flex h-[20px] w-[20px] items-center justify-center rounded-s-sm px-2"],
+  ["    flex h-4 w-4 items-center justify-center rounded-sm p-1"],
+  ["    flex h-5 w-5 items-center justify-center rounded-s-sm px-2"],
+  ["    flex h-5 w-5 items-center justify-center rounded-sm px-2"],
+  ["    flex h-5 w-5 shrink-0 items-center justify-center rounded-sm"],
+  ["  border-b border-solid border-(--hl-sm)", "cursor-not-allowed"],
+  [
+    "  cursor-pointer truncate text-sm font-medium whitespace-nowrap group-last-of-type:border-none focus:outline-hidden",
+    "bg-(--hl-xs)"
+  ],
+  [
+    "  flex h-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm ring-1 ring-transparent transition-all focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
+  ],
+  ["  flex w-6 shrink-0 items-center justify-end border-r-0 border-l"],
+  ["  flex w-full"],
+  ["  group"],
+  ["  group  ", "rounded-xs ring-2 ring-(--color-surprise) ring-inset"],
+  ["  group h-full!   group-hover:bg-transparent!", "pl-4", "pl-12"],
+  ["  group-hover/tree:bg-(--hl-sm)"],
+  ["  group-hover/tree:bg-(--hl-sm)  ", "group-hover:bg-(--hl-sm)"],
+  ["  h-2 w-2 shrink-0", "text-(--color-success)", "text-(--color-warning)"],
+  ["  left-10 group-hover/tree:bg-(--hl-sm)"],
+  ["  left-6 group-hover/tree:bg-(--hl-sm)"],
+  ["  min-w-0 flex-1 truncate text-sm", "ml-7", "ml-3"],
+  ["  mr-1", "animate-spin"],
+  [
+    "  relative flex h-(--line-height-xs) w-full items-center gap-2 overflow-hidden pr-4 text-(--hl) outline-hidden transition-colors select-none group-hover:bg-(--hl-xs) group-focus:bg-(--hl-sm) group-aria-selected:text-(--color-font)",
+    "pl-4",
+    "pl-8"
+  ],
+  ["  relative flex h-full w-[30%] grow pl-1"],
+  ["  relative w-[50%]"],
+  ["  w-16"],
+  ["  w-20"],
+  ["  w-32"],
+  ["  w-5  ", "text-(--color-danger)", "text-(--color-font)", "animate-spin"],
+  [" -pane"],
   [" -pane", "theme--pane", "pane"],
+  ["-mt-[calc(var(--padding-sm))] flex items-center gap-2"],
+  [
+    "-mt-[calc(var(--padding-sm))]flex h-full items-center justify-center gap-2 px-2 py-1 text-xs text-(--color-info) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
   ["-mt-2 flex items-center gap-2 text-sm"],
   ["-mt-2 shrink-0 text-xl text-(--hl) hover:text-(--color-font)"],
   ["absolute -m-px h-px w-px overflow-hidden border-0 p-0 whitespace-nowrap"],
@@ -14,6 +56,9 @@
   ["absolute inset-0"],
   ["absolute left-4 animate-spin text-(--color-font)"],
   ["absolute left-4 text-(--color-font)"],
+  ["absolute right-0 bottom-0 left-0 block h-px bg-(--color-bg)  ", "opacity-100", "opacity-0"],
+  ["absolute right-0 bottom-0 left-0 block h-px bg-(--hl-sm)  ", "opacity-100", "opacity-0"],
+  ["absolute right-0 bottom-0 size-3 translate-x-1/2 translate-y-1/2 transform  "],
   ["absolute top-(--padding-sm) right-(--padding-sm)"],
   ["absolute top-0 bottom-0 left-0 m-auto h-[24px] w-[24px] rounded-full"],
   [
@@ -33,19 +78,21 @@
   ["absolute top-0 left-0 z-10 w-full outline-1 outline-(--color-surprise) outline-solid"],
   ["absolute top-0 left-1/2 h-16 w-16 translate-x-[-50%] translate-y-[-50%] transform"],
   ["absolute top-0 right-0 flex h-full items-center px-2"],
+  ["absolute top-0 right-0 h-4 w-4 hover:bg-(--hl-lg)  ", "hidden"],
   ["absolute top-1/2 right-2 -translate-y-1/2 text-sm text-(--hl) hover:text-(--color-font)"],
   [
     "absolute top-full left-1/2 z-10 mt-2 hidden w-72 -translate-x-1/2 rounded-md border border-(--hl-sm) bg-(--color-bg) p-3 text-xs text-(--color-font) shadow-lg group-hover:block"
   ],
   ["align-center flex items-center gap-2"],
   ["align-center flex w-full flex-1 overflow-y-auto"],
+  ["animate-[sidebar-focus-in_200ms_ease-out]"],
+  ["animate-[sidebar-focus-in_200ms_ease-out]", "animate-[sidebar-focus-out_200ms_ease-out]"],
   ["animate-down-loop w-2"],
   ["animate-spin"],
   ["animate-text-slide-4 block text-right leading-tight [&_li]:block"],
   ["animate-up-loop w-2"],
   ["app"],
   ["aspect-auto"],
-  ["aspect-auto max-h-48"],
   [
     "aspect-square h-6 items-center justify-center rounded-xs text-sm text-(--color-font) opacity-0 ring-1 ring-transparent transition-all group-hover:flex group-hover:opacity-100 group-focus:flex group-focus:opacity-100 hover:bg-(--hl-xs) hover:opacity-100 focus:opacity-100 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:flex data-pressed:opacity-100"
   ],
@@ -63,8 +110,10 @@
     "before:bg-(--color-surprise)",
     "cursor-not-allowed border-(--hl) before:bg-(--hl)"
   ],
+  ["bg-(--color-surprise) px-(--padding-md) text-(--color-font-surprise)  "],
   ["bg-(--hl-sm) p-2 text-left text-xs font-semibold uppercase focus:outline-hidden"],
   ["bg-(--hl-xxs)"],
+  ["bg-[#EEEBFF]", "bg-[#292535]"],
   ["bg-[rgba(var(--color-danger-rgb),0.5)] p-2 text-(--color-font-danger)"],
   ["bg-font mt-4 mb-4 h-1 w-full max-w-500 opacity-20"],
   ["bg-info ml-2 rounded-md px-2 py-1"],
@@ -78,9 +127,12 @@
   ["bg-warning mr-2 rounded-xs px-2 py-1"],
   ["block"],
   ["block p-0 break-all whitespace-pre-wrap"],
+  ["block px-(--padding-md) py-1 text-xs text-(--hl)"],
   [
-    "border select-none text-sm max-w-xs border-solid border-(--hl-sm) shadow-lg bg-(--color-bg) text-(--color-font) px-4 py-2 rounded-md overflow-y-auto max-h-[85vh] focus:outline-hidden"
+    "border border-solid border-(--hl-md) bg-(--color-surprise) font-semibold text-(--color-font-surprise)",
+    "text-(--color-font)"
   ],
+  ["border border-solid border-(--hl-sm)"],
   ["border-(--color-danger)!", "border-(--hl-xs)"],
   ["border-b border-dashed border-b-(--hl-md) pt-6 pb-6"],
   ["border-b border-solid border-(--hl-sm)"],
@@ -113,11 +165,18 @@
   [
     "border-md rounded-md border border-solid border-(--hl-md) px-4 py-1 text-base text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
   ],
+  [
+    "border-md rounded-md border border-solid border-(--hl-md) px-4 py-1 text-base text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset  ",
+    "opacity-50"
+  ],
   ["border-none"],
   ["border-none! outline-1 outline-(--color-surprise) outline-solid"],
   ["border-solid border-(--hl-sm) bg-(--color-bg) shadow-lg"],
   ["border-t border-(--hl-md)  "],
   ["border-top"],
+  [
+    "bounce-in box-border rounded-full border-2 border-solid border-(--color-bg) bg-(--hl) object-cover object-center outline-hidden"
+  ],
   [
     "box-border flex h-(--line-height-sm) flex-row border-t border-solid border-(--hl-md) text-(--font-size-sm)"
   ],
@@ -153,7 +212,8 @@
   ["btn btn--compact modal__close-btn"],
   ["btn btn--no-background"],
   ["btn btn--outlined btn--super-compact flex items-center gap-2"],
-  ["btn btn--outlined btn--super-compact flex w-48 items-center"],
+  ["btn btn--outlined btn--super-compact flex items-center gap-2 ", " pointer-events-none"],
+  ["btn btn--outlined btn--super-compact width-auto flex items-center justify-center gap-2"],
   ["btn btn--outlined btn--super-super-compact margin-right-sm margin-top-sm inline-block"],
   ["btn btn--outlined btn--super-super-compact wide ellipsis"],
   ["btn btn--super-compact"],
@@ -161,12 +221,12 @@
   ["btn btn--super-compact btn--outlined flex items-center gap-(--padding-xs)"],
   ["btn btn--super-compact tall"],
   ["btn btn--super-super-compact"],
-  ["btn btn--super-super-compact pointer"],
+  ["btn btn--super-super-compact pointer ", " pointer-events-none"],
   ["btn btn--super-super-compact pointer btn--forever-enabled"],
   ["btn h-10 gap-(--padding-sm)"],
-  ["calendar-invert"],
   ["capitalize"],
   ["capitalize hover:underline"],
+  ["claude"],
   [
     "col-span-3 h-8 w-full flex-1 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) py-1 pr-7 pl-2 text-(--color-font) transition-colors placeholder:italic placeholder:opacity-60 focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden"
   ],
@@ -188,7 +248,9 @@
   [
     "cursor- py-1 text-(--color-info) underline ring-1 ring-transparent focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
+  ["cursor-auto"],
   ["cursor-default"],
+  ["cursor-default text-sm  "],
   ["cursor-help text-(--hl)"],
   ["cursor-move"],
   ["cursor-pointer"],
@@ -209,12 +271,16 @@
   ],
   ["divide-y divide-solid divide-(--hl)"],
   ["dot"],
+  ["dropdown relative flex  "],
   ["dropdown__menu focus:outline-0"],
   [
     "entering:animate-in entering:fade-in entering:zoom-in-95 exiting:animate-out exiting:fade-out exiting:zoom-out-95 w-56 min-w-[300px] origin-top-left overflow-auto rounded-md border border-solid border-white/20 bg-(--color-bg) p-1"
   ],
   ["environment-editor"],
-  ["fa fa--skinny", "fa-caret- "],
+  ["fa   cursor-pointer pr-(--padding-xs)", "fa-eye", "fa-eye-slash"],
+  ["fa ", "fa-info-circle", "fa-question-circle"],
+  ["fa fa-  flex items-center px-(--padding-xs)"],
+  ["fa fa--skinny", "fa-caret- ", "down", "right"],
   ["fa fa-arrow-left"],
   ["fa fa-arrow-right"],
   ["fa fa-ban mr-2"],
@@ -322,6 +388,12 @@
     "fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full items-start justify-center bg-black/30"
   ],
   [
+    "fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full items-start justify-center bg-black/30 pt-(--padding-xl)"
+  ],
+  [
+    "fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full items-start justify-center bg-black/30 pt-[70px]"
+  ],
+  [
     "fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full justify-center bg-black/30 pt-20"
   ],
   [
@@ -334,7 +406,8 @@
     "fixed top-0 left-0 z-9999 flex h-(--visual-viewport-height) w-full items-start justify-center bg-black/30"
   ],
   [
-    "fixed top-0 right-0 bottom-0 left-0 z-10 flex items-start justify-center bg-black/30 pt-[200px]"
+    "fixed z-[200] flex items-center justify-center bg-black/10  ",
+    "top-0 left-0 h-(--visual-viewport-height) w-full"
   ],
   ["fixed z-50 w-72 rounded-md border border-solid border-(--hl-md) bg-(--color-bg) p-4 shadow-lg"],
   ["flex"],
@@ -344,7 +417,6 @@
   [
     "flex aspect-square h-6 items-center justify-center gap-2 rounded-xs px-2 text-base text-(--color-font) opacity-100 ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset disabled:text-[rgba(var(--color-font-rgb),0.5)] aria-pressed:bg-(--hl-sm) data-pressed:opacity-100"
   ],
-  ["flex aspect-square h-6 items-center justify-center group-hover:hidden group-focus:hidden"],
   [
     "flex aspect-square h-6 items-center justify-center rounded-xs text-base text-(--color-font) opacity-0 ring-1 ring-transparent transition-all group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100 hover:bg-(--hl-xs) hover:opacity-100 focus:opacity-100 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:opacity-100"
   ],
@@ -369,6 +441,7 @@
   [
     "flex aspect-square h-6 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset data-pressed:bg-(--hl-sm)"
   ],
+  ["flex aspect-square h-6 shrink-0 items-center justify-center"],
   [
     "flex aspect-square h-6 shrink-0 items-center justify-center rounded-sm text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
   ],
@@ -376,7 +449,14 @@
     "flex aspect-square h-6 shrink-0 items-center justify-center rounded-sm text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
+    "flex aspect-square h-6 shrink-0 items-center justify-center rounded-xs px-1 text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
     "flex aspect-square h-6 shrink-0 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent outline-hidden transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "flex aspect-square h-6 shrink-0 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent outline-hidden transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)  ",
+    "opacity-50"
   ],
   [
     "flex aspect-square h-6 shrink-0 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
@@ -442,6 +522,10 @@
     "flex aspect-square w-5 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent transition-all group-data-empty:hidden hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
+    "flex aspect-square w-full flex-1 flex-col overflow-hidden rounded-md p-(--padding-md) ring-1 ring-(--hl-md) outline-hidden transition-all select-none hover:bg-(--hl-xs) hover:shadow-md hover:ring-(--hl-sm) focus:bg-(--hl-sm) focus:ring-(--hl-lg)  ",
+    "animate-pulse"
+  ],
+  [
     "flex border-(--hl-md) data-[orientation=horizontal]:mb-2 data-[orientation=horizontal]:border-b data-[orientation=vertical]:mr-2 data-[orientation=vertical]:flex-col data-[orientation=vertical]:border-r"
   ],
   [
@@ -478,7 +562,6 @@
   ["flex flex-1 flex-col items-center gap-2 p-(--padding-sm) font-bold"],
   ["flex flex-1 flex-col items-center gap-2 p-(--padding-sm) text-lg font-bold"],
   ["flex flex-1 flex-col items-center gap-3"],
-  ["flex flex-1 flex-col items-center gap-3 overflow-y-auto"],
   [
     "flex flex-1 flex-col items-center justify-between gap-2 bg-(--hl-xs) p-2 pb-3 text-center text-lg font-semibold text-(--hl)"
   ],
@@ -497,6 +580,11 @@
   ],
   ["flex flex-1 items-center gap-3"],
   [
+    "flex flex-1 items-center justify-center gap-2 rounded-xs border border-solid px-3 py-1.5 text-sm transition-colors  ",
+    "border-(--color-surprise) bg-(--hl-xs) text-(--color-font)",
+    "border-(--hl-md) text-(--color-font) hover:bg-(--hl-xs)"
+  ],
+  [
     "flex flex-1 items-center justify-center gap-2 rounded-xs px-4 py-1 text-sm font-bold text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
@@ -511,11 +599,13 @@
   ],
   ["flex flex-1 shrink-0 items-center justify-end gap-2"],
   ["flex flex-col"],
+  ["flex flex-col divide-y divide-(--hl-sm)"],
   ["flex flex-col gap-(--padding-lg)"],
   ["flex flex-col gap-(--padding-md)"],
   ["flex flex-col gap-(--padding-md) text-(--color-font)"],
   ["flex flex-col gap-(--padding-sm)"],
   ["flex flex-col gap-0.5"],
+  ["flex flex-col gap-0.5 border-l border-(--hl-sm) pl-2"],
   ["flex flex-col gap-1"],
   ["flex flex-col gap-1 divide-y divide-solid divide-(--hl-md) overflow-y-auto"],
   ["flex flex-col gap-1 text-left"],
@@ -523,6 +613,8 @@
   ["flex flex-col gap-2"],
   ["flex flex-col gap-2 overflow-hidden"],
   ["flex flex-col gap-2 overflow-y-auto"],
+  ["flex flex-col gap-2 pb-2 pl-9 text-xs text-(--hl)"],
+  ["flex flex-col gap-2 px-0.5"],
   ["flex flex-col gap-2 rounded-md border border-solid border-(--hl-md) bg-(--hl-xs) p-4"],
   ["flex flex-col gap-2 rounded-md border border-solid border-(--hl-md) p-4"],
   ["flex flex-col gap-2 rounded-md border border-solid border-(--hl-sm) p-2"],
@@ -531,6 +623,7 @@
   ["flex flex-col gap-3"],
   ["flex flex-col gap-3 rounded-md bg-(--hl-sm) p-(--padding-md)"],
   ["flex flex-col gap-3 rounded-sm border border-solid border-(--hl-md) p-3"],
+  ["flex flex-col gap-3 text-left"],
   ["flex flex-col gap-4"],
   ["flex flex-col gap-4 outline-hidden"],
   ["flex flex-col gap-4 p-(--padding-md)"],
@@ -545,7 +638,6 @@
   [
     "flex flex-col items-center justify-between gap-2 p-4 outline-hidden ring-inset focus:ring-1 focus:ring-(--hl-md)"
   ],
-  ["flex flex-col items-center justify-center border border-solid border-(--hl-sm) p-4"],
   ["flex flex-col items-center justify-center gap-4 text-center font-semibold"],
   ["flex flex-col items-center justify-center p-4 text-center opacity-80 md:p-8"],
   ["flex flex-col items-center justify-center whitespace-nowrap"],
@@ -562,11 +654,13 @@
   ["flex flex-col overflow-y-auto"],
   ["flex flex-col overflow-y-hidden"],
   ["flex flex-col pl-5"],
+  ["flex flex-col py-1  ", "opacity-50"],
   ["flex flex-col py-2"],
   [
     "flex flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
   ["flex flex-col rounded-sm border border-(--hl-md) p-1"],
+  ["flex flex-col rounded-xs transition-colors  ", "bg-(--hl-xs)"],
   ["flex flex-col text-(--color-font)"],
   ["flex flex-col text-xs"],
   ["flex flex-row gap-2"],
@@ -574,6 +668,10 @@
   ["flex flex-wrap gap-(--padding-sm)"],
   ["flex flex-wrap gap-1 pl-0.5"],
   ["flex flex-wrap gap-2"],
+  ["flex flex-wrap items-center gap-2"],
+  [
+    "flex flex-wrap items-center justify-between gap-2 rounded-sm bg-[#3A2F08] px-4 py-4 text-(--color-font-warning)"
+  ],
   [
     "flex flex-wrap items-center justify-between gap-2 rounded-sm border border-solid border-(--hl-md) bg-(--color-warning) p-(--padding-sm) text-(--color-font-warning)"
   ],
@@ -583,7 +681,13 @@
   [
     "flex flex-wrap items-center justify-between gap-2 rounded-sm border border-solid border-(--hl-md) bg-(--color-warning)/50 p-(--padding-xs) text-(--color-font-warning)"
   ],
+  [
+    "flex flex-wrap items-center justify-between gap-2 rounded-sm border border-solid border-(--hl-md) p-(--padding-sm) text-(--color-font-warning)  ",
+    "bg-(--color-warning)/50",
+    "bg-(--color-danger)/50"
+  ],
   ["flex gap-1"],
+  ["flex gap-1 p-2 text-xs  ", "opacity-40"],
   ["flex gap-2"],
   ["flex gap-2 bg-[rgba(var(--color-danger-rgb),1)] px-2 py-1 text-xs text-(--color-font-danger)"],
   ["flex gap-2 p-(--padding-sm) pl-[22px] text-left hover:bg-(--hl-sm)"],
@@ -593,14 +697,28 @@
   ["flex grow flex-col overflow-hidden"],
   ["flex grow items-center gap-2 overflow-hidden px-4 py-2 text-lg"],
   ["flex h-(--line-height-sm) bg-(--color-bg) outline-hidden"],
+  [
+    "flex h-(--line-height-sm) cursor-pointer items-center gap-2 rounded-xs px-2 transition-colors  ",
+    "hover:bg-(--hl-xs)"
+  ],
+  [
+    "flex h-(--line-height-sm) items-center gap-1.5 rounded-md border border-(--hl-md) bg-(--color-bg) p-1 focus-within:shadow-[0_0_0_4px_#0044F433]"
+  ],
+  [
+    "flex h-(--line-height-sm) items-center gap-2 overflow-hidden border-solid border-(--hl-md) px-(--padding-sm)  ",
+    "border-b"
+  ],
   ["flex h-(--line-height-sm) items-center gap-2 overflow-hidden px-4 py-2 text-lg"],
-  ["flex h-(--line-height-sm) items-center gap-2 rounded-xs pl-2 odd:bg-(--hl-xxs)"],
   ["flex h-(--line-height-sm) shrink-0 items-center gap-2 bg-(--color-bg) px-2 outline-hidden"],
+  [
+    "flex h-(--line-height-sm) shrink-0 items-center gap-2 border-b border-solid border-(--hl-md) px-(--padding-sm)  "
+  ],
   ["flex h-(--line-height-sm) shrink-0 items-center gap-2 px-(--padding-md)"],
   [
     "flex h-(--line-height-sm) shrink-0 items-center justify-between gap-2 px-3 py-1 text-sm font-bold text-(--hl)"
   ],
   ["flex h-(--line-height-sm) w-fit"],
+  ["flex h-(--line-height-sm) w-full focus:outline-hidden"],
   ["flex h-(--line-height-sm) w-full items-center border-b border-solid border-b-(--hl-md) pl-3"],
   [
     "flex h-(--line-height-sm) w-full items-center gap-2 px-(--padding-md) text-sm text-(--color-font) opacity-60"
@@ -628,6 +746,11 @@
   [
     "flex h-(--line-height-sm) w-full shrink-0 items-center gap-2 overflow-x-auto border-b border-solid border-b-(--hl-md) bg-(--color-bg) px-2"
   ],
+  [
+    "flex h-(--line-height-sm) w-full shrink-0 items-center gap-2 p-(--padding-md) text-lg  ",
+    "text-(--color-danger)",
+    "text-(--color-success)"
+  ],
   ["flex h-(--line-height-sm) w-full shrink-0 items-center gap-2 px-(--padding-md) text-lg"],
   [
     "flex h-(--line-height-sm) w-full shrink-0 items-center justify-between gap-2 border-b border-solid border-(--hl-md) px-2 py-2"
@@ -640,7 +763,13 @@
     "flex h-(--line-height-sm) w-full shrink-0 items-center overflow-y-auto border-t border-solid border-(--hl-md) select-none"
   ],
   [
+    "flex h-(--line-height-xs) flex-1 items-center truncate rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 text-(--color-font)"
+  ],
+  [
     "flex h-(--line-height-xs) items-center justify-center gap-2 rounded-md border border-solid border-(--hl-lg) px-(--padding-md) py-1 text-sm font-semibold text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "flex h-(--line-height-xs) items-center justify-center gap-2 rounded-xs border border-solid border-(--hl-md) px-3 text-sm text-(--color-font) transition-colors hover:bg-(--hl-xs) aria-pressed:bg-(--hl-xs)"
   ],
   [
     "flex h-(--line-height-xs) items-center justify-center rounded-md border border-solid border-(--hl-lg) px-(--padding-md) text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
@@ -649,19 +778,37 @@
     "flex h-(--line-height-xs) items-center justify-center rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--color-surprise)/80"
   ],
   [
+    "flex h-(--line-height-xs) w-full flex-1 items-center justify-between gap-2 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 text-(--color-font) ring-1 ring-transparent transition-colors placeholder:italic hover:bg-(--hl-xs) focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "flex h-(--line-height-xs) w-full flex-none items-center gap-2 rounded-sm bg-transparent pr-1 whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed  ",
+    "pl-(--padding-md)",
+    "pl-8"
+  ],
+  [
     "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font)"
   ],
   [
     "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden"
   ],
   [
+    "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden aria-selected:font-bold"
+  ],
+  [
     "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-selected:font-bold"
   ],
   [
-    "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:text-(--hl-md) aria-selected:font-bold"
+    "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-selected:font-bold  ",
+    "font-bold"
   ],
   [
     "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold"
+  ],
+  [
+    "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-sm) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden aria-selected:font-bold"
+  ],
+  [
+    "flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-sm) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:text-(--hl-md) aria-selected:font-bold"
   ],
   [
     "flex h-(--line-height-xs) w-full items-center gap-2 rounded-sm bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-selected:bg-(--hl-sm) aria-selected:font-bold data-focused:bg-(--hl-xs)"
@@ -670,10 +817,32 @@
     "flex h-(--line-height-xs) w-full items-center gap-2 rounded-sm bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-selected:font-bold data-focused:bg-(--hl-xs)"
   ],
   [
+    "flex h-(--line-height-xs) w-full items-center gap-2 truncate rounded-sm bg-transparent pr-1 whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden  ",
+    "pl-(--padding-md)",
+    "pl-8"
+  ],
+  [
+    "flex h-(--line-height-xs) w-full items-center rounded-md border border-solid bg-(--hl-xxs) p-(--padding-sm) text-(--color-font) focus:border-(--hl-lg) focus:bg-transparent  ",
+    "border-(--color-danger)",
+    "border-(--hl-md)"
+  ],
+  [
     "flex h-(--line-height-xs) w-full items-center rounded-md border border-solid border-(--hl-md) bg-(--hl-xxs) p-(--padding-sm) text-(--color-font) focus:border-(--hl-lg) focus:bg-transparent"
   ],
   [
+    "flex h-(--line-height-xxs) w-40 shrink-0 cursor-pointer items-center justify-between rounded-md px-2 py-1 text-sm text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-[rgba(var(--color-surprise-rgb),50%)] hover:text-(--color-font-surprise) aria-selected:bg-[rgba(var(--color-surprise-rgb),40%)] aria-selected:text-(--color-font-surprise)"
+  ],
+  [
+    "flex h-(--line-height-xxs) w-40 shrink-0 cursor-pointer items-center justify-between rounded-md px-2 py-1 text-sm text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-[rgba(var(--color-surprise-rgb),50%)] hover:text-(--color-font-surprise) aria-selected:bg-[rgba(var(--color-surprise-rgb),40%)] aria-selected:text-(--color-font-surprise) data-focus-visible:ring-2 data-focus-visible:ring-(--hl-md) data-focus-visible:ring-inset"
+  ],
+  [
     "flex h-(--line-height-xxs) w-42 shrink-0 cursor-pointer items-center justify-between rounded-md px-2 py-1 text-sm text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-[rgba(var(--color-surprise-rgb),50%)] hover:text-(--color-font-surprise) aria-selected:bg-[rgba(var(--color-surprise-rgb),40%)] aria-selected:text-(--color-font-surprise)"
+  ],
+  [
+    "flex h-(--line-height-xxs) w-46 shrink-0 cursor-pointer items-center justify-between rounded-md px-2 py-1 text-sm text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-[rgba(var(--color-surprise-rgb),50%)] hover:text-(--color-font-surprise) aria-selected:bg-[rgba(var(--color-surprise-rgb),40%)] aria-selected:text-(--color-font-surprise)"
+  ],
+  [
+    "flex h-(--line-height-xxs) w-46 shrink-0 cursor-pointer items-center justify-between rounded-md px-2 py-1 text-sm text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-[rgba(var(--color-surprise-rgb),50%)] hover:text-(--color-font-surprise) aria-selected:bg-[rgba(var(--color-surprise-rgb),40%)] aria-selected:text-(--color-font-surprise) data-focus-visible:ring-2 data-focus-visible:ring-(--hl-md) data-focus-visible:ring-inset"
   ],
   [
     "flex h-(--line-height-xxs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold"
@@ -696,10 +865,10 @@
   ],
   ["flex h-[30px]"],
   [
-    "flex h-[30px] cursor-pointer items-center justify-between rounded-sm border border-(--hl-sm) px-2"
+    "flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-md px-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:bg-(--hl-sm)"
   ],
   [
-    "flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-md px-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:bg-(--hl-sm)"
+    "flex h-[30px] w-full cursor-pointer items-center justify-between rounded-sm border border-solid border-(--hl-sm) px-2 text-(--color-font) ring-1 ring-transparent transition-colors hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:outline-hidden focus:ring-inset"
   ],
   [
     "flex h-[30px] w-full items-center overflow-hidden rounded-sm border border-solid bg-(--color-bg)",
@@ -715,9 +884,14 @@
   [
     "flex h-[35px] w-[40px] items-center justify-center border-r border-solid border-(--hl-sm) bg-(--hl-xs)"
   ],
+  [
+    "flex h-[40px] shrink-0 items-center gap-2 overflow-hidden border-b border-solid border-(--hl-md) px-(--padding-sm)"
+  ],
+  ["flex h-[40px] w-full items-center   justify-around px-1"],
   ["flex h-[50%] w-6 items-center justify-center"],
   ["flex h-[50px] w-full shrink-0 items-center justify-between"],
   ["flex h-[calc(100%-var(--line-height-md))] flex-col"],
+  ["flex h-[calc(100%-var(--line-height-sm))] flex-col divide-y divide-solid divide-(--hl-md)"],
   [
     "flex h-[calc(100%-var(--padding-xl))] max-h-full w-[calc(100%-var(--padding-xl))] flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
@@ -732,7 +906,6 @@
     "flex h-10 items-center justify-center gap-2 rounded-md bg-(--hl-xxs) px-4 text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   ["flex h-10 shrink-0 items-center justify-end gap-2"],
-  ["flex h-12 shrink-0 items-center justify-between gap-2 p-2"],
   ["flex h-2 w-2 rounded-full bg-green-500"],
   [
     "flex h-20 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-(--hl-md) bg-(--hl-xxs) hover:bg-transparent focus:border-(--hl-lg)"
@@ -750,6 +923,13 @@
   ],
   ["flex h-4 w-full items-center justify-between p-4"],
   ["flex h-5 gap-2"],
+  ["flex h-5 w-5 items-center justify-center"],
+  [
+    "flex h-5 w-5 items-center justify-center rounded-sm bg-(--color-surprise) text-(--color-font-surprise)"
+  ],
+  [
+    "flex h-5 w-5 items-center justify-center rounded-sm bg-(--color-warning) text-(--color-font-warning)"
+  ],
   ["flex h-5 w-5 items-center justify-center rounded-sm px-2"],
   ["flex h-6 items-center gap-2"],
   ["flex h-6 min-w-[88px] items-center gap-2"],
@@ -771,6 +951,14 @@
   ],
   [
     "flex h-7 flex-1 items-center justify-center gap-2 truncate rounded-xs px-3 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "flex h-7 items-center gap-2 rounded-full bg-(--hl-xs) pr-2 pl-1 text-sm leading-6 text-(--color-font)  ",
+    "bg-(--hl-xs)",
+    "border border-dashed border-orange-400 bg-orange-400/40"
+  ],
+  [
+    "flex h-7 items-center gap-2 rounded-xs bg-(--hl-xxs) px-3 text-sm ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
   ],
   [
     "flex h-7 items-center justify-center gap-2 rounded-xs px-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
@@ -867,16 +1055,19 @@
     "flex h-full items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
   ],
   [
+    "flex h-full items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80 disabled:opacity-50"
+  ],
+  [
     "flex h-full items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) px-4 py-2 text-sm text-(--color-font) transition-colors hover:bg-(--hl-xs) aria-pressed:bg-(--hl-xs)"
+  ],
+  [
+    "flex h-full items-center justify-center gap-2 rounded-md border border-solid border-white/40 px-4 py-2 text-sm text-white transition-colors hover:bg-white/10 aria-pressed:bg-white/10"
   ],
   [
     "flex h-full items-center justify-center gap-2 rounded-xs bg-(--hl-xxs) px-4 py-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
     "flex h-full items-center justify-center gap-2 rounded-xs bg-(--hl-xxs) px-4 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
-  ],
-  [
-    "flex h-full items-center justify-center gap-2 rounded-xs px-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
     "flex h-full items-center justify-center gap-2 rounded-xs px-4 py-1 text-sm font-semibold text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset disabled:cursor-not-allowed disabled:bg-(--hl-xs) aria-pressed:bg-(--hl-sm) data-pressed:bg-(--hl-xs)"
@@ -886,6 +1077,9 @@
   ["flex h-full min-h-[450px] flex-col items-center justify-center"],
   ["flex h-full min-h-[500px] w-[600px] flex-col items-center justify-center"],
   ["flex h-full min-h-[min(450px,90%)] w-[540px] flex-col items-center justify-center"],
+  [
+    "flex h-full min-w-[13ch] shrink-0 items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-center text-sm font-semibold whitespace-nowrap text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--color-surprise)/80"
+  ],
   [
     "flex h-full min-w-[14ch] shrink-0 items-center justify-start gap-2 rounded-xs px-2 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-colors hover:bg-(--hl-xs) focus:bg-(--hl-sm) focus:ring-(--hl-md) focus:ring-inset aria-selected:bg-(--hl-xs) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm) data-pressed:bg-(--hl-sm)"
   ],
@@ -898,6 +1092,9 @@
     "flex h-full shrink-0 cursor-pointer items-center justify-between gap-2 px-3 py-1 text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm) aria-selected:bg-(--hl-xs) aria-selected:text-(--color-font) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm)"
   ],
   [
+    "flex h-full shrink-0 cursor-pointer items-center justify-between gap-2 px-3 py-1 text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm) aria-selected:bg-(--hl-xs) aria-selected:text-(--color-font) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm) data-focus-visible:ring-2 data-focus-visible:ring-(--hl-md) data-focus-visible:ring-inset"
+  ],
+  [
     "flex h-full shrink-0 cursor-pointer items-center justify-between px-3 py-1 text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm) aria-selected:bg-(--hl-xs) aria-selected:text-(--color-font) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm)"
   ],
   [
@@ -907,13 +1104,15 @@
     "flex h-full shrink-0 items-center gap-2 rounded-xs bg-(--hl-xs) pr-2 text-sm text-(--color-font)"
   ],
   [
+    "flex h-full shrink-0 items-center justify-between px-3 py-1 text-(--hl) outline-hidden transition-colors duration-300 select-none  ",
+    "cursor-pointer hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm) aria-selected:bg-(--hl-xs) aria-selected:text-(--color-font) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm)",
+    "text-(--color-font)!"
+  ],
+  [
     "flex h-full shrink-0 items-center justify-center gap-2 rounded-xs border border-solid border-(--hl-sm) px-2 py-1 text-base text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) aria-selected:bg-(--hl-sm)"
   ],
   [
     "flex h-full shrink-0 items-center justify-center gap-2 rounded-xs px-2 text-base text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) aria-selected:bg-(--hl-sm)"
-  ],
-  [
-    "flex h-full shrink-0 min-w-[13ch] items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-center text-sm font-semibold whitespace-nowrap text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--color-surprise)/80"
   ],
   [
     "flex h-full w-[10ch] items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
@@ -945,9 +1144,15 @@
   ["flex h-full w-full flex-col items-center justify-center p-8 text-center"],
   ["flex h-full w-full flex-col items-center p-5 text-center"],
   ["flex h-full w-full flex-col overflow-hidden"],
+  ["flex h-full w-full flex-col overflow-y-auto"],
   ["flex h-full w-full flex-row items-stretch justify-between"],
-  ["flex h-full w-full items-center"],
   ["flex h-full w-full items-center justify-between"],
+  ["flex h-full w-full items-center justify-between  "],
+  [
+    "flex h-full w-full items-center justify-between pr-(--padding-md) pl-(--padding-sm)    ",
+    "bg-(--hl-xs) font-bold"
+  ],
+  ["flex h-full w-full items-center justify-between pr-2 pl-1  "],
   ["flex h-full w-full items-center justify-center"],
   ["flex h-full w-full items-center justify-center p-(--padding-md)"],
   ["flex h-full w-full items-center justify-center select-none"],
@@ -958,6 +1163,7 @@
   ["flex items-center bg-transparent transition-all"],
   ["flex items-center border-b border-solid border-(--hl-md)"],
   ["flex items-center gap-(--padding-md)"],
+  ["flex items-center gap-(--padding-sm)"],
   [
     "flex items-center gap-(--padding-sm) border border-solid border-(--hl-md) bg-(--hl-xxs) p-(--padding-sm)"
   ],
@@ -972,11 +1178,12 @@
     "flex items-center gap-1 px-(--padding-md) text-xs text-(--color-font) focus:underline focus:outline-hidden"
   ],
   ["flex items-center gap-1 px-2 text-(--hl)"],
-  ["flex items-center gap-1 text-(--color-surprise)"],
+  [
+    "flex items-center gap-1 rounded-sm px-2 py-1 text-center text-[12px]/[100%] font-[590] uppercase    "
+  ],
   ["flex items-center gap-1 text-(--hl) italic"],
   ["flex items-center gap-2"],
   ["flex items-center gap-2 data-[disabled=true]:text-(--hl)"],
-  ["flex items-center gap-2 disabled:opacity-100"],
   ["flex items-center gap-2 font-bold"],
   ["flex items-center gap-2 p-(--padding-sm)"],
   ["flex items-center gap-2 p-2"],
@@ -994,6 +1201,9 @@
   ["flex items-center gap-2 rounded-sm border border-(--hl-md) bg-(--hl-xs) p-3"],
   [
     "flex items-center gap-2 rounded-xs bg-(--color-danger)/20 p-2 text-sm text-(--color-font-danger)"
+  ],
+  [
+    "flex items-center gap-2 rounded-xs bg-(--color-surprise)/50 px-2 py-1 text-sm text-(--color-font)"
   ],
   [
     "flex items-center gap-2 rounded-xs bg-[rgba(var(--color-danger-rgb),0.5)] px-2 py-1 text-sm text-(--color-font-danger)"
@@ -1032,6 +1242,9 @@
   ["flex items-center gap-3"],
   ["flex items-center gap-3 rounded-xl bg-(--hl-xs) px-5 py-4"],
   ["flex items-center gap-4"],
+  [
+    "flex items-center gap-4 rounded-lg border border-solid border-(--hl-sm) bg-(--color-bg) px-3 py-2 text-sm text-(--color-font) shadow-lg outline-hidden [view-transition-name:toast]"
+  ],
   ["flex items-center gap-6"],
   ["flex items-center justify-between"],
   [
@@ -1065,9 +1278,6 @@
     "flex items-center justify-center gap-2 rounded-xs bg-(--color-surprise) px-4 py-1 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all focus:bg-[rgba(var(--color-surprise-rgb),0.9)] focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-[rgba(var(--color-surprise-rgb),0.8)]"
   ],
   [
-    "flex items-center justify-center gap-2 rounded-xs bg-(--hl-xxs) px-3 py-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
-  ],
-  [
     "flex items-center justify-center gap-2 rounded-xs border border-solid border-(--hl-md) bg-(--color-font) px-4 py-1 text-sm font-semibold text-(--color-bg) ring-1 ring-transparent transition-all hover:bg-(--color-font)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
   ],
   [
@@ -1094,6 +1304,10 @@
   [
     "flex items-center justify-center gap-2 rounded-xs px-4 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
+  [
+    "flex items-center justify-center gap-2 rounded-xs px-4 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)  ",
+    "animate-pulse"
+  ],
   ["flex items-center justify-center gap-2 text-4xl font-semibold text-(--hl-md)"],
   ["flex items-center justify-center gap-2 truncate"],
   [
@@ -1118,14 +1332,21 @@
   ],
   ["flex items-center pl-(--padding-md) text-(--color-notice)"],
   ["flex items-center py-1 text-sm"],
+  [
+    "flex items-center rounded-xs border border-solid border-(--hl-sm)  ",
+    "border-[rgba(var(--color-danger-rgb),0.5)]"
+  ],
   ["flex items-center", "text-success", "text-danger"],
+  ["flex items-end gap-(--padding-sm)"],
   ["flex items-end gap-4"],
   ["flex items-end justify-between"],
   ["flex items-end justify-between gap-(--padding-sm)"],
   ["flex items-start gap-2"],
+  ["flex items-start gap-4 rounded-sm px-4"],
   ["flex items-start gap-4 rounded-sm px-4", "border-b border-solid border-(--hl-sm)"],
   ["flex items-start justify-between gap-3"],
   ["flex items-stretch gap-2"],
+  ["flex items-stretch p-1"],
   ["flex justify-between"],
   [
     "flex justify-between gap-[16px] rounded-xs px-2 leading-[36px] outline-hidden odd:bg-(--hl-xs)"
@@ -1139,6 +1360,9 @@
   ["flex max-h-[200px] flex-1 flex-wrap items-center gap-3 overflow-y-auto"],
   ["flex max-h-[50vh] flex-col gap-(--padding-md) overflow-auto"],
   [
+    "flex max-h-[50vh] flex-wrap items-center gap-(--padding-sm) overflow-auto rounded-md border border-solid bg-(--hl-xs) p-(--padding-sm)"
+  ],
+  [
     "flex max-h-[50vh] flex-wrap items-center gap-(--padding-sm) overflow-auto rounded-md border border-solid bg-(--hl-xs) p-(--padding-sm)",
     "border-(--color-surprise)",
     "border-(--hl-md)"
@@ -1148,6 +1372,11 @@
   ],
   [
     "flex max-h-[90dvh] min-h-[420px] w-full max-w-3xl flex-col overflow-hidden rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-(--color-font)"
+  ],
+  [
+    "flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-(--color-font)  ",
+    "min-h-[420px]",
+    "min-h-[220px]"
   ],
   [
     "flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-(--color-font)"
@@ -1174,9 +1403,6 @@
   ],
   [
     "flex max-h-full w-full max-w-4xl flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
-  ],
-  [
-    "flex max-w-full flex-1 items-center justify-center gap-2 truncate rounded-xs px-4 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:bg-(--hl-sm)"
   ],
   [
     "flex max-w-full items-start gap-2 truncate rounded-xs px-2 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
@@ -1230,18 +1456,30 @@
   ["flex min-w-0 flex-1 flex-col"],
   ["flex min-w-0 flex-1 items-center gap-2"],
   [
+    "flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-xs px-2 py-1 text-left opacity-60 transition-colors  ",
+    "animate-pulse cursor-not-allowed"
+  ],
+  [
     "flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-xs px-2 py-1 text-left transition-colors"
   ],
+  ["flex min-w-0 flex-1 items-center gap-3"],
+  ["flex min-w-0 items-center"],
   [
     "flex min-w-0 items-center gap-1 text-(--color-font) outline-hidden select-none data-focused:outline-hidden"
   ],
+  ["flex min-w-0 items-center gap-2"],
   ["flex min-w-0 items-start gap-3"],
   ["flex min-w-44 flex-col overflow-y-hidden"],
   ["flex min-w-max flex-col overflow-y-hidden"],
   ["flex min-w-max flex-col p-2 text-sm select-none focus:outline-hidden"],
   ["flex min-w-min items-center justify-end gap-(--padding-sm) space-x-3 p-2"],
+  ["flex origin-left scale-90 items-center pl-2 text-xs"],
+  [
+    "flex outline-hidden select-none   relative h-(--line-height-xs) w-full items-center gap-2 overflow-hidden px-4 transition-colors group-hover:bg-(--hl-xs) group-focus:bg-(--hl-sm) group-aria-selected:text-(--color-font) group-data-focused:bg-(--hl-sm)",
+    "font-bold text-(--color-font)",
+    "text-(--hl)"
+  ],
   ["flex p-1"],
-  ["flex place-content-center pb-2"],
   ["flex place-content-center pb-2 whitespace-pre-line"],
   ["flex place-content-center pb-8 text-9xl text-(--hl-md)"],
   ["flex rounded-md border border-solid border-(--hl-md) bg-(--hl-xs) p-(--padding-xs)"],
@@ -1254,12 +1492,21 @@
   ["flex shrink-0 grow items-center justify-start border-b border-solid border-(--hl-sm)"],
   ["flex shrink-0 items-center gap-1.5 text-xs text-(--color-font-secondary)"],
   ["flex shrink-0 items-center gap-2"],
-  ["flex shrink-0 items-center gap-2 p-(--padding-sm)"],
   ["flex shrink-0 items-center gap-2 px-2 text-sm"],
   ["flex shrink-0 items-center justify-between"],
   ["flex shrink-0 items-center justify-between gap-2"],
   [
+    "flex shrink-0 items-center justify-center bg-(--hl-sm) p-3  ",
+    "bg-[rgba(var(--color-danger-rgb),0.5)]"
+  ],
+  [
+    "flex shrink-0 items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) px-2.5 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
     "flex shrink-0 items-center justify-center gap-2 rounded-md px-1 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "flex shrink-0 items-center justify-center rounded-md border border-solid border-(--hl-md) px-2 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
   ],
   ["flex shrink-0 items-center justify-stretch gap-2"],
   ["flex shrink-0 items-center px-4 py-4 pb-1 text-sm font-semibold text-(--hl)"],
@@ -1278,8 +1525,7 @@
   ],
   ["flex w-[70%] items-center leading-relaxed"],
   ["flex w-[81px] items-center"],
-  ["flex w-[8ch] items-center gap-1"],
-  ["flex w-[8ch] items-center justify-center gap-2"],
+  ["flex w-[8ch] cursor-auto items-center justify-center"],
   [
     "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) bg-(--hl-md) py-1 text-[0.65rem] text-(--color-font)"
   ],
@@ -1295,10 +1541,42 @@
   [
     "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) bg-[rgba(var(--color-surprise-rgb),0.5)] text-[0.65rem] text-(--color-font-surprise)"
   ],
+  [
+    "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) text-[0.65rem]  "
+  ],
+  [
+    "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) text-[0.65rem]  ",
+    "bg-(--hl-md) text-(--color-font)"
+  ],
+  [
+    "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) text-[0.65rem]  ",
+    "bg-[rgba(var(--color-surprise-rgb),0.5)] text-(--color-font-surprise)",
+    "bg-[rgba(var(--color-success-rgb),0.5)] text-(--color-font-success)",
+    "bg-[rgba(var(--color-info-rgb),0.5)] text-(--color-font-info)",
+    "bg-[rgba(var(--color-info-rgb),0.5)] text-(--color-font-info)",
+    "bg-[rgba(var(--color-surprise-rgb),0.5)] text-(--color-font-surprise)",
+    "bg-[rgba(var(--color-danger-rgb),0.5)] text-(--color-font-danger)",
+    "bg-[rgba(var(--color-warning-rgb),0.5)] text-(--color-font-warning)",
+    "bg-[rgba(var(--color-notice-rgb),0.5)] text-(--color-font-notice)",
+    "bg-(--hl-md) text-(--color-font)"
+  ],
+  [
+    "flex w-10 shrink-0 items-center justify-center rounded-xs border border-solid border-(--hl-sm) text-[0.65rem] http-method- "
+  ],
   ["flex w-12.5 shrink-0 justify-center py-2"],
+  [
+    "flex w-20 shrink-0 rounded-xs border border-solid border-current   items-center justify-center",
+    "text-(--color-danger)",
+    "text-(--color-success)"
+  ],
   ["flex w-23 shrink-0 items-center gap-2"],
   ["flex w-5 items-center justify-center"],
-  ["flex w-5 shrink-0 cursor-grab items-center justify-center p-2 focus-visible:bg-(--hl-sm)"],
+  [
+    "flex w-5 shrink-0 items-center justify-center p-2 focus-visible:bg-(--hl-sm)  ",
+    "invisible",
+    "cursor-grab"
+  ],
+  ["flex w-auto min-w-[8ch] cursor-auto items-center gap-1"],
   ["flex w-full"],
   [
     "flex w-full flex-1 basis-96 divide-x divide-solid divide-(--hl-md) overflow-hidden overflow-y-auto rounded-sm border border-solid border-(--hl-sm) select-none"
@@ -1319,6 +1597,9 @@
   ["flex w-full flex-1 flex-col overflow-y-auto pt-3"],
   ["flex w-full flex-1 items-center gap-2"],
   [
+    "flex w-full flex-1 items-center justify-between gap-2 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-(--color-font) ring-1 ring-transparent transition-colors hover:bg-(--hl-xs) focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
+  [
     "flex w-full flex-1 items-center justify-between gap-2 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-(--color-font) ring-1 ring-transparent transition-colors placeholder:italic hover:bg-(--hl-xs) focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   [
@@ -1336,14 +1617,15 @@
   ],
   ["flex w-full flex-col gap-2"],
   ["flex w-full flex-col gap-2 overflow-hidden p-2"],
+  [
+    "flex w-full flex-col gap-2 rounded-sm bg-(--color-bg) bg-[linear-gradient(180deg,rgba(var(--color-surprise-rgb),0.2)_0%,color-mix(in_srgb,var(--color-bg)_0%,transparent)_72.8%)] px-5 pt-4 pb-2"
+  ],
   ["flex w-full flex-col items-center justify-center gap-(--padding-sm) p-(--padding-md)"],
   ["flex w-full flex-col items-center justify-center gap-4"],
   [
     "flex w-full flex-col items-center justify-start gap-(--padding-sm) rounded-md bg-(--color-bg) p-(--padding-md) text-ellipsis whitespace-nowrap"
   ],
-  [
-    "flex w-full flex-col items-center rounded-sm bg-(--color-bg) bg-[linear-gradient(180deg,rgba(var(--color-surprise-rgb),0.2)_0%,color-mix(in_srgb,var(--color-bg)_0%,transparent)_72.8%)] px-6 pt-8 pb-5"
-  ],
+  ["flex w-full flex-col justify-start gap-4 pb-2 text-left  ", "hidden"],
   ["flex w-full flex-col overflow-hidden"],
   ["flex w-full flex-row items-center justify-end gap-(--padding-md) pt-(--padding-md)"],
   ["flex w-full gap-2"],
@@ -1355,8 +1637,14 @@
   ],
   ["flex w-full gap-3"],
   ["flex w-full items-center"],
+  [
+    "flex w-full items-center gap-[8px] rounded-full bg-clip-padding px-[8px] outline-hidden transition-colors disabled:opacity-40  "
+  ],
   ["flex w-full items-center gap-1"],
   ["flex w-full items-center gap-2"],
+  [
+    "flex w-full items-center gap-2 overflow-hidden bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold"
+  ],
   ["flex w-full items-center gap-2 self-stretch p-2"],
   [
     "flex w-full items-center gap-3 bg-[rgba(var(--color-warning-rgb),0.1)] px-3 py-1.5 text-xs text-(--color-font)"
@@ -1387,7 +1675,6 @@
   ["flex w-full items-stretch justify-between self-stretch"],
   ["flex w-full justify-between"],
   ["flex w-full justify-center"],
-  ["flex w-full justify-end"],
   ["flex w-full justify-start py-2"],
   ["flex w-full leading-8"],
   [
@@ -1401,6 +1688,9 @@
   ],
   [
     "flex w-full max-w-lg flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
+  ],
+  [
+    "flex w-full max-w-md flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
   [
     "flex w-full max-w-sm flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-6 text-(--color-font) shadow-xl"
@@ -1455,12 +1745,16 @@
   ["flex-1 text-sm text-(--hl)"],
   ["flex-1 truncate"],
   ["flex-1 truncate px-1 text-sm text-(--hl-md)"],
+  [
+    "flex-1 truncate rounded-xs p-1 font-semibold text-(--color-font) transition-colors hover:cursor-text hover:bg-(--hl-xs)"
+  ],
   ["flex-1 truncate text-sm text-(--color-font)"],
   ["focus:outline-hidden"],
   ["font-bold"],
   [
     "font-bold outline-hidden transition-colors hover:text-(--color-font) focus:text-(--color-font)"
   ],
+  ["font-bold text-(--hl-xl)"],
   ["font-bold text-(--hl)"],
   ["font-bold underline"],
   ["font-error"],
@@ -1472,6 +1766,7 @@
   ["font-mono text-sm font-medium text-(--color-font)"],
   ["font-semibold"],
   ["font-semibold text-(--color-font)"],
+  ["font-semibold text-(--hl-xl)"],
   ["font-semibold text-nowrap"],
   ["for-row pad-top-sm"],
   ["force-wrap"],
@@ -1485,26 +1780,32 @@
   ["form-control form-control--outlined mt-4"],
   ["form-control form-control--outlined no-pad-top"],
   ["form-control form-control--outlined no-pad-top flex"],
-  ["form-control form-control--outlined width-auto", "form-control--no-label", "boolean"],
+  ["form-control form-control--outlined width-auto"],
+  ["form-control form-control--outlined width-auto", "form-control--no-label"],
   ["form-control form-control--thin"],
-  ["form-control", "form-control--thin", "boolean", "form-control--outlined", "boolean"],
+  ["form-control", "form-control--thin", "form-control--outlined"],
   ["form-control form-control--thin pad-top-sm"],
+  ["form-control form-control--underlined form-control--wide"],
   ["form-control form-control--underlined form-control--wide", "form-control--inactive"],
+  ["form-control form-control--underlined form-control--wide no-min-width"],
   [
     "form-control form-control--underlined form-control--wide no-min-width",
     "form-control--inactive"
   ],
+  ["form-control form-control--underlined no-margin wide flex"],
   ["form-control form-control--underlined no-margin wide flex", "form-control--inactive"],
-  ["form-control form-control--wide", "form-control--outlined", "checkbox"],
+  ["form-control form-control--wide", "form-control--outlined"],
   ["form-control__right"],
   ["form-row"],
-  ["form-row items-end justify-between"],
+  ["form-row form-row--start pad-top-sm justify-start"],
   ["form-row mt-2"],
   ["form-row pad-top-sm"],
   ["form-row pad-top-sm flex-col"],
-  ["form-row pad-top-sm justify-start"],
   ["gap-(--padding-sm)"],
   ["gap-2 bg-[rgba(var(--color-danger-rgb),0.5)] p-2 text-(--color-font-danger)"],
+  ["gemini"],
+  ["GET"],
+  ["gguf"],
   ["graphql-explorer theme--dialog"],
   ["graphql-explorer__body"],
   ["graphql-explorer__defs"],
@@ -1533,12 +1834,11 @@
   [
     "grid h-[25px] grid-cols-[30px_1fr_80px_1px_1fr_50px] items-center gap-2 border border-solid border-(--hl-md)"
   ],
+  ["grid h-full gap-2 divide-x divide-solid divide-(--hl-md) overflow-hidden"],
   [
     "grid h-full gap-2 divide-x divide-solid divide-(--hl-md) overflow-hidden",
     "grid-cols-[300px_1fr]",
-    "diff",
-    "grid-cols-[170px_1fr]",
-    "merge"
+    "grid-cols-[170px_1fr]"
   ],
   [
     "grid h-full grid-cols-[350px_1fr] gap-4 divide-x divide-solid divide-(--hl-md) overflow-hidden"
@@ -1549,15 +1849,32 @@
   ["grid h-full w-full grid-rows-[1fr_30px]"],
   ["grid h-full w-full grid-rows-[repeat(auto-fit,minmax(0,1fr))]"],
   ["grid max-h-52 min-h-24 gap-0 overflow-auto rounded-xs border border-solid border-(--hl-sm)"],
+  ["grid transition-[grid-template-rows] duration-200 ease-in-out"],
   [
     "grid w-(--trigger-width) min-w-max grid-flow-col divide-x divide-solid divide-(--hl-md) overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-sm shadow-lg select-none focus:outline-hidden"
   ],
   ["grid w-full grid-cols-2 gap-2"],
   ["grid w-full shrink-0 grid-cols-2 gap-x-[20.8px] overflow-hidden rounded-xs"],
   [
+    "grid-template-app-layout relative grid h-full w-full divide-x divide-solid divide-(--hl-md) bg-(--color-bg)"
+  ],
+  [
     "group absolute top-0 left-0 w-full outline-hidden select-none  ",
+    "data-drop-target:bg-(--hl-md)",
+    "border-solid data-drop-target:border-b data-drop-target:border-(--color-surprise)"
+  ],
+  [
+    "group absolute top-0 left-0 w-full outline-hidden select-none  ",
+    "data-drop-target:bg-(--hl-md)",
+    "border-solid data-drop-target:border-b data-drop-target:border-(--color-surprise)",
     "bg-(--hl-sm) text-(--color-font)"
   ],
+  [
+    "group box-border flex w-full cursor-default flex-col rounded-md px-3 py-2 text-(--color-font) outline-hidden hover:bg-(--hl-xs)  ",
+    "opacity-40",
+    "cursor-pointer"
+  ],
+  ["group flex cursor-auto items-center gap-1.5 p-0 text-xs disabled:animate-pulse"],
   [
     "group flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 outline-hidden select-none hover:bg-(--hl-xs) hover:text-(--color-font) focus:bg-(--hl-xs) focus:text-(--color-font)"
   ],
@@ -1571,11 +1888,12 @@
     "group flex h-(--line-height-xs) flex-1 items-start gap-2 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) text-(--color-font) transition-colors focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden"
   ],
   [
-    "group flex h-(--line-height-xs) w-full items-center gap-2 rounded-sm bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden aria-disabled:cursor-not-allowed aria-selected:bg-(--hl-sm) aria-selected:font-bold data-focused:bg-(--hl-xs)"
+    "group flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors focus:outline-hidden disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-30 aria-selected:font-bold"
   ],
   ["group flex h-full cursor-pointer items-center p-0"],
   ["group flex h-full items-center p-0"],
   ["group flex h-full items-center p-0 disabled:animate-pulse"],
+  ["group flex items-center gap-1 px-(--padding-sm) pt-(--padding-sm)"],
   ["group flex items-center gap-2"],
   ["group flex items-center gap-2 p-0"],
   [
@@ -1610,9 +1928,13 @@
   ["group relative flex-1"],
   ["group relative inline-flex h-6 w-11"],
   ["group relative w-full flex-1"],
+  [
+    "group rounded-xs outline-hidden select-none data-focus-visible:z-10 data-focus-visible:ring-2 data-focus-visible:ring-(--color-surprise) data-focus-visible:ring-inset  ",
+    "z-10 ring-2 ring-(--color-surprise) ring-inset"
+  ],
+  ["group transition-colors  "],
   ["group transition-colors focus-within:bg-(--hl-xxs) focus:outline-hidden"],
   ["group w-full outline-hidden select-none"],
-  ["group-aria-disabled:opacity-30"],
   ["group-elements"],
   [
     "group-pressed:opacity-80 flex w-full items-center justify-center gap-2 rounded-xs border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-1 text-sm font-semibold text-(--color-font-surprise) ring-1 ring-transparent transition-all group-hover:bg-(--color-surprise)/80 group-hover:ring-inset group-focus:bg-(--color-surprise)/80 group-focus:ring-inset hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
@@ -1623,16 +1945,14 @@
   ["group/tree flex-1 overflow-y-auto pb-(--padding-sm)"],
   ["grow"],
   ["grow p-4"],
+  ["gRPC"],
+  [
+    "h-(--line-height-xs) flex-1 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 text-(--color-font)"
+  ],
   [
     "h-(--line-height-xs) rounded-md border border-solid border-(--hl-lg) px-(--padding-md) hover:bg-(--hl-xs)"
   ],
-  [
-    "h-[10px] grow overflow-hidden rounded-full bg-[#f1e6ff]",
-    "error",
-    "bg-[#db110040]",
-    "success",
-    "bg-[#00bf7340]"
-  ],
+  ["h-[10px] grow overflow-hidden rounded-full bg-[#f1e6ff]", "bg-[#db110040]", "bg-[#00bf7340]"],
   ["h-[12px] w-[12px] text-(--color-font) disabled:text-[#00000080]"],
   ["h-[16px] text-(--color-surprise)"],
   ["h-[200px] resize-none font-mono"],
@@ -1673,7 +1993,10 @@
     "h-3 w-3 opacity-0 group-data-indeterminate:text-(--color-success) group-data-indeterminate:opacity-100 group-data-selected:text-(--color-success) group-data-selected:opacity-100"
   ],
   ["h-3 w-3 opacity-0 group-data-selected:text-(--color-success) group-data-selected:opacity-100"],
+  ["h-3 w-3 opacity-0 group-data-selected:text-(--color-warning) group-data-selected:opacity-100"],
   ["h-3 w-3 shrink-0"],
+  ["h-3 w-3 shrink-0 text-(--color-danger)"],
+  ["h-3 w-3 shrink-0 text-(--hl)"],
   ["h-4 border border-solid border-(--hl-sm) bg-(--color-bg)"],
   ["h-4 text-(--hl-lg) outline-1 outline-solid"],
   ["h-4 w-3"],
@@ -1683,7 +2006,6 @@
   ["h-4 w-4 cursor-default text-(--color-font)"],
   ["h-4 w-4 shrink-0"],
   ["h-4 w-4 text-white"],
-  ["h-48 flex-1"],
   ["h-5 border border-solid border-(--hl-sm) bg-(--color-bg)"],
   ["h-5 w-5"],
   ["h-5 w-5 rounded-full"],
@@ -1697,8 +2019,16 @@
     "h-6 items-center justify-center rounded-xs pr-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all"
   ],
   ["h-6 w-6 rounded-full"],
+  ["h-6.5 min-w-0 flex-1 bg-transparent px-1 text-[12px]/[18px] font-normal outline-none"],
+  ["h-6.5 px-2"],
   [
     "h-7 rounded-xs px-2 py-1 text-sm text-(--color-font) transition-all hover:bg-(--hl-xs) disabled:opacity-50 aria-pressed:bg-(--hl-sm)"
+  ],
+  [
+    "h-8 rounded-xs border border-solid border-(--hl-sm) bg-(--color-bg) px-2 text-(--color-font) transition-colors placeholder:italic placeholder:opacity-60 focus:ring-1 focus:ring-(--hl-md) focus:outline-hidden"
+  ],
+  [
+    "h-fit max-h-full w-full max-w-[900px] overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
   ["h-full"],
   ["h-full bg-(--hl-md)"],
@@ -1707,26 +2037,30 @@
   [
     "h-full gap-2 rounded-md bg-(--color-bg) px-4 py-2 text-sm font-semibold ring-1 ring-transparent transition-all hover:bg-(--hl-xs)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) aria-pressed:opacity-80"
   ],
-  ["h-full grid-cols-[300px_1fr] gap-2 divide-x divide-solid divide-(--hl-md) overflow-hidden"],
   ["h-full grow"],
   ["h-full min-w-[500px]"],
   [
     "h-full min-w-max overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-sm shadow-lg select-none focus:outline-hidden"
   ],
   ["h-full p-2"],
+  ["h-full px-(--padding-md)  ", "text-(--color-warning)"],
   ["h-full px-4 py-1 text-sm text-(--color-info) underline transition-all"],
+  ["h-full rounded-sm px-2 text-[12px]/[18px] font-[590]"],
   ["h-full w-full"],
   ["h-full w-full flex-1"],
   ["h-full w-full flex-row p-2"],
   ["h-full w-full overflow-auto text-base leading-8"],
   ["h-full w-full overflow-hidden"],
   ["h-full w-full overflow-hidden text-left"],
+  ["h-full w-full overflow-x-hidden overflow-y-auto p-4"],
   ["h-full w-full overflow-y-auto"],
   ["h-full w-full overflow-y-auto p-(--padding-sm)"],
   ["h-full w-full overflow-y-auto p-4"],
-  ["h-full w-full placeholder-(--hl-lg)"],
+  ["h-full w-full overflow-y-auto text-(--color-font)"],
   ["h-full w-full rounded-sm p-2"],
   ["h-full w-px bg-(--hl-md)"],
+  ["h-full w-px bg-(--hl-md)", "h-px w-full bg-(--hl-md)"],
+  ["h-full! group-hover:bg-transparent! group-focus:bg-transparent!"],
   ["h-px flex-1 bg-(--hl-md)"],
   ["h-px w-full bg-(--hl-md)"],
   ["has-checked:bg-(--color-bg)"],
@@ -1737,8 +2071,13 @@
   [
     "hidden aspect-square h-6 items-center justify-center rounded-xs text-sm text-(--color-font) ring-1 ring-transparent transition-all group-hover:flex group-focus:flex hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
+  ["hidden", "flex flex-col gap-3 px-0.5"],
   ["hidden md:block"],
   ["hide-scrollbars max-w-[calc(100%-40px)] overflow-x-scroll"],
+  [
+    "hover:bbg-(--color-surprise)/90 rounded-xs bg-(--color-surprise) px-3 py-2 text-sm font-bold text-(--color-font-surprise) transition-colors hover:no-underline",
+    "animate-pulse cursor-not-allowed"
+  ],
   [
     "hover:bg-opacity-90 rounded-sm border border-solid border-(--hl-md) px-3 py-2 text-(--color-font) transition-colors hover:no-underline"
   ],
@@ -1746,6 +2085,8 @@
   ["hover:cursor-grab"],
   ["hover:no-underline"],
   ["hr"],
+  ["http-method- "],
+  ["http-method-  text-sm font-medium"],
   ["http-method-custom"],
   ["icn-warning_svg__fill-notice-fg"],
   ["icon fa fa-info-circle"],
@@ -1754,11 +2095,15 @@
   ["inline cursor-pointer border-0 bg-transparent p-0 text-(--color-surprise) underline"],
   ["inline cursor-pointer border-0 bg-transparent p-0 underline"],
   ["inline-block"],
-  ["inline-block", "checkbox"],
+  ["inline-block animate-spin text-(--color-font)"],
   [
     "inline-block items-center space-x-0.5 rounded-md bg-(--hl-xs) px-2 py-0.5 text-center font-sans text-sm font-normal text-(--hl) shadow-xs"
   ],
   ["inline-block leading-6 font-bold text-(--color-font)"],
+  ["inline-block w-16 rounded-sm p-[2px] text-center text-xs font-semibold text-white  "],
+  [
+    "inline-block w-22 shrink-0 rounded-sm px-2 py-[2px] text-center text-xs font-semibold text-white  "
+  ],
   ["inline-block w-4/5 align-top text-clip"],
   ["inline-flex cursor-pointer items-center justify-center outline-none"],
   [
@@ -1779,19 +2124,24 @@
   [
     "inline-flex items-center rounded-full bg-(--color-warning) px-1.5 py-0.5 text-xs font-medium text-(--color-font-warning) ring-1 ring-[rgba(var(--color-warning-rgb),1)] ring-inset"
   ],
+  ["inline-flex items-center whitespace-nowrap  ", "mr-(--padding-xs)"],
+  ["inline-flex w-fit items-center gap-1 text-xs text-(--color-surprise) hover:opacity-80"],
   [
     "inline-flex w-fit items-center gap-2 text-sm text-[rgba(var(--color-warning-rgb),0.8)] outline-hidden"
   ],
   [
     "invisible flex w-5 shrink-0 cursor-grab items-center justify-center p-2 focus-visible:bg-(--hl-sm)"
   ],
-  [
-    "invisible rounded border border-solid border-(--hl-xl) px-2 py-1 text-(--color-font) group-hover:visible"
-  ],
+  ["IO"],
   [
     "isolate flex w-(--trigger-width) min-w-max flex-col overflow-hidden rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-sm shadow-lg select-none"
   ],
   ["items flex-1"],
+  [
+    "items-center justify-center truncate rounded-xs ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset data-pressed:bg-(--hl-sm)     ",
+    "hidden",
+    "px-2"
+  ],
   ["justify-normal!"],
   ["justify-self-end px-2 text-(--color-success)"],
   ["justify-self-end text-(--color-success)"],
@@ -1814,8 +2164,20 @@
     "m-(--padding-lg) flex max-h-full w-full max-w-4xl flex-col rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
   ["m-(--padding-sm) flex w-full items-center justify-between"],
+  [
+    "m-0 box-border rounded-full border-2 border-solid border-(--color-bg) bg-(--color-surprise) bg-cover bg-center object-cover object-center text-(--color-font-surprise) outline-hidden   flex items-center justify-center text-xs font-bold",
+    "h-[20px] w-[20px]",
+    "h-[24px] w-[24px]"
+  ],
   ["m-0 flex h-(--line-height-sm) w-full list-none items-center gap-2 px-(--padding-sm) font-bold"],
   ["m-0 flex min-w-0 list-none items-center gap-1 text-sm font-bold"],
+  [
+    "m-0 flex min-w-60 items-center text-left leading-10 whitespace-nowrap text-(--color-font)     hover:bg-(--hl-xs) focus:outline-0",
+    "bg-(--hl-sm)",
+    "bg-transparent",
+    "cursor-not-allowed",
+    "cursor-pointer"
+  ],
   ["m-0 flex-1 text-center text-[12px] font-normal tracking-[-0.25px] capitalize"],
   ["m-0 h-full items-center px-1"],
   ["m-0 text-[10px] leading-[15px] font-normal text-(--color-font) disabled:text-[#00000080]"],
@@ -1830,6 +2192,12 @@
     "m-2 flex aspect-square items-center justify-center gap-2 truncate rounded-xs border-none! text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
   ["m-2 flex flex-col overflow-hidden rounded-md bg-black text-center text-white"],
+  [
+    "m-2 flex items-start justify-between gap-2 rounded-sm p-3 text-xs  ",
+    "bg-[rgba(58,18,8,1)]",
+    "bg-[rgba(250,173,20,0.15)]",
+    "bg-[rgba(82,196,26,0.15)]"
+  ],
   ["m-2 rounded-lg border! border-solid border-(--hl-sm) bg-(--color-bg) p-4"],
   ["m-2 w-full flex-1 overflow-hidden"],
   ["m-2 w-full flex-1 overflow-y-auto"],
@@ -1839,13 +2207,10 @@
   [
     "m-24 flex max-h-[75%] w-full max-w-3xl flex-col overflow-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
-  [
-    "m-auto grid w-[min(700px,100%)] grid-rows-[min-content_1fr_min-content] place-items-stretch items-stretch gap-4 overflow-hidden p-16 text-(--color-font)"
-  ],
+  ["m-3 rounded-sm border border-solid border-(--hl-md) p-3"],
   ["m-auto mr-2 inline-block animate-spin text-(--color-font)"],
-  ["m-auto mx-1 leading-4"],
   ["m-auto w-[60%] min-w-[400px]"],
-  ["margin-bottom margin-left faint italic txt-md"],
+  ["margin-bottom margin-left faint italic txt-md", "hidden"],
   [
     "margin-bottom-sm flex items-start gap-2 rounded-xs border border-solid border-(--color-danger) bg-(--color-danger-bg) p-2 text-(--color-danger)"
   ],
@@ -1906,16 +2271,16 @@
   [
     "max-h-full w-full max-w-2xl rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) p-(--padding-lg) text-(--color-font)"
   ],
-  ["max-w-[18rem] truncate"],
+  ["max-w-[24ch] truncate"],
   ["max-w-[80ch] text-sm text-(--hl)"],
   ["max-w-2xl text-lg text-(--hl)"],
   ["max-w-lg min-w-max overflow-hidden"],
   ["max-w-md text-xs"],
   [
-    "max-w-xs rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-3 py-2 text-sm text-(--color-font) shadow-lg"
+    "max-w-xs rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-sm text-(--color-font) shadow-lg"
   ],
   [
-    "mb-(--padding-sm) flex h-full items-center justify-center gap-2 px-2 py-1 text-xs text-(--color-info) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+    "max-w-xs rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-3 py-2 text-sm text-(--color-font) shadow-lg"
   ],
   ["mb-(--padding-xs)"],
   ["mb-[14px] text-[22px] leading-[34px]"],
@@ -1924,6 +2289,7 @@
   [
     "mb-1 flex h-10 items-center justify-center gap-2 rounded-md border border-solid border-(--hl-md) bg-(--color-surprise) px-4 py-2 text-(--color-font-surprise) ring-1 ring-transparent transition-all hover:bg-(--color-surprise)/80 focus:ring-(--hl-md) focus:ring-inset aria-pressed:opacity-80"
   ],
+  ["mb-1 pl-3 leading-10 font-bold uppercase"],
   ["mb-1 pt-0 text-sm"],
   ["mb-1 text-xs font-semibold"],
   ["mb-1.5"],
@@ -1941,6 +2307,7 @@
   ["mb-2 pt-0"],
   ["mb-2 pt-0 text-sm"],
   ["mb-2 px-0.5 pt-0 text-sm"],
+  ["mb-2 px-0.5 pt-0 text-sm text-(--color-font)"],
   ["mb-2 text-lg font-bold text-(--color-font)"],
   ["mb-2 text-lg font-semibold text-(--color-font)"],
   ["mb-3"],
@@ -1972,11 +2339,16 @@
     "min-h-[24px] grow-[inherit] border-none px-2 py-1 leading-6 outline-hidden disabled:cursor-not-allowed"
   ],
   ["min-h-0 flex-1"],
-  ["min-h-0 flex-1 px-4 pt-3 pb-2"],
+  ["min-h-4 text-xs text-[#FF5631]"],
   ["min-w-(--trigger-width)"],
   ["min-w-0"],
+  ["min-w-0 flex-1"],
   ["min-w-0 flex-1 border-none bg-transparent wrap-break-word whitespace-normal select-text"],
+  ["min-w-0 flex-1 break-all"],
   ["min-w-0 flex-1 truncate"],
+  [
+    "min-w-0 flex-1 truncate rounded-xs bg-(--hl-sm) p-1 font-semibold text-(--color-font) focus:ring-1 focus:ring-(--color-surprise) focus:outline-none"
+  ],
   ["min-w-0 flex-1 truncate text-base"],
   ["min-w-0 flex-1 truncate text-base text-[rgb(var(--color-font-rgb),0.8)]"],
   ["min-w-0 flex-1 wrap-break-word whitespace-normal"],
@@ -1988,12 +2360,13 @@
   [
     "min-w-max cursor-pointer overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) text-sm shadow-lg select-none focus:outline-hidden"
   ],
+  ["min-w-max focus:outline-hidden"],
   [
     "min-w-max overflow-hidden rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-sm shadow-lg select-none"
   ],
   ["min-w-max overflow-y-auto py-2 focus:outline-hidden"],
   [
-    "min-w-max overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-base shadow-lg select-none focus:outline-hidden"
+    "min-w-max overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-sm shadow-lg select-none"
   ],
   [
     "min-w-max overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-sm shadow-lg select-none focus:outline-hidden"
@@ -2003,6 +2376,10 @@
   ["ml-1 align-top"],
   ["ml-1 animate-spin"],
   ["ml-1 flex h-[25px] w-[25px] items-center justify-center hover:bg-(--hl-xs)"],
+  [
+    "ml-1 flex min-w-0 flex-1 items-center self-stretch overflow-hidden border-x border-solid border-(--hl-md) bg-(--hl-xs) pr-2 group-hover:bg-(--hl-sm) group-focus:bg-(--hl-sm)  ",
+    "rounded-b-sm border-b"
+  ],
   [
     "ml-1 flex shrink-0 items-center justify-center rounded text-(--hl) transition-opacity hover:opacity-70 focus:outline-none"
   ],
@@ -2016,6 +2393,7 @@
   [
     "ml-1 rounded-l-sm bg-(--color-surprise) px-5 text-(--color-font-surprise) hover:brightness-75 focus:brightness-75"
   ],
+  ["ml-1 rounded-xs px-1  "],
   ["ml-1 text-(--color-font)"],
   ["ml-1 text-base"],
   ["ml-1 text-red-500"],
@@ -2023,7 +2401,6 @@
   ["ml-2"],
   ["ml-2 border-l-2 border-solid border-(--hl-sm) pl-3"],
   ["ml-2 cursor-pointer text-(--hl) hover:underline"],
-  ["ml-2", "error", "text-(--color-danger)"],
   ["ml-2 flex flex-col gap-4 border-l-2 border-solid border-(--hl-sm) pl-3"],
   [
     "ml-2 flex h-full w-[14ch] shrink-0 items-center justify-start gap-2 rounded-xs py-1 pl-2 text-sm text-(--color-font) ring-1 ring-transparent transition-colors hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
@@ -2031,7 +2408,11 @@
   [
     "ml-2 h-(--line-height-xs) rounded-md border border-solid border-(--hl-lg) px-(--padding-md) hover:bg-(--hl-xs)"
   ],
+  ["ml-2", "text-(--color-danger)"],
   ["ml-2 text-(--hl) hover:text-red-500"],
+  ["ml-2 text-xs uppercase http-method- "],
+  ["ml-2 text-xs whitespace-nowrap text-neutral-400"],
+  ["ml-2 transition-transform duration-200"],
   ["ml-2 transition-transform duration-200", "rotate-180", "rotate-0", "text-(--hl-xs)"],
   [
     "ml-3 grow-0 gap-2 px-2 py-1 text-xs text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-inset"
@@ -2056,10 +2437,12 @@
   ["ml-auto flex h-full shrink-0 items-center gap-2 border-l border-(--hl-md) pl-2"],
   ["ml-auto h-[30px] rounded-sm border-none! px-0 text-sm text-(--color-font)"],
   ["ml-auto pl-(--padding-lg) text-(--hl-xl)"],
+  ["ml-auto shrink-0"],
   ["modal", "theme--dialog", "modal--fixed-height", "modal--wide", "modal--skinny", "z-10"],
   ["modal__backdrop overlay theme--transparent-overlay"],
   ["modal__body theme--dialog__body", "modal__body--no-scroll"],
   ["modal__content"],
+  ["modal__content__wrapper"],
   ["modal__content__wrapper", "modal--centered"],
   ["modal__footer theme--dialog__footer"],
   ["modal__header theme--dialog__header"],
@@ -2073,7 +2456,8 @@
     "mr-0 flex aspect-square size-(--line-height-xs) items-center justify-center gap-2 truncate rounded-xs border border-solid border-(--hl-sm) p-2 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset active:bg-(--hl-sm)"
   ],
   ["mr-1"],
-  ["mr-1 cursor-grab"],
+  ["mr-1  ", "invisible", "cursor-grab"],
+  ["mr-1 size-4  ", "animate-spin"],
   ["mr-1 w-1/4 text-right leading-8"],
   ["mr-2"],
   ["mr-2 animate-spin"],
@@ -2083,13 +2467,10 @@
   ["mr-2 flex shrink-0 items-center text-(--color-warning)"],
   ["mr-2 h-3 w-3 shrink-0 text-(--hl)"],
   ["mr-2 h-4 w-4"],
-  ["mr-2 leading-4"],
+  ["mr-2 min-w-0 leading-4"],
   ["mr-2 ml-2"],
   [
     "mr-2 ml-auto flex shrink-0 items-center gap-2 rounded-xs bg-(--hl-sm) px-2 py-1 text-sm text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset data-pressed:bg-(--hl-sm)"
-  ],
-  [
-    "mr-2 rounded-xs border border-solid border-(--hl-md) bg-(--color-surprise) px-3 py-2 text-(--color-font-surprise) transition-colors hover:bg-(--color-surprise)/90 hover:no-underline focus:ring-(--hl-md) aria-pressed:bg-(--color-surprise)/80"
   ],
   ["mr-2 w-2 text-(--hl)"],
   ["mr-2 w-4"],
@@ -2108,6 +2489,9 @@
   ["mt-[16px] flex justify-center"],
   ["mt-[26px] text-[16px]"],
   ["mt-[8px] flex w-[250px] flex-col text-(--color-font)"],
+  [
+    "mt-0 flex h-full items-center justify-center px-2 text-xs text-(--color-warning) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
+  ],
   ["mt-0.5"],
   ["mt-0.5 text-(--hl)"],
   ["mt-1"],
@@ -2116,26 +2500,31 @@
   ],
   ["mt-1 flex items-center gap-1 text-(--hl) hover:text-(--color-font)"],
   ["mt-1 flex items-center gap-2 pl-3 text-(--hl)"],
+  ["mt-1 mb-3 flex flex-wrap gap-x-10 gap-y-6"],
   ["mt-1 ml-[24px] text-sm"],
   ["mt-1 ml-[24px] text-sm text-[--hl-xl]"],
+  ["mt-1 mr-2 w-auto break-words"],
   ["mt-1 size-4"],
   ["mt-1 space-y-0.5 pl-3"],
   ["mt-1 text-(--color-danger)"],
   ["mt-1 text-sm text-(--hl-xl)"],
   ["mt-1 text-sm text-(--hl)"],
+  ["mt-1 text-sm text-neutral-400"],
   ["mt-1 text-xs text-(--hl)"],
   ["mt-1 text-xs text-[--color-help]"],
   ["mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-(--color-font)"],
+  ["mt-1.5", "mt-1"],
   ["mt-2"],
-  ["mt-2 flex"],
   ["mt-2 flex flex-col gap-2"],
   ["mt-2 flex flex-col items-start gap-2"],
   ["mt-2 flex flex-row"],
   ["mt-2 flex flex-row justify-between gap-2"],
+  ["mt-2 flex flex-wrap gap-2"],
   ["mt-2 flex gap-3"],
   ["mt-2 flex items-center gap-2"],
   ["mt-2 flex items-center justify-between"],
   ["mt-2 flex items-center justify-center"],
+  ["mt-2 flex items-center justify-center gap-1.5 text-sm text-neutral-400"],
   ["mt-2 flex items-center justify-end"],
   ["mt-2 flex justify-end"],
   ["mt-2 flex justify-end gap-2"],
@@ -2146,13 +2535,10 @@
   ["mt-2 text-sm break-all whitespace-pre-wrap text-(--color-warning)"],
   ["mt-2 text-sm text-(--hl)"],
   ["mt-2 text-sm text-gray-400"],
-  ["mt-2 text-sm text-orange-500"],
   ["mt-2 text-sm text-red-500"],
-  ["mt-2 text-xs text-[#FF5631]"],
-  ["mt-2.5 text-center text-sm"],
   ["mt-3"],
-  ["mt-3 flex flex-wrap gap-2"],
   ["mt-3 flex justify-start gap-[20px]"],
+  ["mt-3 mb-5 flex items-start justify-start gap-5 rounded-md px-6 py-5"],
   [
     "mt-3 mb-5 flex items-start justify-start gap-5 rounded-md px-6 py-5",
     "bg-[#292535]",
@@ -2170,6 +2556,7 @@
   [
     "mt-4 flex h-(--line-height-xs) items-center justify-center gap-2 rounded-md border border-solid border-(--hl-lg) px-(--padding-md) py-1 text-sm font-semibold text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
   ],
+  ["mt-4 flex items-start text-[12px]"],
   ["mt-4 flex justify-end"],
   ["mt-4 flex justify-end gap-(--padding-md)"],
   ["mt-4 flex justify-end gap-[8px]"],
@@ -2178,6 +2565,7 @@
   ["mt-4 text-left"],
   ["mt-4 w-full items-center gap-4 text-wrap outline-hidden"],
   ["mt-5 flex justify-between gap-1 px-2"],
+  ["mt-5 flex w-full items-start text-base"],
   ["mt-5 px-2"],
   ["mt-5 text-center"],
   ["mt-6 flex flex-col items-start gap-4"],
@@ -2189,12 +2577,14 @@
   [
     "mt-8 rounded-md bg-(--color-surprise) px-4 py-2 text-white hover:brightness-90 focus:brightness-90"
   ],
-  ["mt-8 w-[50%] min-w-135"],
   ["mt-auto rounded-md border border-solid border-(--hl-sm) p-4 text-sm text-(--color-font)"],
   ["mx-[10px] h-[20px] w-[20px] text-center hover:bg-(--hl-xs) data-pressed:bg-(--hl-sm)"],
   ["mx-[8px] overflow-hidden text-nowrap text-ellipsis"],
+  ["mx-[8px] overflow-hidden text-nowrap text-ellipsis", "italic"],
+  ["mx-1 leading-4"],
   ["mx-10 flex items-center"],
   ["mx-2 h-4 border-l border-(--color-font)"],
+  ["mx-auto flex w-[min(700px,100%)] flex-col gap-4 p-16"],
   ["my-[14px] border"],
   ["my-[24px]"],
   ["my-[8px] flex flex-col gap-[18px] px-[12px]"],
@@ -2202,14 +2592,10 @@
   ["my-1"],
   ["my-1 border-t border-(--hl-sm)"],
   ["my-1 flex min-h-[30px] justify-between gap-2 rounded-xs p-2 outline-hidden odd:bg-(--hl-xs)"],
-  ["my-1 mr-2 w-auto text-nowrap"],
-  ["my-1 text-sm text-neutral-400"],
   ["my-2 bg-(--color-bg) pr-4 text-xs whitespace-nowrap text-(--hl) uppercase"],
   ["my-2 font-semibold"],
-  ["my-3 flex w-full text-base"],
-  ["my-3 w-full pl-3 text-sm text-neutral-400"],
+  ["my-2 w-full pl-3 text-sm text-neutral-400"],
   ["my-4"],
-  ["my-6 px-4"],
   ["my-auto"],
   ["new-sidebar flex h-full w-full flex-col text-(--color-font)"],
   ["new-sidebar h-full w-full text-(--color-font)"],
@@ -2246,6 +2632,8 @@
   ["notice subtle text-left"],
   ["notice warning"],
   ["notice warning no-margin-top no-margin-bottom"],
+  ["opacity-50"],
+  ["openai"],
   ["options text-right"],
   ["outline-1 outline-(--color-surprise) outline-solid"],
   ["outline-hidden"],
@@ -2254,6 +2642,7 @@
   ],
   ["outline-none"],
   ["overflow-auto p-4"],
+  ["overflow-hidden"],
   ["overflow-hidden border-b border-(--hl-md) [grid-area:Content]"],
   ["overflow-x-auto border-r border-solid border-r-(--hl-md) bg-(--color-bg)"],
   ["overflow-y-auto"],
@@ -2266,6 +2655,7 @@
   ["p-0 text-sm font-semibold"],
   ["p-0 text-sm text-(--color-font)"],
   ["p-0 text-sm text-(--hl)"],
+  ["p-0 text-sm text-(--hl)  ", "text-[rgba(var(--color-danger-rgb),0.5)]"],
   ["p-1 outline-hidden"],
   [
     "p-1 ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset"
@@ -2320,13 +2710,14 @@
   ["pb-2 text-base normal-case"],
   ["pb-4"],
   ["pl-2"],
-  ["pl-3"],
+  ["pl-2  ", "cursor-not-allowed opacity-30"],
+  ["pl-3 text-base leading-10 text-(--color-font)"],
   ["pl-3 text-base leading-10 text-(--color-font)", "pt-2"],
   [
-    "pointer h-(--line-height-xs) rounded-md border border-solid border-(--hl-lg) px-(--padding-sm) hover:bg-(--hl-xs)"
+    "pointer flex h-(--line-height-xs) items-center justify-center rounded-md border border-solid border-(--hl-lg) px-(--padding-sm) hover:bg-(--hl-xs)"
   ],
   [
-    "pointer mb-(--padding-sm) ml-(--padding-sm) flex h-(--line-height-xs) shrink-0 min-w-32 items-center justify-center rounded-md border border-solid border-(--hl-lg) px-(--padding-md) text-center whitespace-nowrap hover:bg-(--hl-xs)"
+    "pointer mb-(--padding-sm) flex h-(--line-height-xs) min-w-32 shrink-0 items-center justify-center rounded-md border border-solid border-(--hl-lg) px-(--padding-md) text-center whitespace-nowrap hover:bg-(--hl-xs)"
   ],
   [
     "pointer-events-auto flex aspect-square h-6 items-center justify-center gap-2 rounded-xs bg-(--hl-xs) p-4 text-sm text-(--color-font) ring-1 ring-transparent transition-all group-hover:opacity-100 group-focus:opacity-100 hover:bg-(--hl-xs) hover:opacity-100 focus:opacity-100 focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm) data-pressed:opacity-100"
@@ -2334,6 +2725,7 @@
   [
     "pointer-events-auto flex items-center gap-2 text-sm font-bold transition-colors hover:text-(--hl) focus:text-(--hl)"
   ],
+  ["pointer-events-none  ", "scale-x-[-1] transform"],
   ["pointer-events-none absolute top-0 left-0 flex h-full w-full items-center select-none"],
   [
     "pointer-events-none absolute top-full right-0 z-50 mt-1 hidden max-w-[1200px] min-w-[220px] rounded border border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-center text-sm wrap-break-word whitespace-normal text-(--color-font) group-hover:block"
@@ -2349,22 +2741,22 @@
   ["pt-0 text-sm text-(--color-font)"],
   ["pt-1.5"],
   ["pt-2"],
+  ["pt-4"],
   ["pull-right"],
   ["pull-right btn btn--clicky"],
   ["pull-right icon"],
   ["px-(--padding-md) pb-(--padding-md)"],
+  ["px-(--padding-md) pb-2"],
+  ["px-(--padding-md) py-2 italic text-(--hl-md)"],
   ["px-[calc(var(--padding-md) * 0.8)] w-[40px] border border-solid border-transparent"],
   ["px-10"],
   ["px-2"],
   ["px-2 font-bold underline"],
+  ["px-2 py-1 capitalize"],
+  ["px-2 py-1 capitalize", "bg-success", "bg-info", "bg-danger"],
   [
-    "px-2 py-1 capitalize",
-    "bg-success",
-    "connected",
-    "bg-info",
-    "connecting",
-    "bg-danger",
-    "disconnected"
+    "px-2 text-(--color-font) outline-hidden transition-colors duration-300 hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm)  ",
+    "bg-(--hl-xs) text-(--color-font)"
   ],
   ["px-2 text-(--hl)"],
   [
@@ -2405,11 +2797,14 @@
   [
     "relative flex h-12 w-full items-center gap-2 overflow-hidden px-4 text-(--hl) outline-hidden transition-colors select-none group-hover:bg-(--hl-xs) group-focus:bg-(--hl-sm) group-aria-selected:bg-(--hl-sm) group-aria-selected:text-(--color-font)"
   ],
-  ["relative flex h-96 flex-col gap-4 bg-(--color-bg) p-4 text-left"],
   [
     "relative flex h-auto w-full flex-col items-center justify-center gap-(--padding-sm) rounded-md border border-solid border-(--hl-sm) bg-(--hl-xs) p-(--padding-lg) pt-12"
   ],
   ["relative flex h-full flex-1 flex-col overflow-hidden outline-hidden"],
+  [
+    "relative flex h-full max-w-[200px] cursor-pointer flex-nowrap items-center border-r border-solid border-(--hl-sm) px-[10px] outline-hidden hover:text-(--color-font)  ",
+    "opacity-[0.7]"
+  ],
   ["relative flex h-full w-full bg-(--color-bg) text-center"],
   ["relative flex h-full w-full bg-(--color-bg) text-left"],
   ["relative flex h-full w-full bg-(--color-bg) text-left text-base"],
@@ -2429,6 +2824,14 @@
     "relative flex shrink-0 cursor-pointer items-center justify-between gap-2 px-6 py-2 text-(--hl) outline-hidden transition-colors duration-300 select-none hover:bg-(--hl-sm) hover:text-(--color-font) focus:bg-(--hl-sm) aria-selected:bg-(--hl-xs) aria-selected:text-(--color-font) aria-selected:hover:bg-(--hl-sm) aria-selected:focus:bg-(--hl-sm)"
   ],
   [
+    "relative flex shrink-0 flex-col gap-2 rounded-md border border-solid border-(--hl-sm) p-3  ",
+    "opacity-50"
+  ],
+  [
+    "relative flex size-6 shrink-0 items-center justify-center rounded-full border border-dashed border-(--hl-sm) bg-(--color-bg) text-(--color-font)  ",
+    "info"
+  ],
+  [
     "relative flex w-full cursor-pointer items-start justify-start gap-2 overflow-hidden px-2 py-1 text-(--hl) outline-hidden transition-colors select-none hover:bg-(--hl-xs) focus:bg-(--hl-sm) aria-selected:bg-(--hl-sm) aria-selected:text-(--color-font)"
   ],
   ["relative flex w-full flex-1 flex-col overflow-hidden"],
@@ -2441,6 +2844,11 @@
   ],
   ["relative flex w-full flex-col overflow-hidden"],
   ["relative flex-1 overflow-y-auto outline-hidden"],
+  [
+    "relative grid h-(--line-height-sm) shrink-0 gap-2 bg-(--color-bg) px-2 outline-hidden  ",
+    "grid-cols-[max-content_1fr_1fr_1fr_max-content]",
+    "grid-cols-[max-content_1fr_1fr_max-content]"
+  ],
   ["relative h-[24px] w-[24px]"],
   ["relative h-full w-full overflow-y-auto p-4"],
   [
@@ -2449,6 +2857,10 @@
   ["relative outline-hidden"],
   ["relative overflow-hidden"],
   ["relative p-4"],
+  [
+    "relative w-(--trigger-width) flex-1 overflow-y-auto rounded-b-md border bg-(--color-bg) text-(--color-font) outline-hidden   border-(--hl-sm)",
+    "border-solid"
+  ],
   ["relative w-[min(44rem,calc(100vw-2rem))] max-w-3xl"],
   ["relative w-full flex-1"],
   ["relative z-10 h-full w-px bg-(--hl-md)"],
@@ -2462,6 +2874,7 @@
   ],
   ["rounded border border-solid border-(--hl-sm) px-4 pt-4 text-left"],
   ["rounded-full bg-(--hl-sm) px-1 text-xs text-(--hl)"],
+  ["rounded-full px-2 text-center"],
   [
     "rounded-full px-2 text-center",
     "bg-(--color-surprise) text-(--color-font-surprise)",
@@ -2484,6 +2897,9 @@
     "rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-base text-(--color-font) shadow-lg select-none focus:outline-hidden"
   ],
   [
+    "rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-2 py-1 text-sm text-(--color-font) shadow-lg"
+  ],
+  [
     "rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) px-3 py-1.5 text-xs text-(--color-font) shadow-lg select-none"
   ],
   [
@@ -2495,6 +2911,7 @@
   [
     "rounded-sm bg-(--color-surprise) px-(--padding-md) text-center text-(--color-font-surprise) hover:brightness-75"
   ],
+  ["rounded-sm bg-(--hl-xs) px-1.5 text-xs whitespace-nowrap text-(--hl)"],
   [
     "rounded-sm bg-[radial-gradient(95.72%_95.72%_at_-0.32%_2.6%,var(--hl-md)_0%,var(--hl-xs)_100%),radial-gradient(100%_100.41%_at_100%_99.92%,var(--hl-md)_0%,var(--hl-xs)_100%)] p-px"
   ],
@@ -2515,7 +2932,9 @@
     "rounded-xs bg-(--color-surprise) px-(--padding-md) text-center text-(--color-font-surprise) hover:brightness-75"
   ],
   ["rounded-xs bg-(--color-warning)/50 p-(--padding-sm) text-(--color-font-warning)"],
+  ["rounded-xs bg-(--hl-xs) p-2 font-mono text-xs whitespace-pre-wrap text-(--color-font-danger)"],
   ["rounded-xs bg-(--hl-xs) px-1 py-0.5 font-bold text-(--color-font)"],
+  ["rounded-xs bg-(--hl-xxs) px-2 py-1 font-mono text-xs break-all text-(--color-font)"],
   ["rounded-xs border border-solid border-(--hl-md)"],
   [
     "rounded-xs border border-solid border-(--hl-md) bg-(--color-danger) px-3 py-2 text-(--color-font-danger) transition-colors hover:bg-(--color-danger)/90 hover:no-underline"
@@ -2526,6 +2945,7 @@
   [
     "rounded-xs border border-solid border-(--hl-md) bg-(--color-surprise) px-3 py-2 text-sm text-(--color-font-surprise) transition-colors hover:bg-(--color-surprise)/90 hover:no-underline"
   ],
+  ["rounded-xs border border-solid border-(--hl-md) px-3 py-0.5 text-sm hover:bg-(--hl-xs)"],
   [
     "rounded-xs border border-solid border-(--hl-md) px-3 py-2 text-(--color-font) transition-colors"
   ],
@@ -2564,6 +2984,7 @@
   ["row-spaced cursor-pointer"],
   ["row-spaced margin-bottom bold"],
   ["row-spaced margin-bottom-xs"],
+  ["runner-request-list-  border border-solid border-transparent text-(--color-font)"],
   [
     "scro flex h-(--line-height-sm) w-full shrink-0 items-center overflow-x-auto border-b border-solid border-b-(--hl-md) bg-(--color-bg)"
   ],
@@ -2577,9 +2998,11 @@
   ["selectable block"],
   ["selectable bold"],
   ["selectable force-pre-wrap"],
+  ["selectable force-pre-wrap text-(--color-danger)"],
   ["selectable no-wrap text-right"],
   ["selectable notice warning margin-bottom"],
   ["selectable pad force-pre-wrap"],
+  ["self-stretch"],
   ["shortcuts"],
   ["shortcuts add-key-comb-modal"],
   ["shrink"],
@@ -2601,10 +3024,15 @@
     "shrink-0 rounded-xs bg-(--hl-sm) px-3 py-1 text-sm text-(--color-font) hover:bg-(--hl-xs) focus:bg-(--hl-xs)"
   ],
   ["shrink-0 rounded-xs bg-(--hl-xs) px-3 py-1"],
+  [
+    "shrink-0 rounded-xs border border-solid border-(--hl-md) px-3 py-0.5 text-sm hover:bg-(--hl-xs)"
+  ],
+  ["shrink-0 rounded-xs px-3 pt-1 pb-0.5 text-sm hover:bg-(--hl-xs)"],
   ["shrink-0 text-(--color-warning)"],
   ["shrink-0 text-(--hl) hover:text-(--color-font)"],
   ["shrink-0 truncate px-1"],
   ["shrink-0 underline"],
+  ["shrink-0 whitespace-pre"],
   ["sidebar theme--sidebar"],
   ["sidebar theme--sidebar divide-y divide-solid divide-(--hl-md)"],
   [
@@ -2614,6 +3042,7 @@
   ["size-3"],
   ["size-3.5"],
   ["size-4"],
+  ["size-4  ", "animate-spin"],
   ["size-5"],
   ["size-5 animate-spin"],
   ["size-full"],
@@ -2624,6 +3053,7 @@
   ["space-right"],
   ["space-y-2"],
   ["space-y-2 rounded-sm border border-solid border-(--hl-sm) py-2"],
+  ["space-y-4"],
   ["space-y-4", "border-l border-solid border-(--hl-sm)", "pl-4"],
   ["space-y-6"],
   ["sr-only"],
@@ -2633,6 +3063,9 @@
   ["sticky top-0 z-10 bg-(--hl-xs) backdrop-blur-sm backdrop-filter"],
   [
     "sticky top-0 z-10 border-b border-(--hl-sm) bg-(--hl-xs) px-2 py-2 text-left text-xs font-semibold backdrop-blur-sm backdrop-filter focus:outline-hidden"
+  ],
+  [
+    "sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-solid border-(--hl-md) bg-(--color-bg) px-3 py-2"
   ],
   ["success"],
   ["super-duper-faint italic"],
@@ -2645,8 +3078,11 @@
   ["table--fancy table--striped table--compact selectable"],
   ["table--fancy table--striped table--valign-middle margin-top margin-bottom"],
   ["table--no-outline-row"],
+  ["tag"],
   ["tag tag--no-bg tag--small"],
+  ["tag tag--no-bg tag--small http-method-"],
   ["tag tag--no-bg tag--small method-grpc"],
+  ["tag tag--no-bg tag--superscript http-method-"],
   ["tag", "tag--small"],
   ["tag__inner"],
   ["tall"],
@@ -2655,15 +3091,19 @@
   ["tall space-left icon"],
   ["tall wide"],
   ["tall wide scrollable"],
+  ["test-result-count ml-1 rounded-xs px-1  "],
   ["test-result-pane flex h-full flex-col divide-y divide-solid divide-(--hl-md)"],
   ["text h-[12px] w-[12px] text-(--color-font) disabled:text-[#00000080]"],
   ["text pointer-events-none mb-2 text-sm"],
+  ["text- ", "sm", "md"],
   ["text-(--color-danger)"],
+  ["text-(--color-danger)", "text-(--color-warning)"],
   ["text-(--color-font-muted)"],
   ["text-(--color-font-secondary)"],
   ["text-(--color-font-warning)"],
   ["text-(--color-font)"],
   ["text-(--color-success)"],
+  ["text-(--color-success)", "text-(--color-danger)"],
   ["text-(--color-surprise-font)"],
   ["text-(--color-surprise)"],
   ["text-(--color-surprise) underline"],
@@ -2673,7 +3113,7 @@
   ["text-(--hl-xl)"],
   ["text-(--hl)"],
   ["text-(--hl) [grid-area:extension]"],
-  ["text-(--hl) uppercase"],
+  ["text-(--hl) italic"],
   ["text-[12px]"],
   ["text-[12px] italic"],
   ["text-[12px] text-(--color-danger)"],
@@ -2690,12 +3130,12 @@
   ["text-6xl text-(--hl)"],
   ["text-base"],
   ["text-base font-semibold"],
+  ["text-base leading-10 text-(--color-font)"],
   ["text-base leading-10 text-(--color-font)", "pt-2"],
   ["text-base leading-6"],
   ["text-base leading-snug font-bold"],
   ["text-base text-[rgb(var(--color-font-rgb),0.8)]"],
   ["text-center"],
-  ["text-center text-2xl leading-none font-semibold"],
   ["text-center text-base text-(--hl)"],
   ["text-center text-sm"],
   ["text-center text-xl"],
@@ -2717,7 +3157,6 @@
   [
     "text-md flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold"
   ],
-  ["text-md h-full w-full flex-1 resize-none font-mono"],
   ["text-md relative top-[8px]"],
   [
     "text-md resize-none rounded-xs border border-solid border-(--hl-sm) p-2 placeholder:text-(--hl-md)"
@@ -2742,7 +3181,6 @@
   ["text-sm italic"],
   ["text-sm text-(--color-danger)"],
   ["text-sm text-(--color-font)"],
-  ["text-sm text-(--color-success)"],
   ["text-sm text-(--hl-md)"],
   ["text-sm text-(--hl)"],
   ["text-sm text-[--hl-xl]"],
@@ -2753,12 +3191,14 @@
   ["text-sm text-red-500"],
   ["text-start text-[rgba(var(--color-font-rgb),0.8)]"],
   ["text-success flex items-center pl-(--padding-md)"],
+  ["text-white-500", "text-red-500"],
   ["text-xl"],
   ["text-xl font-semibold"],
   ["text-xs"],
   ["text-xs font-bold text-(--hl-xl) uppercase"],
   ["text-xs font-bold text-(--hl) uppercase"],
   ["text-xs text-(--color-danger)"],
+  ["text-xs text-(--color-font-muted)"],
   ["text-xs text-(--hl-lg)"],
   ["text-xs text-(--hl-xl)"],
   ["text-xs text-(--hl)"],
@@ -2776,27 +3216,23 @@
   ["theme--pane__header--sub"],
   ["theme--pane--sub"],
   ["theme--sidebar--sub"],
-  [
-    "theme--transparent-overlay fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full items-start justify-center bg-(--color-bg) pt-[70px]"
-  ],
-  [
-    "theme--transparent-overlay fixed top-0 left-0 z-10 flex h-(--visual-viewport-height) w-full justify-center bg-(--color-bg) py-[100px]"
-  ],
   ["theme-preview"],
   ["timer-list mx-auto"],
   ["tooltip"],
   ["tooltip__bubble theme--tooltip", "tooltip__bubble--visible", "tooltip__bubble--wide"],
+  ["transition-colors  ", "animate-pulse", "animate-spin"],
   [
     "transition-width h-full rounded-full bg-(--color-surprise) duration-1000 ease-in-out",
-    "error",
     "bg-(--color-danger)",
-    "success",
     "bg-(--color-success)"
   ],
   ["truncate"],
-  ["truncate group-aria-disabled:opacity-30"],
+  ["truncate  ", "line-through"],
+  ["truncate  ", "px-2"],
+  ["truncate  ", "text-(--color-danger)"],
   ["truncate opacity-60"],
   ["truncate p-2"],
+  ["truncate px-1 py-0.5 font-normal opacity-[0.7]  ", "text-(--color-font)", "text-(--hl)"],
   ["truncate px-2 text-(--hl)"],
   ["truncate px-4 pb-1 text-xs text-(--hl) italic"],
   [
@@ -2804,6 +3240,8 @@
   ],
   ["truncate text-center text-sm select-none"],
   ["truncate text-sm"],
+  ["truncate text-sm text-(--hl) italic"],
+  ["truncate text-xs font-bold text-(--color-danger)"],
   ["txt-sm block"],
   ["txt-sm faint italic"],
   ["txt-sm pull-right icon inline-block"],
@@ -2811,6 +3249,7 @@
   ["underline"],
   ["underline hover:opacity-70"],
   ["underline hover:text-(--color-font)"],
+  ["url"],
   ["vertically-center"],
   ["vertically-center text-center"],
   ["w-(--trigger-width) bg-(--hl-xs) p-4 text-sm text-(--color-font)"],
@@ -2819,16 +3258,21 @@
   ],
   ["w-[10ch] text-center text-xs font-bold text-(--hl-xl) uppercase"],
   ["w-[110px] font-semibold"],
+  ["w-[30px]  ", "block", "hidden"],
   ["w-[330px] text-xs font-normal"],
   ["w-[70px]"],
   ["w-[86px] pb-2 text-base normal-case"],
   ["w-[calc(100%-50px)] truncate"],
   ["w-1/2"],
   ["w-1/5 leading-8"],
-  ["w-10 rounded-md px-0"],
   ["w-2"],
+  ["w-2  ", "animate-down-loop"],
+  ["w-2  ", "animate-up-loop"],
   ["w-2 text-(--hl)"],
+  ["w-2.5 shrink-0"],
+  ["w-2.5 text-(--hl)"],
   ["w-20 flex-1"],
+  ["w-27.5 font-semibold"],
   ["w-28 flex-1"],
   ["w-3"],
   ["w-3 animate-spin"],
@@ -2839,8 +3283,11 @@
   ["w-4 pr-2"],
   ["w-4 shrink-0"],
   ["w-5"],
+  ["w-5  ", "animate-spin"],
+  ["w-5  ", "animate-spin", "rotate-90"],
   ["w-5 shrink-0"],
   ["w-5 text-(--color-danger)"],
+  ["w-5 text-(--color-danger)  ", "animate-spin"],
   ["w-5 text-xs"],
   ["w-52 whitespace-nowrap"],
   ["w-6"],
@@ -2868,6 +3315,9 @@
   ["w-full px-1"],
   ["w-full px-4"],
   ["w-full py-1 pr-7 pl-2 placeholder:italic"],
+  [
+    "w-full rounded border border-(--hl-sm) bg-(--color-bg) py-1 pr-7 pl-2 text-sm text-(--color-font) placeholder:text-(--hl-md) focus:outline-hidden focus:ring-1 focus:ring-(--hl-md)"
+  ],
   [
     "w-full rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-3 pr-7 pl-10 text-(--color-font) transition-none group-data-open:rounded-b-none"
   ],
@@ -2899,12 +3349,14 @@
   ["warning text-sm italic"],
   ["whitespace-normal"],
   ["whitespace-nowrap"],
+  ["whitespace-nowrap text-(--hl)"],
   ["wide"],
   ["wide pad"],
   ["wide", "pad"],
   ["wide selectable"],
   ["wide tall"],
   ["width-auto btn btn--clicky space-left inline-block"],
+  ["WS"],
   ["z-1"],
   ["z-10 bg-(--color-bg) pt-5 pb-2 text-lg font-bold"],
   ["z-10 bg-(--color-bg) text-lg font-bold"],

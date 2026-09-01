@@ -1,0 +1,25 @@
+[
+  [
+    "flex flex-col gap-0 overflow-hidden p-0",
+    "left-0 top-0 h-[100dvh] max-h-none w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 duration-0 data-[state=closed]:animate-none data-[state=open]:animate-none sm:rounded-none",
+    "h-[calc(100vh-2rem)] max-h-[760px] w-[calc(100vw-2rem)] sm:max-w-5xl"
+  ],
+  ["h-[64vh] max-h-[64vh]", "min-h-0 flex-1 max-h-none"],
+  [
+    "order-first ps-2 has-[>button]:ms-[-0.3rem] has-[>kbd]:ms-[-0.15rem]",
+    "order-last pe-2 has-[>button]:me-[-0.3rem] has-[>kbd]:me-[-0.15rem]",
+    "order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2",
+    "order-last w-full justify-start px-2.5 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2",
+    "inline-start"
+  ],
+  [
+    "relative h-[18px] w-[18px] rounded border text-indigo-600 focus:ring-indigo-500 transition ease-out duration-150  ",
+    "border-blue-500 bg-blue-500 shadow-sm group-hover:bg-blue-400 group-hover:border-blue-400",
+    "border-gray-200 bg-white shadow-inner group-hover:bg-gray-100"
+  ],
+  [
+    "h-full bg-transparent outline-none flex-1 text-[14px] text-textColor",
+    "pl-[8px] pe-[16px]",
+    "px-[16px]"
+  ]
+]

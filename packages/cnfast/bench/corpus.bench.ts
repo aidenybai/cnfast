@@ -1,13 +1,11 @@
 import { runSuite } from "./lib/harness";
 import { corpusWorkloads } from "./lib/workloads";
 
-// Raw cn throughput over class lists harvested from real app source. Positional args (not flags)
-// select specific corpora, e.g. `pnpm bench:corpus calcom shadcn-ui`; none = every extracted corpus.
-const requested = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
+const requestedCorpusNames = process.argv.slice(2).filter((argument) => !argument.startsWith("--"));
 
 let workloads;
 try {
-  workloads = corpusWorkloads(requested);
+  workloads = corpusWorkloads(requestedCorpusNames);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

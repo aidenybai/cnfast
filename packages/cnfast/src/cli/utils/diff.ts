@@ -8,7 +8,7 @@ interface DiffLine {
 export const generateDiff = (originalContent: string, newContent: string): DiffLine[] => {
   const originalLines = originalContent.split("\n");
   const newLines = newContent.split("\n");
-  const diff: DiffLine[] = [];
+  const diffLines: DiffLine[] = [];
 
   let originalIndex = 0;
   let newIndex = 0;
@@ -18,14 +18,14 @@ export const generateDiff = (originalContent: string, newContent: string): DiffL
     const newLine = newLines[newIndex];
 
     if (originalLine === newLine) {
-      diff.push({ type: "unchanged", content: originalLine });
+      diffLines.push({ type: "unchanged", content: originalLine });
       originalIndex++;
       newIndex++;
     } else if (originalLine === undefined) {
-      diff.push({ type: "added", content: newLine });
+      diffLines.push({ type: "added", content: newLine });
       newIndex++;
     } else if (newLine === undefined) {
-      diff.push({ type: "removed", content: originalLine });
+      diffLines.push({ type: "removed", content: originalLine });
       originalIndex++;
     } else {
       const originalInNew = newLines.indexOf(originalLine, newIndex);
@@ -36,39 +36,36 @@ export const generateDiff = (originalContent: string, newContent: string): DiffL
         (newInOriginal === -1 || originalInNew - newIndex < newInOriginal - originalIndex)
       ) {
         while (newIndex < originalInNew) {
-          diff.push({ type: "added", content: newLines[newIndex] });
+          diffLines.push({ type: "added", content: newLines[newIndex] });
           newIndex++;
         }
       } else if (newInOriginal !== -1) {
         while (originalIndex < newInOriginal) {
-          diff.push({ type: "removed", content: originalLines[originalIndex] });
+          diffLines.push({ type: "removed", content: originalLines[originalIndex] });
           originalIndex++;
         }
       } else {
-        diff.push({ type: "removed", content: originalLine });
-        diff.push({ type: "added", content: newLine });
+        diffLines.push({ type: "removed", content: originalLine });
+        diffLines.push({ type: "added", content: newLine });
         originalIndex++;
         newIndex++;
       }
     }
   }
 
-  return diff;
+  return diffLines;
 };
 
-export const formatDiff = (diff: DiffLine[], contextLines: number = 2): string => {
+export const formatDiff = (diffLines: DiffLine[], contextLines: number = 2): string => {
   const lines: string[] = [];
   let lastPrintedIndex = -1;
+  let hasChanges = false;
 
-  const changedIndices = diff
-    .map((line, index) => (line.type !== "unchanged" ? index : -1))
-    .filter((index) => index !== -1);
-
-  if (changedIndices.length === 0) return pc.dim("No changes");
-
-  for (const changedIndex of changedIndices) {
+  for (let changedIndex = 0; changedIndex < diffLines.length; changedIndex++) {
+    if (diffLines[changedIndex].type === "unchanged") continue;
+    hasChanges = true;
     const startContext = Math.max(0, changedIndex - contextLines);
-    const endContext = Math.min(diff.length - 1, changedIndex + contextLines);
+    const endContext = Math.min(diffLines.length - 1, changedIndex + contextLines);
 
     if (startContext > lastPrintedIndex + 1 && lastPrintedIndex !== -1) {
       lines.push(pc.dim("  …"));
@@ -79,7 +76,7 @@ export const formatDiff = (diff: DiffLine[], contextLines: number = 2): string =
       lineIndex <= endContext;
       lineIndex++
     ) {
-      const diffLine = diff[lineIndex];
+      const diffLine = diffLines[lineIndex];
 
       if (diffLine.type === "added") {
         lines.push(pc.green(`+ ${diffLine.content}`));
@@ -93,7 +90,7 @@ export const formatDiff = (diff: DiffLine[], contextLines: number = 2): string =
     }
   }
 
-  return lines.join("\n");
+  return hasChanges ? lines.join("\n") : pc.dim("No changes");
 };
 
 export const printDiff = (filePath: string, originalContent: string, newContent: string): void => {

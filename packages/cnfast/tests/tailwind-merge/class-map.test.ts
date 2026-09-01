@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { ClassPartObject, createClassMap } from "../src/lib/class-group-utils.js";
+import { ClassPartObject, createClassMap } from "../src/lib/class-map.js";
 import { getDefaultConfig } from "../src/lib/default-config.js";
 
 test("class map has correct class groups at first part", () => {
@@ -361,7 +361,7 @@ test("class map has correct class groups at first part", () => {
   });
 });
 
-function getClassGroupsInClassPart(classPart: ClassPartObject): Set<string> {
+const getClassGroupsInClassPart = (classPart: ClassPartObject): Set<string> => {
   const { classGroupId, validators, nextPart } = classPart;
 
   const classGroups = new Set<string>();
@@ -381,4 +381,4 @@ function getClassGroupsInClassPart(classPart: ClassPartObject): Set<string> {
   });
 
   return classGroups;
-}
+};

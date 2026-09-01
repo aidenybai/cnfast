@@ -1,10 +1,7 @@
 [
   ["absolute bottom-[15%] flex w-full justify-center"],
-  [
-    "absolute bottom-0 left-0 flex w-full px-4 pb-4 @container/label",
-    "lg:px-20 lg:pb-[35%]",
-    "center"
-  ],
+  ["absolute bottom-0 left-0 flex w-full px-4 pb-4 @container/label"],
+  ["absolute bottom-0 left-0 flex w-full px-4 pb-4 @container/label", "lg:px-20 lg:pb-[35%]"],
   ["absolute left-0 ml-4"],
   [
     "absolute right-0 top-0 -mr-2 -mt-2 h-4 w-4 rounded-sm bg-blue-600 text-[11px] font-medium text-white"
@@ -25,6 +22,9 @@
   ["bg-white"],
   ["block flex-none md:hidden"],
   [
+    "block p-2 text-lg underline-offset-4 hover:text-black hover:underline md:inline-block md:text-sm dark:hover:text-neutral-300"
+  ],
+  [
     "block p-2 text-lg underline-offset-4 hover:text-black hover:underline md:inline-block md:text-sm dark:hover:text-neutral-300",
     "text-black dark:text-neutral-300"
   ],
@@ -34,9 +34,11 @@
   ["border-t border-neutral-200 py-6 text-sm dark:border-neutral-700"],
   ["col-span-2 hidden h-[400px] w-full flex-none py-4 lg:block"],
   [
+    "ease flex h-full min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80"
+  ],
+  [
     "ease flex h-full min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
-    "ml-auto",
-    "minus"
+    "ml-auto"
   ],
   ["fixed bottom-0 left-0 right-0 top-0 flex h-full w-full flex-col bg-white pb-6 dark:bg-black"],
   [
@@ -49,10 +51,12 @@
     "flex flex-col rounded-lg border border-neutral-200 bg-white p-8 md:p-12 lg:flex-row lg:gap-8 dark:border-neutral-800 dark:bg-black"
   ],
   [
+    "flex flex-none items-center justify-center border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-black"
+  ],
+  [
     "flex flex-none items-center justify-center border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-black",
     "h-[40px] w-[40px] rounded-xl",
-    "h-[30px] w-[30px] rounded-lg",
-    "sm"
+    "h-[30px] w-[30px] rounded-lg"
   ],
   ["flex flex-row"],
   ["flex flex-wrap gap-3"],
@@ -74,6 +78,9 @@
   ["flex justify-end md:w-1/3"],
   ["flex justify-end space-y-2 text-right text-sm"],
   [
+    "flex min-w-[48px] items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+  ],
+  [
     "flex min-w-[48px] items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-sm dark:border-neutral-800 dark:bg-neutral-900",
     "cursor-default ring-2 ring-blue-600",
     "ring-1 ring-transparent transition duration-300 ease-in-out hover:ring-blue-600",
@@ -93,12 +100,16 @@
   ["grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"],
   ["grid-cols-2 lg:grid-cols-3"],
   [
+    "group flex h-full w-full items-center justify-center overflow-hidden rounded-lg border bg-white hover:border-blue-600 dark:bg-black"
+  ],
+  [
     "group flex h-full w-full items-center justify-center overflow-hidden rounded-lg border bg-white hover:border-blue-600 dark:bg-black",
+    "relative",
     "border-2 border-blue-600",
     "border-neutral-200 dark:border-neutral-800"
   ],
   ["grow overflow-auto py-4"],
-  ["h-[16px] w-[16px]", "h-[10px] w-[10px]", "sm"],
+  ["h-[16px] w-[16px]", "h-[10px] w-[10px]"],
   ["h-16"],
   ["h-20 w-20"],
   ["h-4"],
@@ -138,6 +149,7 @@
   ["mb-6 text-sm leading-tight dark:text-white/[60%]"],
   ["mb-8"],
   ["mb-8 text-5xl font-bold"],
+  ["md:col-span-4 md:row-span-2", "md:col-span-2 md:row-span-1"],
   ["md:hidden"],
   ["md:ml-auto"],
   ["ml-1 inline"],
@@ -206,6 +218,7 @@
     "relative h-16 w-16 overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
   ],
   ["relative h-full w-full"],
+  ["relative h-full w-full object-contain"],
   [
     "relative h-full w-full object-contain",
     "transition duration-300 ease-in-out group-hover:scale-105"
@@ -230,12 +243,14 @@
   ["uppercase"],
   ["w-6 text-center"],
   ["w-full"],
+  ["w-full hover:underline hover:underline-offset-4"],
   ["w-full hover:underline hover:underline-offset-4", "underline underline-offset-4"],
   ["w-full overflow-x-auto pb-6 pt-1"],
   [
     "w-full rounded-lg border bg-white px-4 py-2 text-sm text-black placeholder:text-neutral-500 dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
   ],
   ["w-full text-sm"],
+  ["w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100"],
   [
     "w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100",
     "underline underline-offset-4"

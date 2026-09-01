@@ -1,49 +1,44 @@
-/**
- * The code in this file is copied from https://github.com/lukeed/clsx and modified to suit the needs of tailwind-merge better.
- *
- * Specifically:
- * - Runtime code from https://github.com/lukeed/clsx/blob/v1.2.1/src/index.js
- * - TypeScript types from https://github.com/lukeed/clsx/blob/v1.2.1/clsx.d.ts
- *
- * Original code has MIT license: Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)
- */
+import { SPACE_CHARACTER } from "./constants.js";
 
 export type ClassNameValue = ClassNameArray | string | null | undefined | 0 | 0n | false;
-type ClassNameArray = readonly ClassNameValue[];
+interface ClassNameArray extends ReadonlyArray<ClassNameValue> {
+  readonly [index: number]: ClassNameValue;
+}
 
-export const twJoin = (...classLists: ClassNameValue[]): string => {
+export const twJoin = (...classValues: ClassNameValue[]): string => {
   let index = 0;
-  let argument: ClassNameValue;
-  let resolvedValue: string;
-  let string = "";
+  let classValue: ClassNameValue;
+  let resolvedClassName: string;
+  let classList = "";
 
-  while (index < classLists.length) {
-    if ((argument = classLists[index++])) {
-      if ((resolvedValue = toValue(argument))) {
-        if (string) string += " ";
-        string += resolvedValue;
+  while (index < classValues.length) {
+    if ((classValue = classValues[index++])) {
+      if ((resolvedClassName = resolveClassNameValue(classValue))) {
+        if (classList) classList += SPACE_CHARACTER;
+        classList += resolvedClassName;
       }
     }
   }
-  return string;
+  return classList;
 };
 
-const toValue = (value: ClassNameArray | string): string => {
+const resolveClassNameValue = (value: ClassNameArray | string): string => {
   if (typeof value === "string") {
     return value;
   }
 
-  let resolvedValue: string;
-  let string = "";
+  let resolvedClassName: string;
+  let classList = "";
 
   for (let index = 0; index < value.length; index++) {
-    if (value[index]) {
-      if ((resolvedValue = toValue(value[index] as ClassNameArray | string))) {
-        if (string) string += " ";
-        string += resolvedValue;
+    const nestedValue = value[index];
+    if (nestedValue) {
+      if ((resolvedClassName = resolveClassNameValue(nestedValue))) {
+        if (classList) classList += SPACE_CHARACTER;
+        classList += resolvedClassName;
       }
     }
   }
 
-  return string;
+  return classList;
 };
