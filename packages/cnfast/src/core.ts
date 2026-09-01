@@ -130,10 +130,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return bucket;
   };
 
-  // Objects/arrays must be re-resolved every call (clsx semantics), but the merged
-  // result depends only on the resolved strings, so after resolving in place the row
-  // can share the argument cache with plain-string calls — bucket === compares on the
-  // fresh strings beat hashing the fresh full class list in the whole-string cache.
   const resolveAndMergeClassValues = (classValues: ClassValue[]): string => {
     for (let index = 0, length = classValues.length; index < length; index++) {
       const classValue = classValues[index];
@@ -197,19 +193,7 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
   ): string => {
-    // A falsy anchor can never match predictedAnchors (truthy strings only),
-    // so falsy-tail rows skip the probe's loads instead of paying them every
-    // call for nothing (toggle-heavy callers hit this constantly).
     if (secondClassValue) {
-      // predictedAnchors only holds truthy strings, so the anchor compare is a
-      // sound guard for secondClassValue — but predictedPosition can be stale
-      // after trimBucket, letting the slot compares land on numeric bookkeeping
-      // slots (restLength/entryId) that a truthy NUMBER argument can strict-
-      // equal. A matched slot therefore only proves a hit once the argument is
-      // verified to be a truthy string: then either the window is a genuine
-      // same-restLength entry of this anchor (byte-identical result) or a
-      // string-vs-number compare has already failed. The typeof checks sit
-      // after the identity compares so probe misses pay nothing.
       const predictedId = successorIds[lastHitId]!;
       if (predictedId !== -1 && predictedAnchors[predictedId] === secondClassValue) {
         const predictedBucket = predictedBuckets[predictedId]!;
@@ -252,10 +236,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeTwoValuesUncacheable(firstClassValue, secondClassValue);
   };
 
-  // JSC-only front for the toggle-shaped falsy anchors the probe-first body
-  // routes through mergeTwoValuesUncacheable; the exit V8 cannot afford — it
-  // would push TwoValues past the bytecode budget that keeps it inlined in cn.
-  // Selected once at closure creation, never branched per call.
   const getMergedClassNameForTwoValuesJsc = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
@@ -333,8 +313,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     secondClassValue: ClassValue,
     thirdClassValue: ClassValue,
   ): string => {
-    // Falsy anchors skip the probe's loads — same reasoning as the two-value
-    // path, and falsy tails are the majority of real arity-3 traffic.
     if (thirdClassValue) {
       const predictedId = successorIds[lastHitId]!;
       if (predictedId !== -1 && predictedAnchors[predictedId] === thirdClassValue) {
@@ -389,9 +367,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     return mergeThreeValuesUncacheable(firstClassValue, secondClassValue, thirdClassValue);
   };
 
-  // JSC-only front, mirroring the two-value one: the (string, string, falsy)
-  // and (string, falsy, string) toggle shapes drop to the equivalent two-value
-  // call inline instead of paying a wasted probe plus the uncacheable hop.
   const getMergedClassNameForThreeValuesJsc = (
     firstClassValue: ClassValue,
     secondClassValue: ClassValue,
@@ -490,13 +465,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
 
       const restLengthWanted = truthyStringCount - 1;
 
-      // The entry-level probe already tried this exact anchor for raw-string
-      // rows, so re-probing is wanted only after resolveClassValue rewrote
-      // values (the probe can then match strings the raw row could not). No
-      // stale-position guards are needed: every compared value is a verified
-      // truthy string and restLengthWanted >= 1, so a stale window either
-      // fails on a numeric slot or is a genuine same-anchor entry with a
-      // byte-identical result.
       if (probeWanted) {
         const predictedId = successorIds[lastHitId]!;
         if (predictedId !== -1 && predictedAnchors[predictedId] === anchorClassName) {
@@ -578,21 +546,6 @@ const createClassNameFunction = (twMerge: TailwindMerge): ClassNameFunction => {
     if (classValueCount === 3)
       return getMergedClassNameForThreeValues(firstClassValue, arguments[1], arguments[2]);
 
-    // The anchor is the LAST truthy argument, so a short backward walk over
-    // the falsy tail finds it without the new Array copy or the forward
-    // anchor-selection scan — falsy-tail high-arity rows otherwise pay both
-    // just to reach the identical interior re-probe. predictedAnchors only
-    // holds truthy strings, so the anchor compare guards the anchor operand
-    // (a truthy non-string last value can never match). predictedPosition
-    // can be stale after trimBucket, so the header read must be verified as a
-    // real restLength (a stale slot can hold a string or an entryId — id 0
-    // would let an all-falsy prefix "consume" zero rest slots and return a
-    // number), and each raw argument that matches a rest slot must be a
-    // truthy string: a stale window that still matches string-for-string is
-    // a genuine same-anchor entry, while only a NUMBER argument can equal
-    // the numeric slot a misaligned window puts in its path.
-    // anchorIndex > 0 (not !== 0) also terminates the zero-argument call,
-    // which lands here with anchorIndex already -1.
     let anchorIndex = classValueCount - 1;
     let anchorClassValue = arguments[anchorIndex];
     while (!anchorClassValue && anchorIndex > 0) anchorClassValue = arguments[--anchorIndex];

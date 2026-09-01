@@ -69,8 +69,6 @@ const createCallSiteModel = (
 
 const callSiteModels = [
   createCallSiteModel("monomorphic upper bound", (callRow) => JSON.stringify(callRow)),
-  // The capture lacks source locations, so arity plus the first static class
-  // provides a conservative proxy for polymorphic component call sites.
   createCallSiteModel("component-variant proxy", (callRow) =>
     JSON.stringify([callRow.length, callRow[0]]),
   ),
@@ -80,7 +78,6 @@ interface BoundCaller {
   (): string;
 }
 
-// Arity specialization avoids adding spread-dispatch overhead to every implementation.
 const createBoundCaller = (
   implementation: ClassNameFunction,
   callRow: ClassValue[],

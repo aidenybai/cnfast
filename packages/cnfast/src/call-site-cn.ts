@@ -6,8 +6,6 @@ import {
 } from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
-// Only primitive argument vectors are memoized because objects and arrays can mutate.
-// Invalidating a row before writes prevents an aborted store from exposing partial data.
 export const createCallSiteCn = (classNameFunction: ClassNameFunction = cn): ClassNameFunction => {
   const memoizedArgumentCounts = createFilledArray(
     CALL_SITE_MEMO_ROW_COUNT,
@@ -20,7 +18,6 @@ export const createCallSiteCn = (classNameFunction: ClassNameFunction = cn): Cla
   );
   let nextMemoRowIndex = 0;
 
-  // A function expression reads arguments without allocating a rest array.
   const memoizedClassNameFunction: ClassNameFunction = function (): string {
     const argumentCount = arguments.length;
     for (let rowIndex = 0; rowIndex < CALL_SITE_MEMO_ROW_COUNT; rowIndex++) {

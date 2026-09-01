@@ -192,8 +192,6 @@ const printSummary = (workloadResults: WorkloadResult[], suiteLabel: string): vo
   );
 };
 
-// Corpus rows where the pinned tailwind-merge dev snapshot diverges from the released
-// conflict semantics cnfast implements (px vs pe/ps, max-h-none, shadow-sm vs shadow-inner).
 const knownDivergentInputs = new Set(
   (
     JSON.parse(
@@ -230,8 +228,6 @@ const verifyWorkloads = (workloads: Workload[]): void => {
         }
       }
     }
-    // A divergent case makes the checksums differ by construction; every case in such a
-    // workload was already compared per call above, which is the stronger check.
     if (hasKnownDivergence) continue;
     const cnfastChecksum = workload.run(implementations.cnfast);
     const referenceChecksum = workload.run(implementations.reference);
