@@ -1,11 +1,13 @@
+> Check out [`cn`](https://github.com/shadcn-ui/cn) by [shadcn](https://ui.shadcn.com/) for an even _**faster**_ `cn`
+
 # cnfast
 
 [![version](https://img.shields.io/npm/v/cnfast?style=flat&colorA=000000&colorB=000000)](https://npmjs.com/package/cnfast)
 [![downloads](https://img.shields.io/npm/dt/cnfast.svg?style=flat&colorA=000000&colorB=000000)](https://npmjs.com/package/cnfast)
 
-Fast drop-in replacement for `cn`.
+Fast drop-in replacement for `tailwind-merge` + `clsx`.
 
-cnfast runs [**25× faster**](https://cn.aidenybai.com/) than `clsx + tailwind-merge` across 58 real-world repositories, with byte-identical output. Same API, no code changes.
+cnfast runs [**25× faster**](https://cn.aidenybai.com/) than `tailwind-merge` + `clsx` across 58 real-world repositories, with byte-identical output. Same API, no code changes.
 
 ```ts
 import { cn } from "cnfast";
