@@ -46,7 +46,20 @@ export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 export { cn } from "cnfast";
 ```
 
-cnfast also exports `clsx`, `twMerge`, and `twJoin`.
+For a hot call site that repeatedly receives the same primitive arguments, create one opt-in memo
+outside the render path:
+
+```ts
+import { createCallSiteCn } from "cnfast";
+
+const buttonCn = createCallSiteCn();
+
+buttonCn("inline-flex", isActive && "bg-blue-500", isDisabled && "opacity-50");
+```
+
+Create one memo per call site. Keep using `cn` for sites that cycle through different combinations
+or receive mutable objects and arrays; the wrapper overhead can make those sites slower. cnfast also
+exports `createCn`, `clsx`, `twMerge`, and `twJoin`.
 
 ## Development
 
