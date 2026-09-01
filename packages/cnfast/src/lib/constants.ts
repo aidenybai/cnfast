@@ -24,7 +24,8 @@ export const ARGUMENT_CACHE_PREDICTION_SLOTS = 2048;
 export const CALL_SITE_MEMO_ROWS = 4;
 export const CALL_SITE_MEMO_ROW_ARG_SLOTS = 12;
 
-export const CVA_MEMO_ROWS = 8;
+export const CVA_MEMO_ROWS = 16;
+export const CVA_MEMO_NARROW_ROWS = 8;
 export const CVA_MEMO_MAX_VALUE_SLOTS = 16;
 export const CVA_TABLE_MAX_SLOTS = 256;
 

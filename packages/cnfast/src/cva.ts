@@ -5,7 +5,12 @@
 // tell an inherited value from an own one). None of these shapes occur in real usage; the
 // 58-repo corpus study found zero.
 import { type ClassValue, clsx, resolveClassValue } from "./clsx.js";
-import { CVA_MEMO_MAX_VALUE_SLOTS, CVA_MEMO_ROWS, CVA_TABLE_MAX_SLOTS } from "./lib/constants.js";
+import {
+  CVA_MEMO_MAX_VALUE_SLOTS,
+  CVA_MEMO_NARROW_ROWS,
+  CVA_MEMO_ROWS,
+  CVA_TABLE_MAX_SLOTS,
+} from "./lib/constants.js";
 import { createFilledArray } from "./utils/create-filled-array.js";
 
 export type ClassPropKey = "class" | "className";
@@ -83,12 +88,20 @@ interface CompiledVariantConfig {
   defaultsForCompounds: Record<string, unknown>;
   relevantKeys: string[];
   defaultClassName: string | null;
+  memoKind: number;
+  memoKey0: string;
+  memoKey1: string;
   memoWidth: number;
+  memoRows: number;
+  memoMinRows: number;
   scratchValues: unknown[];
   rowValues: unknown[];
-  rowValidFlags: boolean[];
   rowResults: string[];
+  ringRows: number;
+  writtenRows: number;
+  scanRows: number;
   victimRow: number;
+  didHitThisPass: boolean;
   // The table pieces are held flat rather than behind the CombinationTable
   // object: the extra pointer chase per call measured 1.5% on V8.
   tableSlotCount: number;
@@ -211,8 +224,19 @@ const compileVariantConfig = (
     }
   }
 
-  const width = relevantKeys.length + 2;
-  const isMemoizable = width <= CVA_MEMO_MAX_VALUE_SLOTS;
+  // The fast memo lane pads 0/1-key configs to the fixed four-slot layout
+  // [key0, key1, class, className] (a missing key slot duplicates its
+  // neighbor's read, which compares equal by construction), so one unrolled
+  // scan with the values held in locals serves the 85% of real configs that
+  // declare at most two relevant keys. Both lanes share the row count: real
+  // sites cycle more prop shapes than eight rows hold (the 48-site replay has
+  // a median of 11 distinct shapes per site, and 38 of its 48 sites exceed
+  // eight), and the ring below shrinks itself back for sites that never hit.
+  const relevantKeyCount = relevantKeys.length;
+  const naturalWidth = relevantKeyCount + 2;
+  const isMemoizable = naturalWidth <= CVA_MEMO_MAX_VALUE_SLOTS;
+  const isFastLane = isMemoizable && relevantKeyCount <= 2;
+  const width = isFastLane ? 4 : naturalWidth;
   const combinationTable =
     compoundRows.length === 0 && isMemoizable
       ? compileCombinationTable(variantNames, fragmentTables, defaultKeys)
@@ -228,12 +252,20 @@ const compileVariantConfig = (
     defaultsForCompounds,
     relevantKeys,
     defaultClassName: null,
+    memoKind: isFastLane ? 1 : isMemoizable ? 2 : 0,
+    memoKey0: relevantKeys[0] ?? "class",
+    memoKey1: relevantKeys[1] ?? relevantKeys[0] ?? "class",
     memoWidth: isMemoizable ? width : 0,
+    memoRows: isMemoizable ? CVA_MEMO_ROWS : 0,
+    memoMinRows: isMemoizable ? CVA_MEMO_NARROW_ROWS : 0,
     scratchValues: isMemoizable ? createFilledArray<unknown>(width, undefined) : [],
     rowValues: isMemoizable ? createFilledArray<unknown>(CVA_MEMO_ROWS * width, undefined) : [],
-    rowValidFlags: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, false) : [],
     rowResults: isMemoizable ? createFilledArray(CVA_MEMO_ROWS, "") : [],
+    ringRows: CVA_MEMO_ROWS,
+    writtenRows: 0,
+    scanRows: 0,
     victimRow: 0,
+    didHitThisPass: true,
     tableSlotCount: combinationTable === null ? 0 : combinationTable.slotCount,
     tableStateIndexes: combinationTable === null ? [] : combinationTable.stateIndexes,
     tableStateCounts: combinationTable === null ? [] : combinationTable.stateCounts,
@@ -325,14 +357,95 @@ const resolveVariantClassName = (
 
 // Per-instance memo in the createCallSiteCn mold: only primitives are stored
 // (=== on primitives guarantees a byte-identical result, while a truthy
-// object/array can mutate between calls without changing identity), the victim
-// row is invalidated before the store loop so a mid-store bailout on an object
-// value can never leave a half-written row serveable, and validity lives in
-// rowValidFlags rather than in-band sentinel values. The key is the resolved
-// relevant-prop vector (declared variants plus compound selector keys) plus the
-// class/className slots, so a memo hit returns the SAME string instance per
-// combination — which keeps a wrapping cn() on its whole-string cache hits.
-const resolveThroughMemo = (
+// object/array can mutate between calls without changing identity), and every
+// value is vetted for primitiveness BEFORE the first row write, so a row moves
+// atomically from its old entry to the new one (the store loop itself runs no
+// user code) and a half-written row can never be served. That atomicity is
+// what lets a row count bound the scan in place of per-row validity flags:
+// every row below it holds a complete entry. The key is the resolved
+// relevant-prop vector (declared variants plus compound selector keys) plus
+// the class/className slots, so a memo hit returns the SAME string instance
+// per combination — which keeps a wrapping cn() on its whole-string cache
+// hits.
+const resolveMemoMiss = (
+  compiled: CompiledVariantConfig,
+  propRecord: Record<string, unknown>,
+): string => {
+  const memoWidth = compiled.memoWidth;
+  const scratchValues = compiled.scratchValues;
+  const resolvedClassName = resolveVariantClassName(compiled, propRecord);
+  let slot = 0;
+  for (; slot < memoWidth; slot++) {
+    const value = scratchValues[slot];
+    if (value !== null && (typeof value === "object" || typeof value === "function")) break;
+  }
+  if (slot === memoWidth) {
+    const rowValues = compiled.rowValues;
+    const victim = compiled.victimRow;
+    const storeBase = victim * memoWidth;
+    for (slot = 0; slot < memoWidth; slot++) rowValues[storeBase + slot] = scratchValues[slot];
+    compiled.rowResults[victim] = resolvedClassName;
+    let nextVictim = victim + 1;
+    if (victim === compiled.writtenRows) {
+      compiled.writtenRows = nextVictim;
+      compiled.scanRows = nextVictim;
+    }
+    if (nextVictim === compiled.ringRows) {
+      // The ring keeps its full width only while it is paying off. A whole pass
+      // that served no hit means the site cycles more shapes than the memo can
+      // hold, so the ring falls back to the narrow width and stops paying a
+      // full-width scan per doomed lookup; one hit restores it. The flag starts
+      // set so the fill-up pass, which cannot hit yet, never counts as a failed
+      // one. Rows outside the ring stay valid (a row is an immutable
+      // value-vector to result fact), so widening again serves them straight
+      // away.
+      const ringRows = compiled.didHitThisPass ? compiled.memoRows : compiled.memoMinRows;
+      const writtenRows = compiled.writtenRows;
+      compiled.ringRows = ringRows;
+      compiled.scanRows = writtenRows < ringRows ? writtenRows : ringRows;
+      compiled.didHitThisPass = false;
+      nextVictim = 0;
+    }
+    compiled.victimRow = nextVictim;
+  }
+  return resolvedClassName;
+};
+
+// The four-slot lane: reads land in locals and the unrolled compare touches no
+// scratch storage on a hit, which cuts the hit cost roughly in half on both
+// engines; the scratch vector is filled only when the scan falls through to
+// the outlined miss/store tail.
+const resolveThroughFastMemo = (
+  compiled: CompiledVariantConfig,
+  propRecord: Record<string, unknown>,
+): string => {
+  const value0 = propRecord[compiled.memoKey0];
+  const value1 = propRecord[compiled.memoKey1];
+  const adhocClass = propRecord.class;
+  const adhocClassName = propRecord.className;
+  const rowValues = compiled.rowValues;
+  const rowLimit = compiled.scanRows;
+  for (let row = 0; row < rowLimit; row++) {
+    const rowBase = row * 4;
+    if (
+      value0 === rowValues[rowBase] &&
+      value1 === rowValues[rowBase + 1] &&
+      adhocClass === rowValues[rowBase + 2] &&
+      adhocClassName === rowValues[rowBase + 3]
+    ) {
+      compiled.didHitThisPass = true;
+      return compiled.rowResults[row]!;
+    }
+  }
+  const scratchValues = compiled.scratchValues;
+  scratchValues[0] = value0;
+  scratchValues[1] = value1;
+  scratchValues[2] = adhocClass;
+  scratchValues[3] = adhocClassName;
+  return resolveMemoMiss(compiled, propRecord);
+};
+
+const resolveThroughWideMemo = (
   compiled: CompiledVariantConfig,
   propRecord: Record<string, unknown>,
 ): string => {
@@ -347,32 +460,30 @@ const resolveThroughMemo = (
   scratchValues[relevantKeyCount + 1] = propRecord.className;
 
   const rowValues = compiled.rowValues;
-  const rowValidFlags = compiled.rowValidFlags;
-  for (let row = 0; row < CVA_MEMO_ROWS; row++) {
-    if (!rowValidFlags[row]) continue;
+  const rowLimit = compiled.scanRows;
+  for (let row = 0; row < rowLimit; row++) {
     const rowBase = row * memoWidth;
     let slot = 0;
     while (slot < memoWidth && scratchValues[slot] === rowValues[rowBase + slot]) slot++;
-    if (slot === memoWidth) return compiled.rowResults[row]!;
+    if (slot === memoWidth) {
+      compiled.didHitThisPass = true;
+      return compiled.rowResults[row]!;
+    }
   }
 
-  const resolvedClassName = resolveVariantClassName(compiled, propRecord);
-  const victim = compiled.victimRow;
-  rowValidFlags[victim] = false;
-  const storeBase = victim * memoWidth;
-  let slot = 0;
-  for (; slot < memoWidth; slot++) {
-    const value = scratchValues[slot];
-    if (value !== null && (typeof value === "object" || typeof value === "function")) break;
-    rowValues[storeBase + slot] = value;
-  }
-  if (slot === memoWidth) {
-    compiled.victimRow = victim + 1 === CVA_MEMO_ROWS ? 0 : victim + 1;
-    rowValidFlags[victim] = true;
-    compiled.rowResults[victim] = resolvedClassName;
-  }
-  return resolvedClassName;
+  return resolveMemoMiss(compiled, propRecord);
 };
+
+// The lane pick for calls that reach the memo from the table rather than from
+// the closure. The closure calls the two lanes directly instead, so the memo
+// hit path of a table-less config keeps its single frame.
+const resolveThroughMemo = (
+  compiled: CompiledVariantConfig,
+  propRecord: Record<string, unknown>,
+): string =>
+  compiled.memoKind === 1
+    ? resolveThroughFastMemo(compiled, propRecord)
+    : resolveThroughWideMemo(compiled, propRecord);
 
 // The keyed reads coerce exactly like upstream's `variants[v][variantKey]`
 // (ToPropertyKey on the normalized value), so two prop values share a slot
@@ -441,7 +552,9 @@ export const cva = <T>(base?: ClassValue, config?: CvaConfig<T>) => {
     }
     const propRecord = props as Record<string, unknown>;
     if (compiled.tableSlotCount !== 0) return resolveThroughTable(compiled, propRecord);
-    if (compiled.memoWidth === 0) return resolveVariantClassName(compiled, propRecord);
-    return resolveThroughMemo(compiled, propRecord);
+    const memoKind = compiled.memoKind;
+    if (memoKind === 1) return resolveThroughFastMemo(compiled, propRecord);
+    if (memoKind === 2) return resolveThroughWideMemo(compiled, propRecord);
+    return resolveVariantClassName(compiled, propRecord);
   };
 };
